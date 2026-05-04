@@ -58,7 +58,7 @@ export default function ApplicantDashboard_PaymentApplicantComponent({
     
     const transactionType: TransactionType = (params.type as TransactionType) || 'repayment';
     const referenceId =
-        params.referenceId || (transactionType === 'repayment' ? session?.user?.id || '' : '');
+        params.referenceId;
     
     const handlePaymentMethodSelect = (method: PaymentMethod) => {
         setPaymentMethod(String(method));
