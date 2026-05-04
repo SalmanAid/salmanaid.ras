@@ -118,7 +118,7 @@ export default function AdminDashboardPage() {
       <AdminDashboard_AdminNavbar />
 
       {/* Page Content */}
-      <div className="flex flex-col w-full max-w-[1400px] mx-auto px-6 py-6 gap-6">
+      <div className="flex flex-col w-full max-w-350 mx-auto px-6 py-6 gap-6">
 
         {/* ── Stat Cards ── */}
         <div className="grid grid-cols-4 gap-4">

@@ -63,12 +63,12 @@ export default function DonorDashboard_RecentDistributionTable({
             tableRows.map((row) => (
               <TableRow key={row.id} className="border-b border-[#EEF2F6] last:border-0">
                 <TableCell className="px-2 py-3 text-[13px] text-[#111827] md:px-3">{row.date}</TableCell>
-                <TableCell className="max-w-[240px] px-2 py-3 text-[13px] text-[#111827] md:px-3">
+                <TableCell className="max-w-60 px-2 py-3 text-[13px] text-[#111827] md:px-3">
                   <span className="block truncate" title={row.programName}>{row.programName}</span>
                 </TableCell>
                 <TableCell className="px-2 py-3 text-[13px] text-[#111827] md:px-3">{row.amount}</TableCell>
                 <TableCell className="px-2 py-3 md:px-3">
-                  <span className={`inline-flex rounded-full px-2 py-[3px] text-[11px] font-semibold leading-none ${statusClassName[row.status]}`}>
+                  <span className={`inline-flex rounded-full px-2 py-0.75 text-[11px] font-semibold leading-none ${statusClassName[row.status]}`}>
                     {row.status}
                   </span>
                 </TableCell>

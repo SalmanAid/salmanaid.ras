@@ -355,7 +355,7 @@ export default function ReviewLoanApplicationPage() {
                         <textarea
                             value={rejectionApprovalNote}
                             onChange={(e) => setRejectionApprovalNote(e.target.value)}
-                            className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#07B0C8] outline-none min-h-[120px] text-sm"
+                            className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#07B0C8] outline-none min-h-30 text-sm"
                             placeholder="Berikan alasan atau catatan tambahan..."
                         />
                     </div>

@@ -333,7 +333,7 @@ export default function PaymentConfirmPage({
 
               {qrCodeUrl ? (
                 <div className="rounded-md bg-white p-4 flex justify-center">
-                  <img src={qrCodeUrl} alt="Midtrans QRIS" className="w-[240px] h-[240px] object-contain" />
+                  <img src={qrCodeUrl} alt="Midtrans QRIS" className="w-60 h-60 object-contain" />
                 </div>
               ) : (
                 <div className="px-4 py-3 bg-gray-200 text-gray-600 text-center rounded-md">QR image is not available yet. Please wait...</div>

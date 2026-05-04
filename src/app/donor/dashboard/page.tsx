@@ -111,7 +111,7 @@ export default function DonorDashboardPage(){
       <div className="bg-[#F3F5F7] text-[#111827]">
         <DonorDashboard_DonorNavbar />
 
-        <main className="w-full max-w-[1400px] mx-auto px-6 pb-10 pt-8">
+        <main className="w-full max-w-350 mx-auto px-6 pb-10 pt-8">
           <section>
             <h1 className="text-2xl font-bold text-[#111827] tracking-tight">
               Welcome back, <span className="text-[#07B0C8]">{username}</span>

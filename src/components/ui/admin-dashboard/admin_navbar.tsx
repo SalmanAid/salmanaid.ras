@@ -30,11 +30,11 @@ export default function AdminDashboard_AdminNavbar() {
 
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 w-full shadow-sm">
-      <div className="max-w-[1400px] mx-auto px-6">
-        <div className="flex justify-between items-center h-[58px]">
+      <div className="max-w-350 mx-auto px-6">
+        <div className="flex justify-between items-center h-14.5">
 
           {/* Logo */}
-          <Link href="/admin/dashboard" className="flex-shrink-0 flex items-center">
+          <Link href="/admin/dashboard" className="shrink-0 flex items-center">
             <Image
               src={RumahAmalHorizontalLogo}
               alt="Logo Rumah Amal Salman"
@@ -82,10 +82,10 @@ export default function AdminDashboard_AdminNavbar() {
                   className="h-4 w-4"
                 />
               </span>
-              <span className="max-w-[110px] truncate text-[12.5px] font-medium text-[#111827]" title={username}>
+              <span className="max-w-22.5 truncate text-[12.5px] font-medium text-[#111827]" title={username}>
                 {username}
               </span>
-              <ChevronDown className="h-[14px] w-[14px] text-gray-500 transition-transform duration-150 group-hover:rotate-180" />
+              <ChevronDown className="h-3.5 w-3.5 text-gray-500 transition-transform duration-150 group-hover:rotate-180" />
             </button>
 
             {/* Dropdown */}
