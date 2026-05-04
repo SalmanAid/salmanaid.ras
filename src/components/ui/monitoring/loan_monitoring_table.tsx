@@ -121,6 +121,7 @@ export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { 
                         <TableHead className="text-[#64748B] font-semibold text-xs uppercase px-6">Applicant Details</TableHead>
                         <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Description</TableHead>
                         <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Approved Amount</TableHead>
+                        <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Remaining Loan Payments</TableHead>
                         <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Approval Date</TableHead>
                         <TableHead className="text-[#64748B] font-semibold text-xs uppercase text-center">Status</TableHead>
                         <TableHead className="text-[#64748B] font-semibold text-xs uppercase text-center">Action</TableHead>
@@ -165,6 +166,11 @@ export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { 
                                 {/* Approved Amount (JSON uses approvedAmount string) */}
                                 <TableCell className="font-bold text-[#1E293B] text-sm">
                                     {formatCurrency(Number(loan.approvedAmount))}
+                                </TableCell>
+
+                                {/* Approved Amount (JSON uses approvedAmount string) */}
+                                <TableCell className="font-bold text-[#1E293B] text-sm">
+                                    {formatCurrency(Number(loan.approvedAmount - loan.totalPaid))}
                                 </TableCell>
 
                                 {/* Approval Date (Mapped from approvedAt) */}
