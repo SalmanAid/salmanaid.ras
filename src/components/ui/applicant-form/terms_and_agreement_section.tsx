@@ -54,7 +54,7 @@ export default function ApplicantForm_TermsAndAgreementSection() {
         setSubmitSuccess(null)
 
         try {
-            const createApplicationResponse = await fetch("/api/loans", {
+            const createApplicationResponse = await fetch("/api/loan-applications", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
