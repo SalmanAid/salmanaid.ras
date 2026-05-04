@@ -1,43 +1,36 @@
 import { create } from "zustand"
-import { LoanApplication } from "@/types/loan_application"
+import { Loan } from "@/types/loan"
+import { LoanStatus } from "@/generated/prisma"
 
 type LoanStore = {
-    loans: LoanApplication[]
-    selected_loan: LoanApplication 
+    loans: Loan[]
+    selected_loan: Loan 
 
-    setLoans: (loans: LoanApplication[]) => void
-    setSelectedLoan: (loan: LoanApplication) => void
+    setLoans: (loans: Loan[]) => void
+    setSelectedLoan: (loan: Loan) => void
     setApprovedAmount: (amount: number) => void
-    setRejectionApprovalNote: (note: string) => void
 }
 
 export const useLoanStore = create<LoanStore>((set) => ({
     loans: [],
     selected_loan: {
         id: "",
-        loanApplicationId: "",
-        name: "",
-        idNumber: "",
-        institution: "",
-        image: "",
-        intakeYear: 2026,
-        address: "",
-
-        // loan details
-        requestedAmount: 0,
-        description: "",
-        collateralDescription: "",
-        status: "",
-        createdAt: 0,
-        loanId: "",
-        loan: null,
-        attachments: [],
-        studentIdCard: "",
-        transcriptFile: "",
-
-        // admin actions
+        status : LoanStatus.FORGIVEN,
+        dueDate : "",
         approvedAmount: 0,
-        rejectionApprovalNotes: ""
+        approvedAt : "",
+        
+        // loan details
+        application: {
+            description : "",
+            borrower : {
+                name : "",
+                email : ""
+            }
+        },
+        _count: {
+            repayments : 0
+        },
     },
 
     setLoans: (loans) => set({ loans }),
@@ -49,14 +42,6 @@ export const useLoanStore = create<LoanStore>((set) => ({
             selected_loan: {
                 ...state.selected_loan, 
                 approvedAmount: amount  
-            }
-        })),
-
-    setRejectionApprovalNote: (note) => 
-        set((state) => ({
-            selected_loan: {
-                ...state.selected_loan,
-                rejectionApprovalNotes: note
             }
         })),
 

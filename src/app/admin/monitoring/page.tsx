@@ -4,6 +4,7 @@ import { useLoanStore } from "@/hooks/loanStore";
 import { useEffect, useState } from "react";
 import LoanRequest_LoanRequestsTable from "@/components/ui/loan-request/loan_request_table";
 import AdminDashboard_AdminNavbar from "@/components/ui/admin-dashboard/admin_navbar";
+import Monitoring_LoanMonitoringTable from "@/components/ui/monitoring/loan_monitoring_table";
 
 export default function AdminMonitoringPage() {
   const maxItemsInPage = 10;
@@ -60,9 +61,10 @@ export default function AdminMonitoringPage() {
     if (statusFilter !== value) return "text-gray-500"; // Inactive color
 
     switch (value) {
-      case "PENDING": return "text-[#BB4D00] border-[#BB4D00]";
-      case "APPROVED": return "text-[#007A55] border-[#007A55]";
-      case "REJECTED": return "text-[#C10007] border-[#C10007]";
+      case "FORGIVEN": return "text-[#BB4D00] border-[#BB4D00]";
+      case "ACTIVE" : return "text-[#007A55] border-[#007A55]";
+      case "PAID" : return "text-[#007A55] border-[#007A55]";
+      case "DEFAULTED": return "text-[#C10007] border-[#C10007]";
       default: return "text-[#00B5D8] border-[#00B5D8]"; // "All" color
     }
   };
@@ -72,9 +74,9 @@ export default function AdminMonitoringPage() {
       <AdminDashboard_AdminNavbar />
 
       <div className="w-[90%] pt-10 pb-4">
-        <h1 className="text-4xl font-bold text-[#1E293B]">Daftar Pengajuan Pinjaman</h1>
+        <h1 className="text-4xl font-bold text-[#1E293B]">Daftar Pinjaman</h1>
         <p className="text-lg text-gray-500 mt-2">
-          Atur dan review pengajuan pinjaman oleh mahasiswa dan dosen.
+          Atur pinjaman untuk mahasiswa dan dosen.
         </p>
       </div>
 
@@ -83,9 +85,10 @@ export default function AdminMonitoringPage() {
         <div className="flex gap-4 mb-6 border-b border-gray-200">
           {[
             { label: "All", value: undefined },
-            { label: "Pending", value: "PENDING" },
-            { label: "Approved", value: "APPROVED" },
-            { label: "Rejected", value: "REJECTED" },
+            { label: "Forgiven", value: "FORGIVEN" },
+            { label: "Paid", value: "PAID" },
+            { label: "Active", value: "ACTIVE" },
+            { label: "Defaulted", value: "DEFAULTED" },
           ].map((tab) => (
             <button
               key={tab.label}
@@ -99,7 +102,7 @@ export default function AdminMonitoringPage() {
         </div>
 
         <div className="w-full mb-6">
-          <LoanRequest_LoanRequestsTable isLoading={isLoading} />
+			<Monitoring_LoanMonitoringTable isLoading={isLoading} />
         </div>
 
         {/* Pagination UI */}

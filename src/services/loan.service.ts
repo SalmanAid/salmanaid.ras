@@ -416,4 +416,57 @@ export const LoanService = {
       return updatedApplication;
     });
   },
+
+  async getAllLoans(start: number, end: number, loanStatus?: LoanStatus) {
+    try {
+      // 1. Calculate pagination parameters
+      const skip = Math.max(0, start);
+      const take = Math.max(0, end - start);
+
+      // 2. Build the dynamic filter
+      const whereClause = loanStatus ? { status: loanStatus } : {};
+
+      // 3. Execute both queries in a transaction for better performance/consistency
+      const [loans, totalCount] = await prisma.$transaction([
+        prisma.loan.findMany({
+          where: whereClause,
+          skip: skip,
+          take: take,
+          orderBy: {
+            approvedAt: 'desc', // Show newest loans first
+          },
+          include: {
+            // Including application gives you borrower info and descriptions
+            application: {
+              select: {
+                description: true,
+                borrower: {
+                  select: {
+                    name: true,
+                    email: true
+                  }
+                }
+              }
+            },
+            // Optional: include funding/repayment summary if needed
+            _count: {
+              select: { repayments: true }
+            }
+          },
+        }),
+        prisma.loan.count({
+          where: whereClause,
+        }),
+      ]);
+
+      return {
+        loans,
+        total: totalCount,
+      };
+    } catch (error) {
+      console.error("Error fetching loans:", error);
+      throw new Error("Gagal mengambil data pinjaman.");
+    }
+  },
+
 };
