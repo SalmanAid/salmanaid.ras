@@ -5,9 +5,12 @@ import { useEffect, useState } from "react";
 import LoanRequest_LoanRequestsTable from "@/components/ui/loan-request/loan_request_table";
 import AdminDashboard_AdminNavbar from "@/components/ui/admin-dashboard/admin_navbar";
 import Monitoring_LoanMonitoringTable from "@/components/ui/monitoring/loan_monitoring_table";
+import Monitoring_ManualSettlementCard from "@/components/ui/monitoring/manual_settlement_card";
 
 export default function AdminMonitoringPage() {
   const maxItemsInPage = 10;
+
+	const isManualSettlementCardOpen = useLoanStore((state) => (state.isManualSettlementCardOpen))
 
   const loans = useLoanStore((state) => state.loans);
   const setLoans = useLoanStore((state) => state.setLoans);
@@ -71,77 +74,84 @@ export default function AdminMonitoringPage() {
 
   return (
     <div className="flex flex-col justify-start items-center w-full min-h-screen bg-[#F9FAFB]">
-      <AdminDashboard_AdminNavbar />
 
-      <div className="w-[90%] pt-10 pb-4">
-        <h1 className="text-4xl font-bold text-[#1E293B]">Daftar Pinjaman</h1>
-        <p className="text-lg text-gray-500 mt-2">
-          Atur pinjaman untuk mahasiswa dan dosen.
-        </p>
-      </div>
+		{isManualSettlementCardOpen && (
+			<div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+				<Monitoring_ManualSettlementCard />
+			</div>
+		)}
+		<AdminDashboard_AdminNavbar />
 
-      <div className="flex flex-col w-[90%] py-4">
-        {/* Filter Tabs with Hardcoded Dictionary Colors */}
-        <div className="flex gap-4 mb-6 border-b border-gray-200">
-          {[
-            { label: "All", value: undefined },
-            { label: "Forgiven", value: "FORGIVEN" },
-            { label: "Paid", value: "PAID" },
-            { label: "Active", value: "ACTIVE" },
-            { label: "Defaulted", value: "DEFAULTED" },
-          ].map((tab) => (
-            <button
-              key={tab.label}
-              onClick={() => handleFilterChange(tab.value)}
-              className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${getTabColor(tab.value)} ${statusFilter !== tab.value ? "border-transparent hover:text-gray-700" : ""
-                }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+		<div className="w-[90%] pt-10 pb-4">
+			<h1 className="text-4xl font-bold text-[#1E293B]">Daftar Pinjaman</h1>
+			<p className="text-lg text-gray-500 mt-2">
+			Atur pinjaman untuk mahasiswa dan dosen.
+			</p>
+		</div>
 
-        <div className="w-full mb-6">
-			<Monitoring_LoanMonitoringTable isLoading={isLoading} />
-        </div>
+		<div className="flex flex-col w-[90%] py-4">
+			{/* Filter Tabs with Hardcoded Dictionary Colors */}
+			<div className="flex gap-4 mb-6 border-b border-gray-200">
+				{[
+					{ label: "All", value: undefined },
+					{ label: "Forgiven", value: "FORGIVEN" },
+					{ label: "Paid", value: "PAID" },
+					{ label: "Active", value: "ACTIVE" },
+					{ label: "Defaulted", value: "DEFAULTED" },
+				].map((tab) => (
+					<button
+					key={tab.label}
+					onClick={() => handleFilterChange(tab.value)}
+					className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${getTabColor(tab.value)} ${statusFilter !== tab.value ? "border-transparent hover:text-gray-700" : ""
+						}`}
+					>
+					{tab.label}
+					</button>
+				))}
+				</div>
 
-        {/* Pagination UI */}
-        <div className="flex justify-between items-center w-full py-4 bg-white px-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="text-sm text-gray-500 font-medium">
-            {totalItems === 0 ? (
-              "No data to show"
-            ) : (
-              <>
-                Showing <span className="text-slate-900 font-bold">{((currentPageNumber - 1) * maxItemsInPage) + 1}</span> to{" "}
-                <span className="text-slate-900 font-bold">{Math.min(currentPageNumber * maxItemsInPage, totalItems)}</span> of{" "}
-                <span className="text-slate-900 font-bold">{totalItems}</span> items
-              </>
-            )}
-          </div>
+				<div className="w-full mb-6">
+					<Monitoring_LoanMonitoringTable isLoading={isLoading} />
+				</div>
 
-          <div className="flex items-center gap-2">
-            <button
-              disabled={currentPageNumber === 1}
-              onClick={() => setCurrentPageNumber((prev) => prev - 1)}
-              className="px-4 py-2 text-sm font-bold text-gray-600 bg-gray-50 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-100 transition-colors"
-            >
-              Previous
-            </button>
+				{/* Pagination UI */}
+				<div className="flex justify-between items-center w-full py-4 bg-white px-6 rounded-xl shadow-sm border border-gray-100">
+				<div className="text-sm text-gray-500 font-medium">
+					{totalItems === 0 ? (
+					"No data to show"
+					) : (
+					<>
+						Showing <span className="text-slate-900 font-bold">{((currentPageNumber - 1) * maxItemsInPage) + 1}</span> to{" "}
+						<span className="text-slate-900 font-bold">{Math.min(currentPageNumber * maxItemsInPage, totalItems)}</span> of{" "}
+						<span className="text-slate-900 font-bold">{totalItems}</span> items
+					</>
+					)}
+				</div>
 
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-900 text-white text-sm font-bold">
-              {currentPageNumber}
-            </div>
+				<div className="flex items-center gap-2">
+					<button
+					disabled={currentPageNumber === 1}
+					onClick={() => setCurrentPageNumber((prev) => prev - 1)}
+					className="px-4 py-2 text-sm font-bold text-gray-600 bg-gray-50 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-100 transition-colors"
+					>
+					Previous
+					</button>
 
-            <button
-              disabled={currentPageNumber >= maxPageNumber}
-              onClick={() => setCurrentPageNumber((prev) => prev + 1)}
-              className="px-4 py-2 text-sm font-bold text-gray-600 bg-gray-50 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-100 transition-colors"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      </div>
+					<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-900 text-white text-sm font-bold">
+					{currentPageNumber}
+					</div>
+
+					<button
+					disabled={currentPageNumber >= maxPageNumber}
+					onClick={() => setCurrentPageNumber((prev) => prev + 1)}
+					className="px-4 py-2 text-sm font-bold text-gray-600 bg-gray-50 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-100 transition-colors"
+					>
+					Next
+					</button>
+				</div>
+
+			</div>
+		</div>
     </div>
   );
 }

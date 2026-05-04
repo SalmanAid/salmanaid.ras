@@ -1,4 +1,4 @@
-import { LoanApplicationStatus, LoanStatus, Prisma } from "@/generated/prisma";
+import { LoanApplicationStatus, LoanStatus, Prisma, RepaymentStatus } from "@/generated/prisma";
 import { prisma } from "@/lib/prisma";
 import { supabaseAdmin } from "@/lib/supabase";
 import { LoanApplicationInput } from "@/schemas/loan.schema";
@@ -419,39 +419,42 @@ export const LoanService = {
 
   async getAllLoans(start: number, end: number, loanStatus?: LoanStatus) {
     try {
-      // 1. Calculate pagination parameters
       const skip = Math.max(0, start);
       const take = Math.max(0, end - start);
-
-      // 2. Build the dynamic filter
       const whereClause = loanStatus ? { status: loanStatus } : {};
 
-      // 3. Execute both queries in a transaction for better performance/consistency
       const [loans, totalCount] = await prisma.$transaction([
         prisma.loan.findMany({
           where: whereClause,
           skip: skip,
           take: take,
           orderBy: {
-            approvedAt: 'desc', // Show newest loans first
+            approvedAt: 'desc',
           },
           include: {
-            // Including application gives you borrower info and descriptions
             application: {
               select: {
                 description: true,
                 borrower: {
                   select: {
                     name: true,
-                    email: true
-                  }
-                }
-              }
+                    email: true,
+                  },
+                },
+              },
             },
-            // Optional: include funding/repayment summary if needed
+            // 1. Sum the amount of repayments for each loan
+            repayments: {
+              where: {
+                status: RepaymentStatus.CONFIRMED, // Adjust this to match your RepaymentStatus enum
+              },
+              select: {
+                amount: true,
+              },
+            },
             _count: {
-              select: { repayments: true }
-            }
+              select: { repayments: true },
+            },
           },
         }),
         prisma.loan.count({
@@ -459,8 +462,24 @@ export const LoanService = {
         }),
       ]);
 
+      // 2. Map the data to flatten the totalPaid field
+      const formattedLoans = loans.map((loan) => {
+        const totalPaid = loan.repayments.reduce(
+          (sum, repayment) => sum + Number(repayment.amount),
+          0
+        );
+
+        // Remove the full repayments array from the response to keep it clean
+        const { repayments, ...loanData } = loan;
+
+        return {
+          ...loanData,
+          totalPaid: totalPaid, // Now aligned with application field
+        };
+      });
+
       return {
-        loans,
+        loans: formattedLoans,
         total: totalCount,
       };
     } catch (error) {

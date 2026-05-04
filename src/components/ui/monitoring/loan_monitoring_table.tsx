@@ -13,6 +13,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import DefaultAvatarLogo from "../../../../public/default-avatar.svg"
 import { LoanStatus } from "@/generated/prisma"
+import { Loan } from "@/types/loan"
 
 // ===============================
 // HELPERS
@@ -76,28 +77,28 @@ const formatDate = (dateInput: string | number | Date) => {
 export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { isLoading?: boolean }) {
     const router = useRouter();
     const loans = useLoanStore((state) => state.loans);
+    const isManualSettlementCardOpen = useLoanStore((state) => state.isManualSettlementCardOpen)
     const setSelectedLoan = useLoanStore((state) => state.setSelectedLoan);
+    const setManualSettlementCardOpen = useLoanStore((state) => state.setIsManualSettlementCardOpen);
 
-    // const handleActionClick = (loan: any) => {
-    //     // According to JSON, the ID is top-level 'id'
-    //     // The approvedAmount is top-level 'approvedAmount'
-    //     const status = loan.status as keyof typeof StatusActionDict || "ACTIVE";
+    const handleActionClick = (loan: Loan) => {
+        // According to JSON, the ID is top-level 'id'
+        // The approvedAmount is top-level 'approvedAmount'
+        const status = loan.status as keyof typeof StatusActionDict || "ACTIVE";
         
-    //     setSelectedLoan({
-    //         id: loan.id || "",
-    //         approvedAmount: Number(loan.approvedAmount || 0),
-    //         status: status,
-    //         approvedAt: loan.approvedAt || "",
-    //         dueDate: loan.dueDate || "",
-    //         application: loan.applicationId || "",
-            
-    //     });
-    //     // router.push("/admin/loan-request/review");
-    // };
+        setSelectedLoan({
+            id: loan.id || "",
+            approvedAmount: Number(loan.approvedAmount || 0),
+            status: status,
+            approvedAt: loan.approvedAt || "",
+            dueDate: loan.dueDate || "",
+            application: loan.application,
+            _count: loan._count,
+            totalPaid : loan.totalPaid
+        });
 
-    const handleActionClick = () => {
-        alert("You clicked handle action")
-    }
+        setManualSettlementCardOpen(!isManualSettlementCardOpen)
+    };
 
     if (isLoading) {
         return (
@@ -137,7 +138,7 @@ export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { 
                                 {/* Applicant Details */}
                                 <TableCell className="py-4 px-6">
                                     <div className="flex items-center gap-3">
-                                        <div className="relative w-10 h-10 rounded-full overflow-hidden border border-gray-100 flex-shrink-0">
+                                        <div className="relative w-10 h-10 rounded-full overflow-hidden border border-gray-100 shrink-0">
                                             <Image 
                                                 src={loan.image || DefaultAvatarLogo} 
                                                 alt="Profile" 
@@ -157,7 +158,7 @@ export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { 
                                 </TableCell>
 
                                 {/* Description (Mapped from application.description) */}
-                                <TableCell className="text-[#475569] text-sm font-medium max-w-[200px] truncate">
+                                <TableCell className="text-[#475569] text-sm font-medium max-w-50 truncate">
                                     {loan.application?.description?.split('\n')[0] || "No description provided"}
                                 </TableCell>
 
@@ -188,7 +189,7 @@ export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { 
                                 <TableCell>
                                     <div className="flex justify-center">
                                         <button 
-                                            onClick={() => handleActionClick()}
+                                            onClick={() => handleActionClick(loan)}
                                             className="px-5 py-1.5 rounded-lg text-xs font-bold transition-all hover:brightness-95 active:scale-95 shadow-sm"
                                             style={{ backgroundColor: config.action_bg, color: config.action_text }}
                                         >

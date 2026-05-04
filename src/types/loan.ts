@@ -4,7 +4,7 @@ import { string } from "zod"
 
 export type Loan = {
     id : string,
-    approvedAmount:Number,
+    approvedAmount: number,
     status:LoanStatus,
     approvedAt : string | number | Date,
     dueDate : string | number | Date,
@@ -15,6 +15,7 @@ export type Loan = {
             email : string
         }
     },
+    totalPaid : number,
     _count : {
         repayments : number
     }

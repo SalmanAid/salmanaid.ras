@@ -5,10 +5,12 @@ import { LoanStatus } from "@/generated/prisma"
 type LoanStore = {
     loans: Loan[]
     selected_loan: Loan 
+    isManualSettlementCardOpen : boolean
 
     setLoans: (loans: Loan[]) => void
     setSelectedLoan: (loan: Loan) => void
     setApprovedAmount: (amount: number) => void
+    setIsManualSettlementCardOpen : (isModalOpen : boolean) => void
 }
 
 export const useLoanStore = create<LoanStore>((set) => ({
@@ -31,7 +33,9 @@ export const useLoanStore = create<LoanStore>((set) => ({
         _count: {
             repayments : 0
         },
+        totalPaid : 0,
     },
+    isManualSettlementCardOpen : false,
 
     setLoans: (loans) => set({ loans }),
 
@@ -45,4 +49,7 @@ export const useLoanStore = create<LoanStore>((set) => ({
             }
         })),
 
+    setIsManualSettlementCardOpen : (isModalOpen) => {
+        set( {isManualSettlementCardOpen :  isModalOpen})
+    }
 }))
