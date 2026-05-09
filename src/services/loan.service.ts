@@ -233,6 +233,7 @@ export const LoanService = {
               approvedAmount: true,
               status: true,
               dueDate: true, // This is already being fetched here
+              approvedAt: true,
             },
           },
         },
@@ -240,6 +241,27 @@ export const LoanService = {
           createdAt: "desc",
         },
       });
+
+      const loanIds = applications
+        .map((application) => application.loan?.id)
+        .filter((loanId): loanId is string => Boolean(loanId));
+
+      const repaymentTotals = loanIds.length
+        ? await prisma.repayment.groupBy({
+            by: ["loanId"],
+            where: {
+              loanId: { in: loanIds },
+              status: RepaymentStatus.CONFIRMED,
+            },
+            _sum: {
+              amount: true,
+            },
+          })
+        : [];
+
+      const repaymentTotalsMap = new Map(
+        repaymentTotals.map((entry) => [entry.loanId, Number(entry._sum.amount || 0)])
+      );
 
       const aggregate = await prisma.loan.aggregate({
         where: {
@@ -267,6 +289,8 @@ export const LoanService = {
             approvedAmount: Number(app.loan.approvedAmount),
             status: app.loan.status,
             dueDate: app.loan.dueDate,
+            approvedAt: app.loan.approvedAt,
+            totalPaid: repaymentTotalsMap.get(app.loan.id) || 0,
           } : null,
           userid: userId
         })),

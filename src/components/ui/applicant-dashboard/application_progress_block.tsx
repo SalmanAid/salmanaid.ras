@@ -2,10 +2,23 @@
 import Image from "next/image";
 
 import WhiteChecklist from "../../../../public/white-checklist.svg"
-import { useEffect, useState } from "react";
-import { useUserStore } from "@/hooks/userStore";
 
-export default function ApplicantDashboard_ApplicationProgressComponent(props: {submitTime : Date, verifiedTime : Date, disbursedTime : Date}){
+type ProgressProps = {
+    submitTime: Date | null;
+    verifiedTime: Date | null;
+    disbursedTime: Date | null;
+};
+
+const formatDate = (value: Date | null) => {
+    if (!value) return "Pending";
+    return value.toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+    });
+};
+
+export default function ApplicantDashboard_ApplicationProgressComponent(props: ProgressProps){
 
     return (
 
@@ -46,7 +59,7 @@ export default function ApplicantDashboard_ApplicationProgressComponent(props: {
 
                         {/* date */}
                         <div className="text-sm font-light opacity-80">
-                            Compleeted on Aug 15, 2026
+                            {props.submitTime ? "Completed" : "Pending"} on {formatDate(props.submitTime)}
                         </div>
 
                     </div>
@@ -79,7 +92,7 @@ export default function ApplicantDashboard_ApplicationProgressComponent(props: {
 
                         {/* date */}
                         <div className="text-sm font-light opacity-80">
-                            Completed on Aug 18, 2026
+                            {props.verifiedTime ? "Completed" : "Pending"} on {formatDate(props.verifiedTime)}
                         </div>
 
                     </div>
@@ -112,7 +125,7 @@ export default function ApplicantDashboard_ApplicationProgressComponent(props: {
 
                         {/* date */}
                         <div className="text-sm font-light opacity-80">
-                            Completed on Aug 20, 2026
+                            {props.disbursedTime ? "Completed" : "Pending"} on {formatDate(props.disbursedTime)}
                         </div>
 
                     </div>

@@ -30,8 +30,16 @@ export default function ApplicantDashboard_PaymentScheduleRow(props : {installme
             "text-hex" : "1E2939",
             "logo" : GrayDotLogo,
             "alt" : "Gray dot logo"
+        },
+        "past_due" : {
+            "bg-hex" : "FEE2E2",
+            "text-hex" : "B91C1C",
+            "logo" : AlertLogo,
+            "alt" : "Alert logo"
         }
     }
+
+    const statusLabel = props.installment_status.replace("_", " ");
 
     return (
 
@@ -71,7 +79,7 @@ export default function ApplicantDashboard_PaymentScheduleRow(props : {installme
                             color : `#${installmentStatusColor[props.installment_status]['text-hex']}`
                     }}
                 >
-                    {props.installment_status}
+                    {statusLabel}
                 </div>
 
             </div>

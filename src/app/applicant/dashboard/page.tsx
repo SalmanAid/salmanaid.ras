@@ -1,39 +1,77 @@
-"use client"
+"use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import CalendarLogo from "../../../../public/calendar.svg"
 import { useUserStore } from "@/hooks/userStore";
+import { useSession } from "next-auth/react";
 import { useEffect, useState, useMemo, Suspense } from "react";
 import ApplicantDashboard_PaymentScheduleRow from "@/components/ui/applicant-dashboard/payment_schedule_block";
 import ApplicantDashboard_ApplicationProgressComponent from "@/components/ui/applicant-dashboard/application_progress_block";
 import ApplicantDashboard_ApplicantNavbar from "@/components/ui/applicant-dashboard/applicant_navbar";
 import ApplicantDashboard_PaymentApplicantComponent from "@/components/ui/applicant-dashboard/payment_applicant_modal";
 
+type LoanApplication = {
+    id: string;
+    requestedAmount: number;
+    status: string;
+    description: string;
+    createdAt: string;
+    dueDate?: string | null;
+    loanDetails?: {
+        loanId: string;
+        approvedAmount: number;
+        status: string;
+        dueDate: string;
+        approvedAt?: string | null;
+        totalPaid?: number;
+    } | null;
+};
+
 export default function ApplicantDashboardPage() {
 
     const [isRepaymentModalOpen, setIsRepaymentModalOpen] = useState<boolean>(false)
 
     const installmentFreq = 4;
-    const [applications, setApplications] = useState<any[]>([]);
+    const [applications, setApplications] = useState<LoanApplication[]>([]);
     const [selectedLoanId, setSelectedLoanId] = useState<string>("");
     const [totalValue, setTotalValue] = useState<number>(0);
     const [isLoading, setIsLoading] = useState(true);
+    const [fetchError, setFetchError] = useState<string>("");
+    const [repaymentTotalPaid, setRepaymentTotalPaid] = useState<number>(0);
 
-    const username = useUserStore((state) => (state.user?.username)) || "Rayhan Farrukh";
-    // const userId = useUserStore((state) => state.user?.id);
-    const userId = "7bda909d-71f8-4b40-994e-15d4b710479b"
+    const { data: session, status } = useSession();
+    const username =
+        useUserStore((state) => state.user?.username) ||
+        session?.user?.name ||
+        "Rayhan Farrukh";
+    const userId =
+        useUserStore((state) => state.user?.id) ||
+        (session?.user as { id?: string } | null)?.id ||
+        null;
 
     useEffect(() => {
         const fetchAllLoans = async () => {
-            if (!userId) return;
+            if (status === "loading") {
+                return;
+            }
+
+            if (!userId) {
+                setApplications([]);
+                setTotalValue(0);
+                setFetchError("Unable to load loans because the user ID is missing.");
+                setIsLoading(false);
+                return;
+            }
+
             setIsLoading(true);
+            setFetchError("");
             try {
-                // Fixed the URL protocol and string interpolation
                 const response = await fetch(`/api/loans/${userId}`);
                 if (!response.ok) throw new Error("Failed to fetch");
 
                 const result = await response.json();
-                const apps = result.data.applications || [];
+                const apps = (result.data?.applications || []) as LoanApplication[];
 
                 setApplications(apps);
                 setTotalValue(result.data.totalLoanedValue || 0);
@@ -41,20 +79,25 @@ export default function ApplicantDashboardPage() {
                 // Set initial selection to the first loan
                 if (apps.length > 0) {
                     setSelectedLoanId(apps[0].id);
+                } else {
+                    setSelectedLoanId("");
                 }
             } catch (error) {
                 console.error("Fetch error:", error);
+                setFetchError("Failed to load loans. Please try again later.");
             } finally {
                 setIsLoading(false);
             }
         }
         fetchAllLoans();
-    }, [userId]);
+    }, [userId, status]);
 
     // 1. Logic for choosing the nearest due date across ALL loans
     const nearestDueDate = useMemo(() => {
         const activeDates = applications
-            .map(app => app.dueDate ? new Date(app.dueDate).getTime() : null)
+            .filter(app => app.status === "APPROVED")
+            .map(app => app.loanDetails?.dueDate || app.dueDate)
+            .map((dueDate) => (dueDate ? new Date(dueDate).getTime() : null))
             .filter((date): date is number => date !== null && date > Date.now());
 
         return activeDates.length > 0 ? new Date(Math.min(...activeDates)) : null;
@@ -65,27 +108,81 @@ export default function ApplicantDashboardPage() {
         return applications.find(app => app.id === selectedLoanId);
     }, [selectedLoanId, applications]);
 
+    const selectedApplicationStatus = selectedLoan?.status || "";
+    const selectedLoanDueDate = selectedLoan?.loanDetails?.dueDate || selectedLoan?.dueDate || null;
+    const scheduleAvailable = Boolean(
+        selectedLoan &&
+        selectedLoan.loanDetails &&
+        (selectedLoan.loanDetails.status === "ACTIVE" || selectedLoan.loanDetails.status === "PAID")
+    );
+
     const installmentValue = useMemo(() => {
         if (!selectedLoan) return 0;
-        const amount = selectedLoan.loanDetails?.approvedAmount || selectedLoan.requestedAmount;
+        const amount = selectedLoan.loanDetails?.approvedAmount ?? selectedLoan.requestedAmount;
         return Number(amount) / installmentFreq;
     }, [selectedLoan]);
 
-    // Helper to generate mock installments based on frequency
-    const generateInstallments = (loan: any) => {
-        if (!loan || !loan.dueDate) return [];
-        const baseDate = new Date(loan.dueDate);
+    useEffect(() => {
+        const fetchRepayments = async () => {
+            if (!selectedLoan?.loanDetails?.loanId) {
+                setRepaymentTotalPaid(0);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/loans/${selectedLoan.loanDetails.loanId}/repayments`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch repayments");
+                }
+
+                const result = await response.json();
+                setRepaymentTotalPaid(Number(result?.data?.totalPaid || 0));
+            } catch (error) {
+                console.error("Repayment fetch error:", error);
+                setRepaymentTotalPaid(0);
+            } finally {
+            }
+        };
+
+        fetchRepayments();
+    }, [selectedLoan?.loanDetails?.loanId]);
+
+    const getInstallmentStatus = (date: Date, loanStatus?: string) => {
+        if (loanStatus === "PAID") return "paid";
+
+        const today = new Date();
+        if (date.getTime() < today.getTime()) {
+            return "past_due";
+        }
+        const diffDays = Math.ceil((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (diffDays <= 7) {
+            return "due_soon";
+        }
+
+        return "pending";
+    };
+
+    const generateInstallments = (loan: LoanApplication) => {
+        if (!loan || !selectedLoanDueDate) return [];
+        const baseDate = new Date(selectedLoanDueDate);
+        const approvedAmount = Number(loan.loanDetails?.approvedAmount || 0);
+        const totalPaid = loan.loanDetails?.totalPaid ?? repaymentTotalPaid;
+        const installmentAmount = installmentFreq > 0 ? approvedAmount / installmentFreq : 0;
+        const paidInstallments = installmentAmount > 0
+            ? Math.floor(totalPaid / installmentAmount)
+            : 0;
 
         return Array.from({ length: installmentFreq }).map((_, i) => {
             // Subtract months based on index to show progress backwards from due date
             const date = new Date(baseDate);
             date.setMonth(date.getMonth() - (installmentFreq - 1 - i));
+            const isPaid = loan.loanDetails?.status === "PAID" || i < paidInstallments;
 
             return {
                 order: i + 1,
                 date: date,
-                // Simple logic for status
-                status: i === 0 ? "paid" : i === 1 ? "due_soon" : "pending"
+                status: isPaid ? "paid" : getInstallmentStatus(date, loan.loanDetails?.status),
             };
         });
     };
@@ -130,6 +227,9 @@ export default function ApplicantDashboardPage() {
                 <p className="text-lg text-gray-500 mt-2">
                     Kedermawanan Anda membantu hidup orang lain - terimakasih atas kontribusi Anda.
                 </p>
+                {fetchError && (
+                    <p className="mt-2 text-sm text-red-600">{fetchError}</p>
+                )}
             </div>
 
             {/* Loan Status Card */}
@@ -152,11 +252,14 @@ export default function ApplicantDashboardPage() {
                         </p>
                     </div>
                 </div>
-                <button 
-                    onClick={() => setIsRepaymentModalOpen(true)}
-                    className="px-6 py-3 rounded-xl bg-[#009966] text-white font-bold hover:bg-[#007a52] transition-all">
-                    Bayar Sekarang
-                </button>
+                <Link href="/applicant/installment" className="inline-flex">
+                    <button
+                        type="button"
+                        className="px-6 py-3 rounded-xl bg-[#009966] text-white font-bold hover:bg-[#007a52] transition-all"
+                    >
+                        Bayar Sekarang
+                    </button>
+                </Link>
             </div>
 
             {/* Selection Dropdown */}
@@ -169,7 +272,7 @@ export default function ApplicantDashboardPage() {
                 >
                     {applications.map((app) => (
                         <option key={app.id} value={app.id}>
-                            {app.description} - Rp {Number(app.requestedAmount).toLocaleString('id-ID')} ({app.status})
+                            {app.description} - Rp {Number(app.loanDetails?.approvedAmount ?? app.requestedAmount).toLocaleString('id-ID')} ({app.loanDetails?.status ?? app.status})
                         </option>
                     ))}
                 </select>
@@ -181,7 +284,15 @@ export default function ApplicantDashboardPage() {
                 <div className="flex-1 bg-white rounded-2xl shadow-xl p-6">
                     <h3 className="font-bold text-lg mb-4">Jadwal Pembayaran</h3>
                     <div className="flex flex-col gap-3">
-                        {selectedLoan ? generateInstallments(selectedLoan).map((inst) => (
+                        {!selectedLoan && (
+                            <p className="text-gray-400 text-center py-10">Pilih pinjaman untuk melihat jadwal.</p>
+                        )}
+                        {selectedLoan && !scheduleAvailable && (
+                            <p className="text-gray-400 text-center py-10">
+                                Jadwal pembayaran belum tersedia untuk status {selectedApplicationStatus}.
+                            </p>
+                        )}
+                        {selectedLoan && scheduleAvailable && generateInstallments(selectedLoan).map((inst) => (
                             <ApplicantDashboard_PaymentScheduleRow
                                 key={inst.order}
                                 installment_value={installmentValue}
@@ -189,18 +300,16 @@ export default function ApplicantDashboardPage() {
                                 installment_order={inst.order}
                                 installment_status={inst.status}
                             />
-                        )) : (
-                            <p className="text-gray-400 text-center py-10">No payment schedule available</p>
-                        )}
+                        ))}
                     </div>
                 </div>
 
                 {/* Progress */}
                 <div className="w-[35%] bg-white rounded-2xl shadow-xl h-full flex ">
                     <ApplicantDashboard_ApplicationProgressComponent
-                        submitTime={selectedLoan ? new Date(selectedLoan.createdAt) : new Date()}
-                        verifiedTime={selectedLoan?.status === "APPROVED" ? new Date(selectedLoan.createdAt) : new Date()}
-                        disbursedTime={selectedLoan?.loanDetails?.status === "ACTIVE" ? new Date(selectedLoan.loanDetails.dueDate) : new Date()}
+                        submitTime={selectedLoan?.createdAt ? new Date(selectedLoan.createdAt) : null}
+                        verifiedTime={selectedLoan?.loanDetails?.approvedAt ? new Date(selectedLoan.loanDetails.approvedAt) : null}
+                        disbursedTime={selectedLoan?.loanDetails?.approvedAt ? new Date(selectedLoan.loanDetails.approvedAt) : null}
                     />
                 </div>
             </div>
