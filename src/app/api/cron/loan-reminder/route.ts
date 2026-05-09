@@ -18,21 +18,27 @@ export async function GET(request: Request) {
     const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
 
     // 3. Find expiring loans
-    const expiringLoans = await prisma.loanApplication.findMany({
+    const expiringLoans = await prisma.loan.findMany({
       where: {
-        status: "APPROVED",
-        expiryDate: { gte: startOfDay, lte: endOfDay },
+        status: "ACTIVE",
+        dueDate: { gte: startOfDay, lte: endOfDay },
       },
-      include: { borrower: true },
+      include: { 
+        application: {
+          include: { 
+            borrower: true 
+          } 
+        } 
+      },
     });
 
     // 4. Send Notifications
     const results = await Promise.allSettled(
       expiringLoans.map(loan => {
-        if (loan.borrower.phone_number) {
+        if (loan.application.borrower.phone_number) {
           return sendWhatsAppExpiryReminder(
-            loan.borrower.phone_number,
-            loan.borrower.name,
+            loan.application.borrower.phone_number,
+            loan.application.borrower.name,
             14
           );
         }

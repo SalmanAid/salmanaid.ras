@@ -35,7 +35,11 @@ type LoanOption = {
 	id: string;
 	description?: string | null;
 	status?: string | null;
-	loanDetails?: { approvedAmount?: number | string };
+	loanDetails?: { 
+		loanId: string;
+		status: string;
+		approvedAmount?: number | string 
+	} | null;
 	requestedAmount?: number | string;
 	dueDate?: string | null;
 };
@@ -43,7 +47,7 @@ type LoanOption = {
 export default function InstallmentPage({ searchParams }: InstallmentPageProps) {
 	const router = useRouter();
 	const { data: session, status } = useSession();
-	const params = use(searchParams ?? Promise.resolve({}));
+	const params = use(searchParams ?? Promise.resolve({})) as { type?: TransactionType; referenceId?: string };
 	const userId = useUserStore((state) => state.user?.id) || (session?.user as { id?: string } | null)?.id;
 
 	const paymentMethod = useRepaymentStore((state) => state.repayment?.payment_method);
