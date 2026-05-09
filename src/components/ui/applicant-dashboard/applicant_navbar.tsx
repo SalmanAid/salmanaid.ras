@@ -345,7 +345,7 @@ export default function ApplicantDashboard_ApplicantNavbar() {
 
                 {/* Report */}
                 <div className="font-bold">
-                    <Link href={'/not-found'}>Installment</Link>
+                    <Link href={'/applicant/installment'}>Installment</Link>
                 </div>
 
             </div>
