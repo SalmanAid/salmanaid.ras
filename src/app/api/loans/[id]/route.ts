@@ -6,13 +6,13 @@ import { LoanApplicationStatus } from "@/generated/prisma";
 // Add 'Promise' to the type definition for params
 export async function GET(
   req: Request, 
-  { params }: { params: Promise<{ userId: string }> } 
+  { params }: { params: Promise<{ id: string }> } 
 ) {
   try {
     // Await the params object before accessing userId
-    const { userId } = await params;
+    const { id } = await params;
 
-    const result = await LoanService.getLoanApplicationsByUserId(userId);
+    const result = await LoanService.getLoanApplicationsByUserId(id);
     return NextResponse.json({ data: result });
   } catch (error) {
     console.error("Error in GET /api/loans/[userId]:", error);

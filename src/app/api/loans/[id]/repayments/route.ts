@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ loanId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -13,7 +13,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { loanId } = await params;
+    const { id } = await params;
 
     const currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
@@ -24,8 +24,10 @@ export async function GET(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const loan = await prisma.loan.findUnique({
-      where: { id: loanId },
+    const loan = await prisma.loan.findFirst({
+      where: {
+        OR: [{ id }, { applicationId: id }],
+      },
       select: {
         id: true,
         approvedAmount: true,
@@ -46,7 +48,7 @@ export async function GET(
 
     const repayments = await prisma.repayment.findMany({
       where: {
-        loanId,
+        loanId: loan.id,
         status: "CONFIRMED",
       },
       orderBy: {
