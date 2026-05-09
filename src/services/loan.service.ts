@@ -1,4 +1,4 @@
-import { LoanApplicationStatus, LoanStatus, Prisma } from "@/generated/prisma";
+import { LoanApplicationStatus, LoanStatus, Prisma, RepaymentStatus } from "@/generated/prisma";
 import { prisma } from "@/lib/prisma";
 import { supabaseAdmin } from "@/lib/supabase";
 import { LoanApplicationInput } from "@/schemas/loan.schema";
@@ -6,16 +6,20 @@ import { NotificationService } from "@/services/notification.service";
 
 const BUCKET_NAME = process.env.SUPABASE_BUCKET_NAME || "loan-documents";
 
-async function withSignedAttachmentUrls<T extends { attachments?: { fileUrl: string }[] }>(application: T) {
+async function withSignedAttachmentUrls<T extends { attachments?: { id: string; fileUrl: string }[] }>(application: T) {
   const attachments = await Promise.all(
     (application.attachments || []).map(async (attachment) => {
-      const { data } = await supabaseAdmin.storage
+      const { data, error } = await supabaseAdmin.storage
         .from(BUCKET_NAME)
         .createSignedUrl(attachment.fileUrl, 3600);
 
+      if (error || !data?.signedUrl) {
+        console.error("Supabase signed URL error:", error);
+      }
+
       return {
         ...attachment,
-        fileUrl: data?.signedUrl || attachment.fileUrl,
+        fileUrl: data?.signedUrl || `/api/attachments/${attachment.id}`,
       };
     })
   );
@@ -412,4 +416,76 @@ export const LoanService = {
       return updatedApplication;
     });
   },
+
+  async getAllLoans(start: number, end: number, loanStatus?: LoanStatus) {
+    try {
+      const skip = Math.max(0, start);
+      const take = Math.max(0, end - start);
+      const whereClause = loanStatus ? { status: loanStatus } : {};
+
+      const [loans, totalCount] = await prisma.$transaction([
+        prisma.loan.findMany({
+          where: whereClause,
+          skip: skip,
+          take: take,
+          orderBy: {
+            approvedAt: 'desc',
+          },
+          include: {
+            application: {
+              select: {
+                description: true,
+                borrower: {
+                  select: {
+                    name: true,
+                    email: true,
+                  },
+                },
+              },
+            },
+            // 1. Sum the amount of repayments for each loan
+            repayments: {
+              where: {
+                status: RepaymentStatus.CONFIRMED, // Adjust this to match your RepaymentStatus enum
+              },
+              select: {
+                amount: true,
+              },
+            },
+            _count: {
+              select: { repayments: true },
+            },
+          },
+        }),
+        prisma.loan.count({
+          where: whereClause,
+        }),
+      ]);
+
+      // 2. Map the data to flatten the totalPaid field
+      const formattedLoans = loans.map((loan) => {
+        const totalPaid = loan.repayments.reduce(
+          (sum, repayment) => sum + Number(repayment.amount),
+          0
+        );
+
+        // Remove the full repayments array from the response to keep it clean
+        const { repayments, ...loanData } = loan;
+
+        return {
+          ...loanData,
+          totalPaid: totalPaid, // Now aligned with application field
+        };
+      });
+
+      return {
+        loans: formattedLoans,
+        total: totalCount,
+      };
+    } catch (error) {
+      console.error("Error fetching loans:", error);
+      throw new Error("Gagal mengambil data pinjaman.");
+    }
+  },
+
 };

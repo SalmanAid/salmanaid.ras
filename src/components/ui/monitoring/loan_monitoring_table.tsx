@@ -8,30 +8,39 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { useLoanRequestStore } from "@/hooks/loanRequestStore"
+import { useLoanStore } from "@/hooks/loanStore"
 import Image from "next/image"
-import { useRouter } from "next/navigation" // Import the router
-import DefaultAvatarLogo from  "../../../../public/default-avatar.svg"
+import { useRouter } from "next/navigation"
+import DefaultAvatarLogo from "../../../../public/default-avatar.svg"
+import { LoanStatus } from "@/generated/prisma"
+import { Loan } from "@/types/loan"
 
 // ===============================
 // HELPERS
 // ===============================
 const StatusActionDict = {
-    "PENDING": {
+    "FORGIVEN": {
         "status_bg": "#FEF3C6",
         "status_text": "#BB4D00",
         "action_caption": "Review",
         "action_bg": "#E0F7FA",
         "action_text": "#00B5D8",
     },
-    "APPROVED": {
+    "ACTIVE": {
         "status_bg": "#D0FAE5",
         "status_text": "#007A55",
         "action_caption": "See Detail",
         "action_bg": "#FEFCE8",
         "action_text": "#FCB82E",
     },
-    "REJECTED": {
+    "PAID": {
+        "status_bg": "#D0FAE5",
+        "status_text": "#007A55",
+        "action_caption": "See Detail",
+        "action_bg": "#FEFCE8",
+        "action_text": "#FCB82E",
+    },
+    "DEFAULTED": {
         "status_bg": "#FFE2E2",
         "status_text": "#C10007",
         "action_caption": "See Detail",
@@ -62,100 +71,40 @@ const formatDate = (dateInput: string | number | Date) => {
     }).format(date);
 };
 
-type LoanAttachment = {
-    id: string;
-    documentType: string;
-    fileUrl: string;
-    uploadedAt: string | Date;
-};
-
-type LoanRequestRow = {
-    id?: string;
-    loanApplicationId?: string;
-    borrower?: {
-        name?: string | null;
-        email?: string | null;
-        image?: string | null;
-    } | null;
-    image?: string;
-    idNumber?: string;
-    institution?: string;
-    intakeYear?: number;
-    address?: string;
-    requestedAmount: number | string;
-    description?: string | null;
-    collateralDescription?: string | null;
-    status?: string;
-    createdAt: string | number | Date;
-    loan?: {
-        id: string;
-        approvedAmount: string | number;
-        status: string;
-        fundings?: {
-            id: string;
-            amount: string | number;
-            donorFundId: string | null;
-            sourceType: string;
-            donorFund?: {
-                donor?: {
-                    name?: string | null;
-                    email?: string | null;
-                } | null;
-            } | null;
-        }[];
-    } | null;
-    attachments?: LoanAttachment[];
-    approvedAmount?: number;
-    rejectionApprovalNotes?: string;
-};
-
 // ===============================
 // COMPONENT
 // ===============================
-export default function LoanRequest_LoanRequestsTable({ isLoading = false }: { isLoading?: boolean }) {
-    const router = useRouter(); // Initialize router
-    const loans = useLoanRequestStore((state) => state.loans);
-    const setSelectedLoan = useLoanRequestStore((state) => state.setSelectedLoan);
+export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { isLoading?: boolean }) {
+    const router = useRouter();
+    const loans = useLoanStore((state) => state.loans);
+    const isManualSettlementCardOpen = useLoanStore((state) => state.isManualSettlementCardOpen)
+    const setSelectedLoan = useLoanStore((state) => state.setSelectedLoan);
+    const setManualSettlementCardOpen = useLoanStore((state) => state.setIsManualSettlementCardOpen);
 
-    // Wrapper function to handle both actions
-    const handleActionClick = (loan: LoanRequestRow) => {
-        const studentIdAttachment = loan.attachments?.find((attachment) => attachment.documentType === "student_id_card");
-        const familyCardAttachment = loan.attachments?.find((attachment) => attachment.documentType === "family_card");
-        const status = loan.status || "PENDING";
-        const approvedAmount = status === "APPROVED"
-            ? Number(loan.loan?.approvedAmount || loan.approvedAmount || 0)
-            : 0;
-
+    const handleActionClick = (loan: Loan) => {
+        // According to JSON, the ID is top-level 'id'
+        // The approvedAmount is top-level 'approvedAmount'
+        const status = loan.status as keyof typeof StatusActionDict || "ACTIVE";
+        
         setSelectedLoan({
-            id: loan.id,
-            loanApplicationId: loan.id || loan.loanApplicationId || "",
-            name: loan.borrower?.name || "—",
-            image: loan.borrower?.image || "",
-            idNumber: loan.borrower?.email || "—",
-            institution: loan.institution || "Institut Teknologi Bandung",
-            intakeYear: loan.intakeYear || 2022,
-            address: loan.address || "",
-            requestedAmount: Number(loan.requestedAmount),
-            description: loan.description || "",
-            collateralDescription: loan.collateralDescription || "",
-            status,
-            createdAt: loan.createdAt,
-            loanId: loan.loan?.id || "",
-            loan: loan.loan || null,
-            attachments: loan.attachments || [],
-            studentIdCard: studentIdAttachment?.fileUrl || "",
-            transcriptFile: familyCardAttachment?.fileUrl || "",
-            approvedAmount,
-            rejectionApprovalNotes: loan.rejectionApprovalNotes || "",
+            id: loan.id || "",
+            approvedAmount: Number(loan.approvedAmount || 0),
+            status: status,
+            approvedAt: loan.approvedAt || "",
+            dueDate: loan.dueDate || "",
+            application: loan.application,
+            _count: loan._count,
+            totalPaid : loan.totalPaid
         });
-        router.push("/admin/loan-request/review");
+
+        setManualSettlementCardOpen(!isManualSettlementCardOpen)
     };
 
     if (isLoading) {
         return (
             <div className="w-full h-64 flex flex-col items-center justify-center bg-white rounded-xl shadow-sm border border-gray-100">
                 <div className="w-10 h-10 border-4 border-[#00B5D8]/20 border-t-[#00B5D8] rounded-full animate-spin mb-4"></div>
-                <p className="text-gray-500 font-medium">Memuat data pengajuan...</p>
+                <p className="text-gray-500 font-medium">Memuat data pinjaman...</p>
             </div>
         );
     }
@@ -170,26 +119,27 @@ export default function LoanRequest_LoanRequestsTable({ isLoading = false }: { i
                 <TableHeader className="bg-[#F9FAFB]">
                     <TableRow>
                         <TableHead className="text-[#64748B] font-semibold text-xs uppercase px-6">Applicant Details</TableHead>
-                        <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Institution</TableHead>
-                        <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Requested Amount</TableHead>
-                        <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Date Submitted</TableHead>
+                        <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Description</TableHead>
+                        <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Approved Amount</TableHead>
+                        <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Remaining Loan Payments</TableHead>
+                        <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Approval Date</TableHead>
                         <TableHead className="text-[#64748B] font-semibold text-xs uppercase text-center">Status</TableHead>
                         <TableHead className="text-[#64748B] font-semibold text-xs uppercase text-center">Action</TableHead>
                     </TableRow>
                 </TableHeader>
 
                 <TableBody>
-                    {loans.map((loan) => {
-                        const statusKey = (loan.status || "PENDING").toUpperCase() as keyof typeof StatusActionDict;
-                        const config = StatusActionDict[statusKey];
+                    {loans.map((loan: any) => {
+                        const statusKey = (loan.status || "ACTIVE").toUpperCase() as keyof typeof StatusActionDict;
+                        const config = StatusActionDict[statusKey] || StatusActionDict["ACTIVE"];
 
                         return (
-                            <TableRow key={loan.id || loan.loanApplicationId} className="hover:bg-gray-50 border-b border-gray-50 transition-colors">
+                            <TableRow key={loan.id} className="hover:bg-gray-50 border-b border-gray-50 transition-colors">
                                 
                                 {/* Applicant Details */}
                                 <TableCell className="py-4 px-6">
                                     <div className="flex items-center gap-3">
-                                        <div className="relative w-10 h-10 rounded-full overflow-hidden border border-gray-100 flex-shrink-0">
+                                        <div className="relative w-10 h-10 rounded-full overflow-hidden border border-gray-100 shrink-0">
                                             <Image 
                                                 src={loan.image || DefaultAvatarLogo} 
                                                 alt="Profile" 
@@ -198,27 +148,34 @@ export default function LoanRequest_LoanRequestsTable({ isLoading = false }: { i
                                             />
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-[#1E293B] text-sm">{loan.borrower?.name || "Muhammad Fithra Rizki"}</span>
+                                            <span className="font-bold text-[#1E293B] text-sm">
+                                                {loan.application?.borrower?.name || "Unknown User"}
+                                            </span>
                                             <span className="text-[#64748B] text-[11px] font-medium uppercase tracking-tight">
-                                                REQ-2023-089 • {loan.idNumber || "13523049"}
+                                                {loan.application?.borrower?.email}
                                             </span>
                                         </div>
                                     </div>
                                 </TableCell>
 
-                                {/* Institution */}
-                                <TableCell className="text-[#475569] text-sm font-medium">
-                                    {loan.institution || "Institut Teknologi Bandung (ITB)"}
+                                {/* Description (Mapped from application.description) */}
+                                <TableCell className="text-[#475569] text-sm font-medium max-w-50 truncate">
+                                    {loan.application?.description?.split('\n')[0] || "No description provided"}
                                 </TableCell>
 
-                                {/* Requested Amount */}
+                                {/* Approved Amount (JSON uses approvedAmount string) */}
                                 <TableCell className="font-bold text-[#1E293B] text-sm">
-                                    {formatCurrency(Number(loan.requestedAmount))}
+                                    {formatCurrency(Number(loan.approvedAmount))}
                                 </TableCell>
 
-                                {/* Date Submitted */}
+                                {/* Approved Amount (JSON uses approvedAmount string) */}
+                                <TableCell className="font-bold text-[#1E293B] text-sm">
+                                    {formatCurrency(Number(loan.approvedAmount - loan.totalPaid))}
+                                </TableCell>
+
+                                {/* Approval Date (Mapped from approvedAt) */}
                                 <TableCell className="text-[#64748B] text-sm">
-                                    {formatDate(loan.createdAt)}
+                                    {formatDate(loan.approvedAt)}
                                 </TableCell>
 
                                 {/* Status Pill */}

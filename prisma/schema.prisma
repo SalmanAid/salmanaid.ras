@@ -18,6 +18,8 @@ model User {
   emailVerified    DateTime?
   password         String
   image            String?
+  phone_number     String?
+  address          String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -109,8 +111,8 @@ model LoanApplication {
   borrowerId            String                @db.Uuid
   requestedAmount       Decimal               @db.Decimal(12, 2)
   description           String
-  collateralUrl         String
-  collateralDescription String
+  collateralUrl         String?
+  collateralDescription String?
   status                LoanApplicationStatus @default(PENDING)
   createdAt             DateTime              @default(now())
   loan                  Loan?

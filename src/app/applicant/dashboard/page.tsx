@@ -3,12 +3,16 @@
 import Image from "next/image";
 import CalendarLogo from "../../../../public/calendar.svg"
 import { useUserStore } from "@/hooks/userStore";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import ApplicantDashboard_PaymentScheduleRow from "@/components/ui/applicant-dashboard/payment_schedule_block";
 import ApplicantDashboard_ApplicationProgressComponent from "@/components/ui/applicant-dashboard/application_progress_block";
 import ApplicantDashboard_ApplicantNavbar from "@/components/ui/applicant-dashboard/applicant_navbar";
+import ApplicantDashboard_PaymentApplicantComponent from "@/components/ui/applicant-dashboard/payment_applicant_modal";
 
 export default function ApplicantDashboardPage() {
+
+    const [isRepaymentModalOpen, setIsRepaymentModalOpen] = useState<boolean>(false)
+
     const installmentFreq = 4;
     const [applications, setApplications] = useState<any[]>([]);
     const [selectedLoanId, setSelectedLoanId] = useState<string>("");
@@ -90,6 +94,33 @@ export default function ApplicantDashboardPage() {
 
     return (
         <div className="flex flex-col justify-start items-center w-full min-h-screen bg-[#F9FAFB] gap-4">
+
+            {isRepaymentModalOpen && (
+                <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-100">
+                    {/* Background Click to Close */}
+                    <div className="absolute inset-0" onClick={() => setIsRepaymentModalOpen(false)}></div>
+
+                    <Suspense fallback={<div className="p-10">Loading Payment Details...</div>}>
+                        <div className="relative z-101 bg-white p-8 rounded-2xl shadow-2xl">
+                            <ApplicantDashboard_PaymentApplicantComponent 
+                                searchParams={Promise.resolve({ 
+                                    type: 'repayment', 
+                                    referenceId: selectedLoanId 
+                                })} 
+                            />
+
+                            {/* Tombol Close manual karena signature komponen tidak menerima prop onClose */}
+                            <button 
+                                onClick={() => setIsRepaymentModalOpen(false)}
+                                className="absolute top-2 right-2 text-gray-500 hover:text-black text-lg p-1 font-bold"
+                                >
+                                ✕
+                            </button>
+                        </div>
+                    </Suspense>
+                </div>
+            )}
+
             <ApplicantDashboard_ApplicantNavbar />
 
             <div className="w-[90%] pt-10">
@@ -121,7 +152,9 @@ export default function ApplicantDashboardPage() {
                         </p>
                     </div>
                 </div>
-                <button className="px-6 py-3 rounded-xl bg-[#009966] text-white font-bold hover:bg-[#007a52] transition-all">
+                <button 
+                    onClick={() => setIsRepaymentModalOpen(true)}
+                    className="px-6 py-3 rounded-xl bg-[#009966] text-white font-bold hover:bg-[#007a52] transition-all">
                     Bayar Sekarang
                 </button>
             </div>
