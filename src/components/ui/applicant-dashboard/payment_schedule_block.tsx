@@ -1,37 +1,35 @@
 
 "use client"
 
-import { useState } from "react"
-import Image from "next/image"
-
-import { useUserStore } from "@/hooks/userStore"
-import GreenChecklistLogo from "../../../../public/green-checklist.svg"
-import AlertLogo from "../../../../public/alert.svg"
-import GrayDotLogo from "../../../../public/gray-dot.svg"
-
 export default function ApplicantDashboard_PaymentScheduleRow(props : {installment_value : number, installment_date : Date, installment_order : number, installment_status : string}){
 
     // fetch conditions from the db
     const installmentStatusColor : any = {
         "paid" : {
             "bg-hex" : "D0FAE5",
-            "text-hex" : "006045",
-            "logo" : GreenChecklistLogo,
-            "alt" : "Green checklist logo"
+            "text-hex" : "006045"
         },
         "due_soon" : {
             "bg-hex" : "FEF9C2",
-            "text-hex" : "894B00",
-            "logo" : AlertLogo,
-            "alt" : "Alert logo"
+            "text-hex" : "894B00"
         },
         "pending" : {
             "bg-hex" : "F3F4F6",
-            "text-hex" : "1E2939",
-            "logo" : GrayDotLogo,
-            "alt" : "Gray dot logo"
+            "text-hex" : "1E2939"
+        },
+        "past_due" : {
+            "bg-hex" : "FEE2E2",
+            "text-hex" : "B91C1C"
         }
     }
+
+    const statusLabelMap : Record<string, string> = {
+        paid: "Lunas",
+        due_soon: "Jatuh tempo dekat",
+        pending: "Belum jatuh tempo",
+        past_due: "Terlambat",
+    };
+    const statusLabel = statusLabelMap[props.installment_status] || props.installment_status;
 
     return (
 
@@ -39,16 +37,10 @@ export default function ApplicantDashboard_PaymentScheduleRow(props : {installme
         <div className="flex justify-center items-center h-full w-full">
             
             {/* symbol */}
-            <div className={`flex justify-start items-start rounded-full h-full p-2`}
-                // style={{ background : `#${installmentStatusColor[props.installment_status]['bg-hex']}`}}
-            >
-                <Image
-                    src={installmentStatusColor[props.installment_status]["logo"]}
-                    alt={installmentStatusColor[props.installment_status]["alt"]}
-                    width={20}
-                    height={20}
-                    className="rounded-2xl w-full h-fit justify-center items-start p-2"
-                    style={{ background : `#${installmentStatusColor[props.installment_status]['bg-hex']}`}}
+            <div className="flex justify-center items-center w-8">
+                <span
+                    className="h-3 w-3 rounded-full"
+                    style={{ background: `#${installmentStatusColor[props.installment_status]['text-hex']}` }}
                 />
             </div>
 
@@ -57,7 +49,11 @@ export default function ApplicantDashboard_PaymentScheduleRow(props : {installme
 
                 {/* date */}
                 <div className="flex justify-start items-start p-0.5">
-                    {props.installment_date.toDateString()}
+                    {props.installment_date.toLocaleDateString("id-ID", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                    })}
                 </div>
 
                 {/* installment */}
@@ -71,7 +67,7 @@ export default function ApplicantDashboard_PaymentScheduleRow(props : {installme
                             color : `#${installmentStatusColor[props.installment_status]['text-hex']}`
                     }}
                 >
-                    {props.installment_status}
+                    {statusLabel}
                 </div>
 
             </div>

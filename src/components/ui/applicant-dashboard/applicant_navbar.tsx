@@ -220,7 +220,7 @@ function NotificationBellButton() {
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 top-14 z-50 w-[28rem] overflow-hidden rounded-xl border border-[#E5E7EB] bg-white shadow-2xl">
+                <div className="absolute right-0 top-14 z-50 w-md overflow-hidden rounded-xl border border-[#E5E7EB] bg-white shadow-2xl">
                     <div className="border-b border-[#E5E7EB] bg-[#F9FAFB] px-5 py-4">
                         <div className="flex items-center justify-between gap-4">
                             <div>
@@ -239,7 +239,7 @@ function NotificationBellButton() {
                         </div>
                     </div>
 
-                    <div className="max-h-[28rem] space-y-3 overflow-y-auto bg-white p-4">
+                    <div className="max-h-112 space-y-3 overflow-y-auto bg-white p-4">
                         {isLoading && (
                             <div className="rounded-lg border border-[#E5E7EB] px-4 py-6 text-sm text-[#6B7280]">
                                 Loading notifications...
@@ -345,7 +345,7 @@ export default function ApplicantDashboard_ApplicantNavbar() {
 
                 {/* Report */}
                 <div className="font-bold">
-                    <Link href={'/not-found'}>Installment</Link>
+                    <Link href={'/applicant/installment'}>Installment</Link>
                 </div>
 
             </div>
@@ -370,10 +370,10 @@ export default function ApplicantDashboard_ApplicantNavbar() {
                         className="h-4 w-4"
                         />
                     </span>
-                    <span className="max-w-[110px] truncate text-[12.5px] font-medium text-[#111827]" title={username}>
+                    <span className="max-w-27.5 truncate text-[12.5px] font-medium text-[#111827]" title={username}>
                         {username}
                     </span>
-                    <ChevronDown className="h-[14px] w-[14px] text-gray-500 transition-transform duration-150 group-hover:rotate-180" />
+                    <ChevronDown className="h-3.5 w-3.5 text-gray-500 transition-transform duration-150 group-hover:rotate-180" />
                 </button>
 
                     {/* Dropdown */}

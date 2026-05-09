@@ -22,7 +22,7 @@ export default function DonorDashboard_SummaryOfDonor(props: DonorDashboardSumma
                     <Image
                         src={props.logo}
                         alt={props.alt}
-                        className="h-[16px] w-[16px]"
+                        className="h-4 w-4"
                     />
                 </div>
             </div>

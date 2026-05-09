@@ -6,9 +6,9 @@ import Link from 'next/link';
 export const Hero = () => {
   return (
     <section id="home" className="relative w-full bg-[#F3F4F6] pb-28 md:pb-20">
-      <div className="relative h-[58vh] min-h-[420px] w-full overflow-hidden">
+      <div className="relative h-[58vh] min-h-105 w-full overflow-hidden">
         <div className="absolute inset-0 bg-[url('/landing-banner-image.svg')] bg-cover bg-center bg-no-repeat" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#07B0C8]/72 via-[#07B0C8]/52 to-[#07B0C8]/30" />
+        <div className="absolute inset-0 bg-linear-to-r from-[#07B0C8]/72 via-[#07B0C8]/52 to-[#07B0C8]/30" />
         <div className="relative z-10 max-w-7xl mx-auto h-full px-6 md:px-8 flex items-center">
           <div className="max-w-2xl text-white">
             <h1 className="text-[2.35rem] md:text-[3.45rem] leading-[1.05] font-extrabold tracking-tight">

@@ -38,7 +38,7 @@ export default function PaymentSuccessPage() {
             <DonorDashboard_DonorNavbar />
         </div>
 
-        <div className="min-h-screen w-full bg-gradient-to-br from-[#07B0C8]/10 to-[#F9FAFB] py-8 px-4 sm:px-6 lg:px-8 flex items-center">
+        <div className="min-h-screen w-full bg-linear-to-br from-[#07B0C8]/10 to-[#F9FAFB] py-8 px-4 sm:px-6 lg:px-8 flex items-center">
 
             <div className="max-w-md mx-auto w-full">
                 {/* Success Card */}

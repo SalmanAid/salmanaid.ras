@@ -7,7 +7,7 @@ export const CallToAction = () => {
   return (
     <section className="bg-[#F3F4F6] py-16 md:py-20">
       <div className="max-w-8xl mx-auto px-3 sm:px-5 lg:px-8 -mt-2 md:-mt-4">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#07B0C8] to-[#06a1b8] px-8 py-14 md:px-14 md:py-16 text-center text-white shadow-lg">
+        <div className="relative overflow-hidden rounded-2xl bg-linear-to-r from-[#07B0C8] to-[#06a1b8] px-8 py-14 md:px-14 md:py-16 text-center text-white shadow-lg">
           <div className="pointer-events-none absolute -left-10 -bottom-14 h-44 w-44 rounded-full bg-white/8" />
           <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-white/8" />
 

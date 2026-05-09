@@ -21,7 +21,7 @@ export default function AdminLoanRequestPage() {
   useEffect(() => {
     const fetchLoanApplication = async () => {
       setIsLoading(true);
-      const baseUrl = '/api/loans';
+      const baseUrl = '/api/loan-applications';
       const start = (currentPageNumber - 1) * maxItemsInPage;
       const end = start + maxItemsInPage;
 

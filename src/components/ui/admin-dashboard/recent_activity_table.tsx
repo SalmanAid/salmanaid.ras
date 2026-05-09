@@ -61,7 +61,7 @@ export default function AdminDashboard_RecentActivityTable() {
           >
             {/* Activity */}
             <div className="flex items-center gap-3">
-              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
+              <span className="shrink-0 w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
                 <FileText className="w-4 h-4 text-blue-500" />
               </span>
               <span className="text-sm text-gray-700 font-medium leading-snug">
