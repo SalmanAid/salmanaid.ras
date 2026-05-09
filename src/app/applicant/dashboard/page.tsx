@@ -230,6 +230,15 @@ export default function ApplicantDashboardPage() {
         return map[value] || value;
     };
 
+    const repaymentStatusStyle = (value: string) => {
+        const map: Record<string, { bg: string; text: string }> = {
+            CONFIRMED: { bg: "#D0FAE5", text: "#006045" },
+            PENDING: { bg: "#FEF9C2", text: "#894B00" },
+        };
+
+        return map[value] || { bg: "#E5E7EB", text: "#4B5563" };
+    };
+
     const generateInstallments = (loan: LoanApplication) => {
         if (!loan || !selectedLoanDueDate) return [];
         const baseDate = new Date(selectedLoanDueDate);
@@ -253,6 +262,23 @@ export default function ApplicantDashboardPage() {
             };
         });
     };
+
+    const totalRemainingUnpaid = useMemo(() => {
+        return applications.reduce((sum, app) => {
+            if (!app.loanDetails) return sum;
+            const approvedAmount = Number(app.loanDetails.approvedAmount || 0);
+            const paidAmount = Number(app.loanDetails.totalPaid || 0);
+            const remaining = Math.max(approvedAmount - paidAmount, 0);
+            return sum + remaining;
+        }, 0);
+    }, [applications]);
+
+    const selectedRemainingUnpaid = useMemo(() => {
+        if (!selectedLoan?.loanDetails) return 0;
+        const approvedAmount = Number(selectedLoan.loanDetails.approvedAmount || 0);
+        const paidAmount = Number(selectedLoan.loanDetails.totalPaid || 0);
+        return Math.max(approvedAmount - paidAmount, 0);
+    }, [selectedLoan]);
 
     if (isLoading) return <div className="flex justify-center items-center h-screen">Memuat...</div>;
 
@@ -292,7 +318,7 @@ export default function ApplicantDashboardPage() {
                     Selamat Datang Kembali, <span className="text-[#FCB82E]">{username}</span>
                 </h1>
                 <p className="text-lg text-gray-500 mt-2">
-                    Kedermawanan Anda membantu hidup orang lain - terima kasih atas kontribusi Anda.
+                    Pantau status pinjaman dan pembayaran Anda di sini.
                 </p>
                 {fetchError && (
                     <p className="mt-2 text-sm text-red-600">{fetchError}</p>
@@ -302,8 +328,8 @@ export default function ApplicantDashboardPage() {
             {/* Loan Status Card */}
             <div className="flex flex-col gap-2 w-[90%] bg-white shadow-xl p-6 rounded-2xl">
                 <span className="text-sm text-[#4A5565]">Status Pinjaman Terkini</span>
-                <span className="text-5xl font-bold">{formatIdr(totalValue)}</span>
-                <span className="text-sm text-[#4A5565]">Sisa Saldo Pinjaman</span>
+                <span className="text-5xl font-bold">{formatIdr(totalRemainingUnpaid)}</span>
+                <span className="text-sm text-[#4A5565]">Sisa Pinjaman Belum Lunas</span>
             </div>
 
             {/* Nearest Due Date Banner */}
@@ -329,7 +355,7 @@ export default function ApplicantDashboardPage() {
                 </Link>
             </div>
 
-            <div className="w-[90%] flex gap-2">
+            <div className="w-[90%] flex gap-2 mt-4">
                 <button
                     type="button"
                     onClick={() => setActiveTab("detail")}
@@ -371,6 +397,15 @@ export default function ApplicantDashboardPage() {
                             ))}
                         </select>
                     </div>
+
+                    {selectedLoan?.loanDetails && (selectedLoan.loanDetails.status === "ACTIVE" || selectedLoan.loanDetails.status === "PAID") && (
+                        <div className="w-[90%] bg-white shadow-xl rounded-2xl p-6">
+                            <div className="text-sm text-[#4A5565]">Sisa Pinjaman Belum Lunas</div>
+                            <div className="text-2xl font-semibold mt-2">
+                                {formatIdr(selectedRemainingUnpaid)}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Details Section */}
                     <div className="flex justify-between w-[90%] gap-6 pb-10">
@@ -414,54 +449,59 @@ export default function ApplicantDashboardPage() {
 
             {activeTab === "riwayat" && (
                 <div className="w-[90%] pb-10">
-                    <div className="bg-white rounded-2xl shadow-xl p-6">
-                        <h3 className="font-bold text-lg mb-4">Riwayat Pembayaran</h3>
-                        {historyError && (
-                            <p className="text-sm text-red-600 mb-4">{historyError}</p>
-                        )}
-                        {historyLoading && (
-                            <p className="text-gray-500">Memuat riwayat pembayaran...</p>
-                        )}
-                        {!historyLoading && repaymentHistory.length === 0 && (
-                            <p className="text-gray-400 text-center py-10">Belum ada riwayat pembayaran.</p>
-                        )}
-                        <div className="flex flex-col gap-4">
-                            {repaymentHistory.map((item) => (
-                                <div key={item.id} className="border border-gray-200 rounded-2xl p-4">
+                    <h3 className="font-bold text-lg mb-4">Riwayat Pembayaran</h3>
+                    {historyError && (
+                        <p className="text-sm text-red-600 mb-4">{historyError}</p>
+                    )}
+                    {historyLoading && (
+                        <p className="text-gray-500">Memuat riwayat pembayaran...</p>
+                    )}
+                    {!historyLoading && repaymentHistory.length === 0 && (
+                        <p className="text-gray-400 text-center py-10">Belum ada riwayat pembayaran.</p>
+                    )}
+                    <div className="flex flex-col gap-4">
+                        {repaymentHistory.map((item) => {
+                            const statusStyle = repaymentStatusStyle(item.status);
+
+                            return (
+                                <div key={item.id} className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
                                     <div className="flex flex-col gap-2">
                                         <div className="flex flex-wrap items-center justify-between gap-2">
                                             <div className="font-semibold">
                                                 {item.loanName || "Pinjaman"}
                                             </div>
-                                            <div className="font-bold text-[#07B0C8]">
-                                                {formatIdr(item.amount)}
+                                            <div className="text-sm text-gray-600">
+                                                Jumlah pembayaran: <span className="font-bold text-[#07B0C8]">{formatIdr(item.amount)}</span>
                                             </div>
                                         </div>
-                                        <div className="text-sm text-gray-500">
+                                        <div className="text-sm text-gray-600 font-semibold">
                                             Tanggal pembayaran: {new Date(item.paidAt).toLocaleDateString("id-ID", {
                                                 day: "2-digit",
                                                 month: "long",
                                                 year: "numeric",
                                             })}
                                         </div>
-                                        <div className="text-sm text-gray-500">
+                                        <div
+                                            className="text-xs font-semibold w-fit rounded-full px-3 py-1"
+                                            style={{ background: statusStyle.bg, color: statusStyle.text }}
+                                        >
+                                            {formatStatus(item.status)}
+                                        </div>
+                                        <div className="pt-2 text-xs text-gray-400">
                                             ID Repayment: {item.id}
                                         </div>
-                                        <div className="text-sm text-gray-500">
+                                        <div className="text-xs text-gray-400">
                                             ID Loan: {item.loanId}
                                         </div>
-                                        <div className="text-sm text-gray-500">
-                                            Status: {formatStatus(item.status)}
-                                        </div>
                                         {item.paymentTransactionId && (
-                                            <div className="text-sm text-gray-500">
+                                            <div className="text-xs text-gray-400">
                                                 ID Transaksi: {item.paymentTransactionId}
                                             </div>
                                         )}
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                            );
+                        })}
                     </div>
                 </div>
             )}
