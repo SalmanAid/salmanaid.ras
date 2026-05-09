@@ -6,16 +6,14 @@ import { auth } from "@/auth";
 
 export async function GET(req: Request) {
   try {
-    // 1. Extract the URL from the request
     const { searchParams } = new URL(req.url);
 
     // 2. Get parameters from query string
-    // Note: searchParams.get() always returns a string or null
     const startStr = searchParams.get("start");
     const endStr = searchParams.get("end");
     const status = searchParams.get("status"); // Default to PENDING if not provided
 
-    // 3. Convert start/end to numbers (and handle defaults)
+    // 3. parsing and handle edge case
     const start = startStr ? parseInt(startStr, 10) : 0;
     const end = endStr ? parseInt(endStr, 10) : 10;
 

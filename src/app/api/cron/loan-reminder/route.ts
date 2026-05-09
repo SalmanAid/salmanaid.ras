@@ -4,7 +4,6 @@ import { prisma } from '@/lib/prisma';
 import { sendWhatsAppExpiryReminder } from '../../../../lib/whatsapp'; // The function from my previous answer
 
 export async function GET(request: Request) {
-  // 1. Security Check: Ensure only Vercel can call this
   const authHeader = request.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return new Response('Unauthorized', { status: 401 });

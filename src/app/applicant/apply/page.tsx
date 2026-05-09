@@ -16,7 +16,7 @@ export default function ApplyLoanFormPage(){
 
     return (
         // main container
-        <div className="w-full h-full flex flex-col justify-center items-center p-2">
+        <div className="w-full min-h-screen flex flex-col justify-start items-center p-2">
 
             {/* nav bar */}
             <div className="flex justify-center items-center w-full h-fit">

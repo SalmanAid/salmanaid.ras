@@ -31,9 +31,9 @@ export default function DonorDashboard_DonorNavbar() {
     
     return (
         <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
-            <div className="max-w-[1400px] mx-auto px-6">
-                <div className="flex justify-between items-center h-[58px]">
-                    <div className="flex-shrink-0">
+            <div className="max-w-350 mx-auto px-6">
+                <div className="flex justify-between items-center h-14.5">
+                    <div className="shrink-0">
                         <Link href="/donor/dashboard" className="flex items-center">
                             <Image
                                 src={RumahAmalHorizontalLogo}
@@ -72,10 +72,10 @@ export default function DonorDashboard_DonorNavbar() {
                                     className="h-4 w-4"
                                 />
                             </span>
-                            <span className="max-w-[110px] truncate text-[12.5px] font-medium text-[#111827]" title={username}>
+                            <span className="max-w-27.5 truncate text-[12.5px] font-medium text-[#111827]" title={username}>
                                 {username}
                             </span>
-                            <ChevronDown className="h-[14px] w-[14px] text-gray-500 transition-transform duration-150 group-hover:rotate-180" />
+                            <ChevronDown className="h-3.5 w-3.5 text-gray-500 transition-transform duration-150 group-hover:rotate-180" />
                         </button>
 
                         <div className="invisible absolute right-0 top-[calc(100%+8px)] z-20 w-36 rounded-lg border border-gray-200 bg-white p-1 opacity-0 shadow-lg transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
@@ -90,7 +90,7 @@ export default function DonorDashboard_DonorNavbar() {
                     </div>
 
                     <div className="flex items-center gap-2 md:hidden">
-                        <span className="max-w-[96px] truncate text-[12.5px] font-medium text-[#111827]" title={username}>
+                        <span className="max-w-24 truncate text-[12.5px] font-medium text-[#111827]" title={username}>
                             {username}
                         </span>
                         <button

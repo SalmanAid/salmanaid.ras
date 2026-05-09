@@ -110,7 +110,7 @@ export default function AdminDashboard_FinancialOverviewChart() {
         <p className="text-xs text-gray-400 mb-2 text-center italic">{rangeLabel}</p>
       )}
 
-      <ChartContainer config={chartConfig} className="w-full h-[320px]">
+      <ChartContainer config={chartConfig} className="w-full h-80">
         <BarChart
           data={chartData}
           margin={{ top: 10, right: 16, left: 10, bottom: 5 }}

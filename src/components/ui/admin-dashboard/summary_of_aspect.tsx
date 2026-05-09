@@ -34,7 +34,7 @@ export default function SummaryOfAspect({
 
       {/* Right: icon in colored circle */}
       <div
-        className="flex justify-center items-center w-11 h-11 rounded-xl flex-shrink-0"
+        className="flex justify-center items-center w-11 h-11 rounded-xl shrink-0"
         style={{ backgroundColor: icon_bg_color }}
       >
         <Icon className="w-5 h-5 text-white" strokeWidth={2.2} />

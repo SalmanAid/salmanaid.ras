@@ -124,7 +124,7 @@ export default function ApplicantForm_TermsAndAgreementSection() {
             </div>
 
             {/* Document */}
-            <div className="w-full max-h-[300px] overflow-y-auto border rounded-xl p-4 bg-gray-50 text-sm leading-relaxed space-y-4">
+            <div className="w-full max-h-75 overflow-y-auto border rounded-xl p-4 bg-gray-50 text-sm leading-relaxed space-y-4">
 
                 <h2 className="font-semibold text-base">
                     Perjanjian Pinjaman Tanpa Bunga

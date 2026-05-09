@@ -189,7 +189,7 @@ export default function LoanRequest_LoanRequestsTable({ isLoading = false }: { i
                                 {/* Applicant Details */}
                                 <TableCell className="py-4 px-6">
                                     <div className="flex items-center gap-3">
-                                        <div className="relative w-10 h-10 rounded-full overflow-hidden border border-gray-100 flex-shrink-0">
+                                        <div className="relative w-10 h-10 rounded-full overflow-hidden border border-gray-100 shrink-0">
                                             <Image 
                                                 src={loan.image || DefaultAvatarLogo} 
                                                 alt="Profile" 

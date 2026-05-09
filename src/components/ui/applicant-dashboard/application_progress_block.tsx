@@ -130,7 +130,7 @@ export default function ApplicantDashboard_ApplicationProgressComponent(props: {
                 </div>
 
                 {/* download contracts */}
-                <div className="flex justify-center items-center w-1/2 h-fit text-[#07B0C8] border border-2 border-[#07B0C8] rounded-lg font-semibold p-2">
+                <div className="flex justify-center items-center w-1/2 h-fit text-[#07B0C8] border-2 border-[#07B0C8] rounded-lg font-semibold p-2">
                     Unduh Kontrak
                 </div>
             </div>
