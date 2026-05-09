@@ -7,6 +7,7 @@ import SummaryOfAspect from "@/components/ui/admin-dashboard/summary_of_aspect";
 import AdminDashboard_FinancialOverviewChart from "@/components/ui/admin-dashboard/financial_overview_chart";
 import AdminDashboard_RecentActivityTable from "@/components/ui/admin-dashboard/recent_activity_table";
 import AdminDashboard_AdminNavbar from "@/components/ui/admin-dashboard/admin_navbar";
+import DonationVsLoanView from "@/components/ui/admin-dashboard/donation_vs_loan_view";
 import { useAdminDashboardStore } from "@/hooks/adminDashboardStore";
 import LoadingPageComponent from "@/components/ui/loading";
 import ErrorComponent from "@/components/ui/error";
@@ -206,6 +207,9 @@ export default function AdminDashboardPage() {
             <AdminDashboard_FinancialOverviewChart />
           </div>
         </div>
+
+        {/* ── Donation vs Loan View ── */}
+        <DonationVsLoanView />
 
         {/* ── Recent Activity ── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
