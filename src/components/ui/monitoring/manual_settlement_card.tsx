@@ -42,10 +42,7 @@ export default function Monitoring_ManualSettlementCard() {
                 throw new Error(result.error || "Gagal memproses penyesuaian");
             }
 
-            // Success! 
-            // 1. You could trigger a toast notification here
-            // 2. Refresh the data so the UI reflects the new remaining balance
-            // refreshLoans(); 
+            alert("Perubahan Data Berhasil!")
             
             setManualSettlementCardOpen(false);
         } catch (error: any) {
