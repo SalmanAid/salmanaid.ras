@@ -39,7 +39,7 @@ export async function GET(request: Request) {
         const borrowerName = loan.application.borrower.name;
         
         if (phoneNumber) {
-          const message = `Halo ${borrowerName}, pengajian pinjaman Anda di SalmanAid akan jatuh tempo dalam 14 hari (pada tanggal ${new Date(loan.dueDate).toLocaleDateString('id-ID')}). Mohon pastikan saldo Anda cukup untuk pembayaran cicilan. Terima kasih.`;
+          const message = `Halo ${borrowerName}, pengajuan pinjaman Anda di SalmanAid akan jatuh tempo dalam 14 hari (pada tanggal ${new Date(loan.dueDate).toLocaleDateString('id-ID')}). Mohon pastikan saldo Anda cukup untuk pembayaran cicilan. Terima kasih.`;
           
           return WhatsAppService.sendMessage({
             to: phoneNumber,
@@ -49,10 +49,15 @@ export async function GET(request: Request) {
       })
     );
 
-    // Log failures if any
+    // Log failures if any with detail
     results.forEach((result, index) => {
       if (result.status === 'rejected') {
-        console.error(`Failed to send WhatsApp to ${expiringLoans[index]?.application.borrower.name}:`, result.reason);
+        const error = result.reason;
+        console.error(`Failed to send WhatsApp to ${expiringLoans[index]?.application.borrower.name}:`, {
+          message: error.message,
+          status: error.status,
+          data: error.data // Ini akan memunculkan isi [Object] di Vercel Logs
+        });
       }
     });
 
