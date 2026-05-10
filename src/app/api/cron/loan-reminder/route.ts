@@ -1,7 +1,7 @@
 // app/api/cron/loan-reminder/route.ts
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma'; 
-import { sendWhatsAppExpiryReminder } from '../../../../lib/whatsapp'; // The function from my previous answer
+import { WhatsAppService } from '@/services/whatsapp.service';
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');
@@ -10,14 +10,14 @@ export async function GET(request: Request) {
   }
 
   try {
-    // 2. Calculate the target date (14 days from now)
+    // 1. Calculate the target date (14 days from now)
     const targetDate = new Date();
     targetDate.setDate(targetDate.getDate() + 14);
     
     const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
     const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
 
-    // 3. Find expiring loans
+    // 2. Find expiring loans (Active loans with due date in 14 days)
     const expiringLoans = await prisma.loan.findMany({
       where: {
         status: "ACTIVE",
@@ -32,22 +32,34 @@ export async function GET(request: Request) {
       },
     });
 
-    // 4. Send Notifications
+    // 3. Send Notifications using WhatsAppService (Custom Bot)
     const results = await Promise.allSettled(
       expiringLoans.map(loan => {
-        if (loan.application.borrower.phone_number) {
-          return sendWhatsAppExpiryReminder(
-            loan.application.borrower.phone_number,
-            loan.application.borrower.name,
-            14
-          );
+        const phoneNumber = loan.application.borrower.phone_number;
+        const borrowerName = loan.application.borrower.name;
+        
+        if (phoneNumber) {
+          const message = `Halo ${borrowerName}, pengajian pinjaman Anda di SalmanAid akan jatuh tempo dalam 14 hari (pada tanggal ${new Date(loan.dueDate).toLocaleDateString('id-ID')}). Mohon pastikan saldo Anda cukup untuk pembayaran cicilan. Terima kasih.`;
+          
+          return WhatsAppService.sendMessage({
+            to: phoneNumber,
+            message: message,
+          });
         }
       })
     );
 
+    // Log failures if any
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        console.error(`Failed to send WhatsApp to ${expiringLoans[index]?.application.borrower.name}:`, result.reason);
+      }
+    });
+
     return NextResponse.json({ 
       success: true, 
-      processed: expiringLoans.length 
+      processed: expiringLoans.length,
+      failed: results.filter(r => r.status === 'rejected').length
     });
   } catch (error) {
     console.error('Cron Error:', error);
