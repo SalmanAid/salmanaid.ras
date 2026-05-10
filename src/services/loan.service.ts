@@ -5,6 +5,34 @@ import { LoanApplicationInput } from "@/schemas/loan.schema";
 import { NotificationService } from "@/services/notification.service";
 
 const BUCKET_NAME = process.env.SUPABASE_BUCKET_NAME || "loan-documents";
+const JAKARTA_TIME_ZONE = "Asia/Jakarta";
+
+function toJakartaDateKey(date: Date) {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: JAKARTA_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  return formatter.format(date);
+}
+
+function addDays(date: Date, days: number) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+function differenceInJakartaCalendarDays(from: Date, to: Date) {
+  const fromKey = toJakartaDateKey(from);
+  const toKey = toJakartaDateKey(to);
+
+  const fromUtc = new Date(`${fromKey}T00:00:00.000Z`);
+  const toUtc = new Date(`${toKey}T00:00:00.000Z`);
+
+  return Math.round((toUtc.getTime() - fromUtc.getTime()) / 86400000);
+}
 
 async function withSignedAttachmentUrls<T extends { attachments?: { id: string; fileUrl: string }[] }>(application: T) {
   const attachments = await Promise.all(
@@ -493,11 +521,15 @@ export const LoanService = {
           0
         );
 
-        // Remove the full repayments array from the response to keep it clean
-        const { repayments, ...loanData } = loan;
-
         return {
-          ...loanData,
+          id: loan.id,
+          applicationId: loan.applicationId,
+          approvedAmount: loan.approvedAmount,
+          status: loan.status,
+          approvedAt: loan.approvedAt,
+          dueDate: loan.dueDate,
+          application: loan.application,
+          _count: loan._count,
           totalPaid: totalPaid, // Now aligned with application field
         };
       });
@@ -510,6 +542,92 @@ export const LoanService = {
       console.error("Error fetching loans:", error);
       throw new Error("Gagal mengambil data pinjaman.");
     }
+  },
+
+  async getBorrowersWithDueReminders() {
+    try {
+      const now = new Date();
+      const upperBound = addDays(now, 15);
+
+      const loans = await prisma.loan.findMany({
+        where: {
+          status: LoanStatus.ACTIVE,
+          dueDate: {
+            gte: now,
+            lt: upperBound,
+          },
+        },
+        orderBy: {
+          dueDate: "asc",
+        },
+        include: {
+          application: {
+            select: {
+              borrower: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  phone_number: true,
+                },
+              },
+            },
+          },
+          repayments: {
+            where: {
+              status: RepaymentStatus.CONFIRMED,
+            },
+            select: {
+              amount: true,
+            },
+          },
+        },
+      });
+
+      const reminders = loans
+        .map((loan) => {
+          const totalPaid = loan.repayments.reduce(
+            (sum, repayment) => sum + Number(repayment.amount),
+            0
+          );
+          const approvedAmount = Number(loan.approvedAmount);
+          const remainingAmount = Math.max(approvedAmount - totalPaid, 0);
+          const daysUntilDue = differenceInJakartaCalendarDays(now, loan.dueDate);
+
+          return {
+            loanId: loan.id,
+            applicationId: loan.applicationId,
+            borrowerId: loan.application.borrower.id,
+            borrowerName: loan.application.borrower.name,
+            borrowerEmail: loan.application.borrower.email,
+            borrowerPhoneNumber: loan.application.borrower.phone_number,
+            dueDate: loan.dueDate,
+            approvedAmount,
+            totalPaid,
+            remainingAmount,
+            daysUntilDue,
+          };
+        })
+        .filter(
+          (loan) =>
+            loan.remainingAmount > 0 &&
+            (loan.daysUntilDue === 14 || loan.daysUntilDue === 7)
+        );
+
+      return {
+        dueIn14Days: reminders.filter((loan) => loan.daysUntilDue === 14),
+        dueIn7Days: reminders.filter((loan) => loan.daysUntilDue === 7),
+      };
+    } catch (error) {
+      console.error("Error fetching due reminder borrowers:", error);
+      throw new Error("Gagal mengambil data peminjam jatuh tempo.");
+    }
+  },
+
+  async getBorrowersWithDueReminderByDays(days: 7 | 14) {
+    const result = await this.getBorrowersWithDueReminders();
+
+    return days === 14 ? result.dueIn14Days : result.dueIn7Days;
   },
 
 };
