@@ -35,10 +35,18 @@ export async function GET(request: Request) {
     // 3. Send Notifications using WhatsAppService (Custom Bot)
     const results = await Promise.allSettled(
       expiringLoans.map(loan => {
-        const phoneNumber = loan.application.borrower.phone_number;
+        let phoneNumber = loan.application.borrower.phone_number;
         const borrowerName = loan.application.borrower.name;
         
         if (phoneNumber) {
+          // Normalization: Remove non-digits and convert 08... to 628...
+          phoneNumber = phoneNumber.replace(/\D/g, "");
+          if (phoneNumber.startsWith("0")) {
+            phoneNumber = "62" + phoneNumber.substring(1);
+          }
+
+          console.log(`Attempting to send WhatsApp reminder to ${borrowerName} (${phoneNumber})`);
+
           const message = `Halo ${borrowerName}, pengajuan pinjaman Anda di SalmanAid akan jatuh tempo dalam 14 hari (pada tanggal ${new Date(loan.dueDate).toLocaleDateString('id-ID')}). Mohon pastikan saldo Anda cukup untuk pembayaran cicilan. Terima kasih.`;
           
           return WhatsAppService.sendMessage({
