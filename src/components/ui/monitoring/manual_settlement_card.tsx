@@ -7,20 +7,53 @@ const formatCurrency = (val: number | string) => {
 }
 
 export default function Monitoring_ManualSettlementCard() {
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [reductionAmount, setReductionAmount] = useState<number>(0);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null); // Added for error feedback
 
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
-    const [reductionAmount, setReductionAmount] = useState<number>(0)
-    
-    const selectedLoan = useLoanStore((state) => (state.selected_loan))
+    const selectedLoan = useLoanStore((state) => state.selected_loan);
     const setManualSettlementCardOpen = useLoanStore((state) => state.setIsManualSettlementCardOpen);
 
-    const approvedAmount = selectedLoan.approvedAmount
-    const totalPaid = selectedLoan.totalPaid
-    const remainingUnpaid = approvedAmount - totalPaid
+    const approvedAmount = selectedLoan.approvedAmount;
+    const totalPaid = selectedLoan.totalPaid;
+    const remainingUnpaid = approvedAmount - totalPaid;
 
     const handleConfirmAdjustment = async () => {
+        setErrorMessage(null);
+        setIsSubmitting(true);
 
-    }
+        try {
+            const response = await fetch("/api/repayments", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    loanId: selectedLoan.id,
+                    amount: reductionAmount,
+                    // We can optionally pass paidAt here, 
+                    // otherwise the backend defaults to now.
+                }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Gagal memproses penyesuaian");
+            }
+
+            // Success! 
+            // 1. You could trigger a toast notification here
+            // 2. Refresh the data so the UI reflects the new remaining balance
+            // refreshLoans(); 
+            
+            setManualSettlementCardOpen(false);
+        } catch (error: any) {
+            setErrorMessage(error.message);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <div className="w-[70%] max-w-2xl mx-auto bg-white rounded-3xl shadow-2xl flex flex-col h-137.5 text-slate-800 overflow-hidden px-8 py-4">
@@ -108,19 +141,16 @@ export default function Monitoring_ManualSettlementCard() {
 
             {/* Action Buttons */}
             <div className="p-8 pt-4 bg-white border-t border-slate-50">
-                {/* {errorMessage && (
+                {errorMessage && (
                     <p className="mb-3 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
                         {errorMessage}
                     </p>
-                )} */}
+                )}
 
                 <div className="flex gap-3">
                     <button
                         type="button"
-                        onClick={() => {
-                            setManualSettlementCardOpen(false);
-                            setIsSubmitting(true);
-                        }}
+                        onClick={() => setManualSettlementCardOpen(false)}
                         disabled={isSubmitting}
                         className="flex-1 py-3 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
                     >
