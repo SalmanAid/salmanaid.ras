@@ -223,7 +223,7 @@ function NotificationBellButton() {
                     requestDesktopPermission();
                     fetchNotifications();
                 }}
-                className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-[#111827] transition hover:border-[#FCB82E] hover:bg-[#FFF7E6] focus:outline-none focus:ring-2 focus:ring-[#FCB82E]/40"
+                className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-[#111827] transition hover:border-[#07B0C8] hover:bg-[#F0FBFD] focus:outline-none focus:ring-2 focus:ring-[#07B0C8]/30"
             >
                 <Bell size={18} strokeWidth={2.2} />
                 {pendingCount > 0 && (
@@ -335,7 +335,7 @@ export default function ApplicantDashboard_ApplicantNavbar({ showNotifications =
     
     return (
         <nav className="sticky top-0 z-50 w-full border-b border-[#E5E7EB] bg-white shadow-sm">
-            <div className="mx-auto max-w-[1196px] px-5 sm:px-6">
+            <div className="mx-auto max-w-350 px-6">
                 <div className="flex h-14.5 items-center justify-between">
                     <Link href="/applicant/dashboard" className="shrink-0 flex items-center">
                         <Image
@@ -360,8 +360,8 @@ export default function ApplicantDashboard_ApplicantNavbar({ showNotifications =
                                     href={item.href}
                                     className={`text-[12.5px] font-medium transition-colors ${
                                         isActive
-                                            ? "text-[#F59E0B] underline decoration-2 underline-offset-8 decoration-[#F59E0B]"
-                                            : "text-gray-700 hover:text-[#F59E0B]"
+                                            ? "text-[#07B0C8] underline decoration-2 underline-offset-8 decoration-[#07B0C8]"
+                                            : "text-gray-800 hover:text-cyan-600"
                                     }`}
                                 >
                                     {item.label}
@@ -378,13 +378,13 @@ export default function ApplicantDashboard_ApplicantNavbar({ showNotifications =
                                 type="button"
                                 className="inline-flex items-center gap-2 rounded-full bg-white px-2 py-1 transition-colors hover:bg-gray-50"
                             >
-                                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#FCB82E]">
+                                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#DFF3F7]">
                                     <Image
                                         src={UserPersonaLogo}
                                         alt="User"
                                         width={16}
                                         height={16}
-                                        className="h-4 w-4 brightness-0 invert"
+                                        className="h-4 w-4"
                                     />
                                 </span>
                                 <span className="hidden max-w-27.5 truncate text-[12.5px] font-medium text-[#111827] sm:inline" title={username}>
@@ -397,7 +397,7 @@ export default function ApplicantDashboard_ApplicantNavbar({ showNotifications =
                                 <button
                                     type="button"
                                     onClick={() => signOut({ callbackUrl: "/login" })}
-                                    className="w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#F59E0B]"
+                                    className="w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
                                 >
                                     Logout
                                 </button>
