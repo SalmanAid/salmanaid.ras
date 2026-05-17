@@ -1,7 +1,22 @@
 
 "use client"
 
-export default function ApplicantDashboard_PaymentScheduleRow(props : {installment_value : number, installment_date : Date, installment_order : number, installment_status : string}){
+type PaymentScheduleRowProps = {
+    installment_value: number;
+    installment_paid_value: number;
+    installment_date: Date;
+    installment_order: number;
+    installment_status: string;
+};
+
+const formatIdr = (value: number) =>
+    new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        maximumFractionDigits: 0,
+    }).format(value);
+
+export default function ApplicantDashboard_PaymentScheduleRow(props : PaymentScheduleRowProps){
 
     const installmentStatusColor: Record<string, { "bg-hex": string; "text-hex": string }> = {
         "paid" : {
@@ -60,13 +75,18 @@ export default function ApplicantDashboard_PaymentScheduleRow(props : {installme
                 </span>
             </div>
 
-            <p className="shrink-0 text-right text-[13px] font-semibold text-[#111827]">
-                {new Intl.NumberFormat("id-ID", {
-                    style: "currency",
-                    currency: "IDR",
-                    maximumFractionDigits: 0,
-                }).format(props.installment_value)}
-            </p>
+            <div className="shrink-0 text-right">
+                <p className="text-[13px] font-semibold text-[#111827]">
+                    <span className={props.installment_paid_value === props.installment_value ? `text-[#111827]` : `text-[#6B7280]`}>
+                        {formatIdr(props.installment_paid_value)}
+                    </span>
+                    <span> / </span>
+                    {formatIdr(props.installment_value)}
+                </p>
+                <p className="mt-0.5 text-[11px] font-medium text-[#6B7280]">
+                    terbayar
+                </p>
+            </div>
         </div>
     );
 }

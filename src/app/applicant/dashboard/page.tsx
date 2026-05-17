@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useUserStore } from "@/hooks/userStore";
 import { useSession } from "next-auth/react";
-import { useEffect, useState, useMemo, Suspense } from "react";
+import { useCallback, useEffect, useState, useMemo, Suspense } from "react";
 import { CalendarDays, CreditCard, FileCheck2 } from "lucide-react";
 import ApplicantDashboard_PaymentScheduleRow from "@/components/ui/applicant-dashboard/payment_schedule_block";
 import ApplicantDashboard_ApplicationProgressComponent from "@/components/ui/applicant-dashboard/application_progress_block";
@@ -235,25 +235,43 @@ export default function ApplicantDashboardPage() {
         return map[value] || { bg: "#E5E7EB", text: "#4B5563" };
     };
 
+    const getLoanTotalPaid = useCallback((loan: LoanApplication) => {
+        const totalFromLoanList = Number(loan.loanDetails?.totalPaid || 0);
+        const approvedAmount = Number(loan.loanDetails?.approvedAmount || 0);
+        const isSelectedLoan = loan.id === selectedLoanId;
+        const totalPaid = isSelectedLoan
+            ? Math.max(totalFromLoanList, repaymentTotalPaid)
+            : totalFromLoanList;
+
+        if (loan.loanDetails?.status === "PAID") {
+            return Math.max(totalPaid, approvedAmount);
+        }
+
+        return totalPaid;
+    }, [repaymentTotalPaid, selectedLoanId]);
+
     const generateInstallments = (loan: LoanApplication) => {
         if (!loan || !selectedLoanDueDate) return [];
         const baseDate = new Date(selectedLoanDueDate);
         const approvedAmount = Number(loan.loanDetails?.approvedAmount || 0);
-        const totalPaid = loan.loanDetails?.totalPaid ?? repaymentTotalPaid;
+        const totalPaid = getLoanTotalPaid(loan);
         const installmentAmount = installmentFreq > 0 ? approvedAmount / installmentFreq : 0;
-        const paidInstallments = installmentAmount > 0
-            ? Math.floor(totalPaid / installmentAmount)
-            : 0;
 
         return Array.from({ length: installmentFreq }).map((_, i) => {
             // Subtract months based on index to show progress backwards from due date
             const date = new Date(baseDate);
             date.setMonth(date.getMonth() - (installmentFreq - 1 - i));
-            const isPaid = loan.loanDetails?.status === "PAID" || i < paidInstallments;
+            const installmentPaidAmount = Math.min(
+                Math.max(totalPaid - (installmentAmount * i), 0),
+                installmentAmount
+            );
+            const isPaid = loan.loanDetails?.status === "PAID" || installmentPaidAmount >= installmentAmount;
 
             return {
                 order: i + 1,
                 date: date,
+                paidAmount: installmentPaidAmount,
+                amount: installmentAmount,
                 status: isPaid ? "paid" : getInstallmentStatus(date, loan.loanDetails?.status),
             };
         });
@@ -263,18 +281,18 @@ export default function ApplicantDashboardPage() {
         return applications.reduce((sum, app) => {
             if (!app.loanDetails) return sum;
             const approvedAmount = Number(app.loanDetails.approvedAmount || 0);
-            const paidAmount = Number(app.loanDetails.totalPaid || 0);
+            const paidAmount = getLoanTotalPaid(app);
             const remaining = Math.max(approvedAmount - paidAmount, 0);
             return sum + remaining;
         }, 0);
-    }, [applications]);
+    }, [applications, getLoanTotalPaid]);
 
     const selectedRemainingUnpaid = useMemo(() => {
         if (!selectedLoan?.loanDetails) return 0;
         const approvedAmount = Number(selectedLoan.loanDetails.approvedAmount || 0);
-        const paidAmount = Number(selectedLoan.loanDetails.totalPaid || 0);
+        const paidAmount = getLoanTotalPaid(selectedLoan);
         return Math.max(approvedAmount - paidAmount, 0);
-    }, [selectedLoan]);
+    }, [getLoanTotalPaid, selectedLoan]);
 
     const nearestDueDateLabel = nearestDueDate
         ? nearestDueDate.toLocaleDateString("id-ID", {
@@ -453,7 +471,8 @@ export default function ApplicantDashboardPage() {
                                 {selectedLoan && scheduleAvailable && generateInstallments(selectedLoan).map((inst) => (
                                     <ApplicantDashboard_PaymentScheduleRow
                                         key={inst.order}
-                                        installment_value={installmentValue}
+                                        installment_value={inst.amount || installmentValue}
+                                        installment_paid_value={inst.paidAmount}
                                         installment_date={inst.date}
                                         installment_order={inst.order}
                                         installment_status={inst.status}
