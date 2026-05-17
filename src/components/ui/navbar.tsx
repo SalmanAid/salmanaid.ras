@@ -17,9 +17,9 @@ export const Navbar = () => {
   const pathname = usePathname();
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-gray-100/90">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h14.5">
+    <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+      <div className="max-w-350 mx-auto px-6">
+        <div className="flex justify-between items-center h-14.5">
           {/* Logo */}
           <div className="shrink-0">
             <Link href="/" className="flex items-center">
@@ -40,10 +40,10 @@ export const Navbar = () => {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`text-[12.5px] transition-colors font-medium ${
+                className={`text-[12.5px] font-medium transition-colors ${
                   item.label === 'Home' && pathname === '/'
-                    ? 'text-[#07B0C8] underline underline-offset-8 decoration-2'
-                    : 'text-gray-800 hover:text-cyan-600'
+                    ? 'text-[#07B0C8] underline underline-offset-8 decoration-2 decoration-[#07B0C8]'
+                    : 'text-gray-700 hover:text-[#07B0C8]'
                 }`}
               >
                 {item.label}
@@ -55,13 +55,13 @@ export const Navbar = () => {
           <div className="hidden md:flex items-center gap-4">
             <Link
               href="/login"
-              className="text-[13px] text-gray-800 hover:text-gray-900 font-medium transition-colors"
+              className="text-[12.5px] font-medium text-gray-700 transition-colors hover:text-[#07B0C8]"
             >
               Login
             </Link>
             <Link
               href="/sign-up"
-              className="bg-cyan-500 hover:bg-cyan-600 text-white text-[12.5px] font-medium px-4.5 py-1.5 rounded-full transition-colors"
+              className="rounded-full bg-cyan-500 px-4.5 py-1.5 text-[12.5px] font-medium text-white transition-colors hover:bg-cyan-600"
             >
               Register
             </Link>
