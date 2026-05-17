@@ -108,8 +108,27 @@ export default function ApplicantForm_TermsAndAgreementSection() {
     }
 
     const decrementStep = useApplicationProgressStore((state) => state.decrementStep)
+    const fullName = useApplicationProgressStore((state) => state.full_name)
+    const universityName = useApplicationProgressStore((state) => state.university_name)
+    const studentIdNumber = useApplicationProgressStore((state) => state.student_id_number)
+    const loanTitle = useApplicationProgressStore((state) => state.loan_title)
+    const requestedAmount = useApplicationProgressStore((state) => state.requested_amount)
+    const loanPurpose = useApplicationProgressStore((state) => state.loan_purpose)
+    const familyCard = useApplicationProgressStore((state) => state.family_card)
+    const studentIdCard = useApplicationProgressStore((state) => state.student_id_card)
     const complyToTermsAndAgreement = useApplicationProgressStore((state) => state.comply_to_terms_and_agreement)
     const switchComplyToTermsAndAgreement = useApplicationProgressStore((state) => state.switchComplyToTermsAndAgreement)
+    const isApplicationComplete = Boolean(
+        fullName?.trim() &&
+        universityName?.trim() &&
+        studentIdNumber?.trim() &&
+        loanTitle?.trim() &&
+        Number(requestedAmount) > 0 &&
+        loanPurpose?.trim() &&
+        familyCard &&
+        studentIdCard &&
+        complyToTermsAndAgreement
+    )
 
     return (
         <div className="rounded-lg border border-[#E2E8F0] bg-white px-7 py-8 shadow-[0_1px_3px_rgba(15,23,42,0.08)] sm:px-8">
@@ -182,8 +201,8 @@ export default function ApplicantForm_TermsAndAgreementSection() {
                 <button
                     type="button"
                     onClick={handleSubmitApplication}
-                    disabled={isSubmitting}
-                    className="h-8 rounded-md bg-[#009966] px-6 text-xs font-bold text-white transition hover:bg-[#007A52] disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={isSubmitting || !isApplicationComplete}
+                    className="h-8 rounded-md px-6 text-xs font-bold text-white transition disabled:cursor-not-allowed disabled:bg-[#B7D9CF] disabled:text-white/80 enabled:bg-[#009966] enabled:hover:bg-[#007A52]"
                 >
                     {isSubmitting ? "Submitting..." : "Submit Application"}
                 </button>

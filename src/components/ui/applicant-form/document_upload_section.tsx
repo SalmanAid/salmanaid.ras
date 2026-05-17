@@ -6,14 +6,18 @@ import ApplicantForm_FamilyCardUploadBlock from "./family_card_upload_block";
 import ApplicantForm_StudentIdCardUploadBlock from "./student_id_card_upload_block";
 
 export default function ApplicantForm_DocumentUploadSection() {
+    const studentIdCard = useApplicationProgressStore((state) => state.student_id_card);
+    const familyCard = useApplicationProgressStore((state) => state.family_card);
     const incrementStep = useApplicationProgressStore((state) => state.incrementStep);
     const decrementStep = useApplicationProgressStore((state) => state.decrementStep);
+    const isStepComplete = Boolean(studentIdCard && familyCard);
 
     const handleBack = async () => {
         decrementStep();
     };
 
     const handleContinue = async () => {
+        if (!isStepComplete) return;
         incrementStep();
     };
 
@@ -74,7 +78,8 @@ export default function ApplicantForm_DocumentUploadSection() {
                 <button
                     type="button"
                     onClick={handleContinue}
-                    className="h-8 rounded-md bg-[#74CDB4] px-4 text-xs font-bold text-white transition hover:bg-[#56B99D]"
+                    disabled={!isStepComplete}
+                    className="h-8 rounded-md px-4 text-xs font-bold text-white transition disabled:cursor-not-allowed disabled:bg-[#B7D9CF] disabled:text-white/80 enabled:bg-[#009966] enabled:hover:bg-[#007A52]"
                 >
                     Continue
                 </button>

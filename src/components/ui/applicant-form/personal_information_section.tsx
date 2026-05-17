@@ -20,9 +20,15 @@ export default function ApplicantForm_PersonalInformationSection() {
     }
 
     const handleContinue = async () => {
+        if (!isStepComplete) return
         incrementStep()
     }
 
+    const isStepComplete = Boolean(
+        full_name?.trim() &&
+        university_name?.trim() &&
+        student_id_number?.trim()
+    )
     const inputClassName = "h-8 w-full rounded-md border border-[#D8DEE8] bg-[#F3F4F6] px-3 text-[13px] text-[#111827] shadow-inner outline-none transition placeholder:text-[#7B8190] focus:border-[#FCB82E] focus:bg-white focus:ring-2 focus:ring-[#FCB82E]/20"
     const labelClassName = "text-xs font-semibold text-[#111827]"
     
@@ -85,7 +91,8 @@ export default function ApplicantForm_PersonalInformationSection() {
                 <button
                     type="button"
                     onClick={handleContinue}
-                    className="h-8 rounded-md bg-[#74CDB4] px-4 text-xs font-bold text-white transition hover:bg-[#56B99D]"
+                    disabled={!isStepComplete}
+                    className="h-8 rounded-md px-4 text-xs font-bold text-white transition disabled:cursor-not-allowed disabled:bg-[#B7D9CF] disabled:text-white/80 enabled:bg-[#009966] enabled:hover:bg-[#007A52]"
                 >
                     Continue
                 </button>
