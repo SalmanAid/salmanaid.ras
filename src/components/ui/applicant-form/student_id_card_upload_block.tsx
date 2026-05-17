@@ -31,10 +31,16 @@ export default function ApplicantForm_StudentIdCardUploadBlock() {
                 type="file"
                 ref={fileRef}
                 onChange={handleFileChange}
+                accept=".jpg,.jpeg,.png,.pdf"
                 className="hidden"
             />
 
-            <ApplicantForm_DocumentFilePreview file={studentIdCard} onClick={handleClick} />
+            <ApplicantForm_DocumentFilePreview
+                file={studentIdCard}
+                label="Upload your Student ID Card scan"
+                onClick={handleClick}
+                onFileDrop={setStudentIdCard}
+            />
 
     </div>
   )

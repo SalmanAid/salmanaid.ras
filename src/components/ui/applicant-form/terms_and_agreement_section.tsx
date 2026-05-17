@@ -45,7 +45,7 @@ export default function ApplicantForm_TermsAndAgreementSection() {
             !student_id_card ||
             !comply_to_terms_and_agreement
         ) {
-            setSubmitError("Lengkapi semua data dan setujui syarat sebelum mengajukan.")
+            setSubmitError("Please complete all data and accept the agreement before submitting.")
             return
         }
 
@@ -73,7 +73,7 @@ export default function ApplicantForm_TermsAndAgreementSection() {
 
             if (!createApplicationResponse.ok) {
                 const errorBody = await createApplicationResponse.json().catch(() => null)
-                throw new Error(errorBody?.error || "Gagal membuat pengajuan pinjaman.")
+                throw new Error(errorBody?.error || "Failed to create loan application.")
             }
 
             const createdApplication = (await createApplicationResponse.json()) as CreatedLoanApplicationResponse
@@ -91,112 +91,103 @@ export default function ApplicantForm_TermsAndAgreementSection() {
 
                 if (!response.ok) {
                     const errorBody = await response.json().catch(() => null)
-                    throw new Error(errorBody?.error || "Gagal mengunggah dokumen.")
+                    throw new Error(errorBody?.error || "Failed to upload document.")
                 }
             }
 
             await uploadAttachment(family_card, "family_card")
             await uploadAttachment(student_id_card, "student_id_card")
 
-            setSubmitSuccess("Pengajuan berhasil dikirim.")
+            setSubmitSuccess("Application submitted successfully.")
             router.push("/applicant/dashboard")
         } catch (error) {
-            setSubmitError(error instanceof Error ? error.message : "Terjadi kesalahan saat mengajukan pinjaman.")
+            setSubmitError(error instanceof Error ? error.message : "Something went wrong while submitting the application.")
         } finally {
             setIsSubmitting(false)
         }
     }
 
     const decrementStep = useApplicationProgressStore((state) => state.decrementStep)
+    const complyToTermsAndAgreement = useApplicationProgressStore((state) => state.comply_to_terms_and_agreement)
     const switchComplyToTermsAndAgreement = useApplicationProgressStore((state) => state.switchComplyToTermsAndAgreement)
 
     return (
-        <div className="flex flex-col gap-4 w-full h-full bg-white p-6 rounded-2xl">
-
-            {/* Title */}
-            <div className="text-2xl font-bold">
-                Syarat & Ketentuan
-            </div>
-
-            {/* Subtitle */}
-            <div className="text-sm text-gray-500">
-                Mohon baca dan setujui ketentuan berikut sebelum melanjutkan
-            </div>
-
-            {/* Document */}
-            <div className="w-full max-h-75 overflow-y-auto border rounded-xl p-4 bg-gray-50 text-sm leading-relaxed space-y-4">
-
-                <h2 className="font-semibold text-base">
-                    Perjanjian Pinjaman Tanpa Bunga
+        <div className="rounded-lg border border-[#E2E8F0] bg-white px-7 py-8 shadow-[0_1px_3px_rgba(15,23,42,0.08)] sm:px-8">
+            <div>
+                <h2 className="text-[22px] font-extrabold leading-tight text-[#111827]">
+                    Terms & Agreement
                 </h2>
-
-                <p>
-                    Dengan mengajukan permohonan ini, Anda menyatakan telah membaca, memahami, dan menyetujui seluruh syarat dan ketentuan dalam program pinjaman mahasiswa tanpa bunga yang diselenggarakan oleh Rumah Amal Salman.
+                <p className="mt-2 text-xs font-medium text-[#667085]">
+                    Please review and accept the loan agreement terms
                 </p>
-
-                <p>
-                    Pinjaman ini merupakan pinjaman tanpa bunga (Qardhul Hasan) yang diberikan untuk mendukung kebutuhan pendidikan melalui prinsip filantropi Islam.
-                </p>
-
-                <ul className="list-disc pl-5 space-y-1">
-                    <li>Anda bersedia mengembalikan dana pinjaman dalam bentuk cicilan bulanan sesuai kesepakatan setelah pinjaman disetujui.</li>
-                    <li>Tidak dikenakan bunga maupun biaya tambahan dalam bentuk apa pun. Total pengembalian sama dengan jumlah pinjaman.</li>
-                    <li>Seluruh informasi yang Anda berikan dalam pengajuan ini adalah benar dan dapat dipertanggungjawabkan.</li>
-                    <li>Anda memberikan izin kepada Rumah Amal Salman untuk melakukan verifikasi atas data dan dokumen yang telah Anda kirimkan.</li>
-                    <li>Dana pinjaman akan digunakan sepenuhnya untuk keperluan pendidikan sesuai dengan tujuan yang Anda ajukan.</li>
-                </ul>
-
-                <p>
-                    Apabila Anda mengalami kesulitan finansial di kemudian hari, Anda bersedia untuk segera berkomunikasi dengan pihak Rumah Amal Salman guna membahas kemungkinan penyesuaian skema pembayaran.
-                </p>
-
-                <ul className="list-disc pl-5 space-y-1">
-                    <li>Anda memahami bahwa pinjaman ini merupakan bentuk amanah yang harus dijaga dan dikembalikan secara bertanggung jawab, baik secara moral maupun etika.</li>
-                </ul>
-
             </div>
 
-            {/* Agreement */}
-            <div className="flex items-start gap-3">
+            <div className="mt-6 max-h-86 overflow-y-auto rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-5 py-5 text-xs leading-6 text-[#334155]">
+                <h3 className="text-sm font-bold text-[#111827]">
+                    Interest-Free Loan Agreement
+                </h3>
 
+                <p className="mt-4">
+                    By submitting this application, you acknowledge and agree to the following terms and conditions of the Rumah Amal Salman interest-free student loan program:
+                </p>
+
+                <p className="mt-4">
+                    This is an interest-free loan (Qardhul Hasan) provided to support your education through Islamic philanthropy principles.
+                </p>
+
+                <ul className="mt-3 space-y-2 pl-4">
+                    <li>You agree to repay the loan amount in monthly installments as agreed upon after loan approval.</li>
+                    <li>No interest or additional fees will be charged on this loan. The repayment amount equals the borrowed amount.</li>
+                    <li>All information provided in this application is accurate and truthful to the best of your knowledge.</li>
+                    <li>You authorize Rumah Amal Salman to verify the information and documents provided.</li>
+                    <li>You commit to using the loan funds solely for educational purposes as stated in your application.</li>
+                </ul>
+
+                <p className="mt-4">
+                    In case of financial hardship, you agree to communicate promptly with Rumah Amal Salman to discuss alternative repayment arrangements.
+                </p>
+
+                <p className="mt-3">
+                    You understand that this loan is a trust (amanah) and you are morally and ethically obligated to repay it responsibly.
+                </p>
+            </div>
+
+            <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-lg border border-[#E2E8F0] bg-white px-3 py-4">
                 <input
                     type="checkbox"
+                    checked={complyToTermsAndAgreement}
                     onChange={switchComplyToTermsAndAgreement}
-                    className="mt-1 w-4 h-4 accent-[#009966]"
+                    className="mt-0.5 h-4 w-4 rounded border-[#111827] accent-[#111827]"
                 />
+                <span className="text-xs font-semibold leading-6 text-[#111827]">
+                    I have read and agree to the interest-free loan agreement terms and conditions. I confirm that all information provided is accurate and I commit to fulfilling my repayment obligations.
+                </span>
+            </label>
 
-                <p className="text-sm text-gray-700">
-                    Saya telah membaca, memahami, dan menyetujui seluruh syarat dan ketentuan yang berlaku. Saya menyatakan bahwa seluruh data yang saya berikan adalah benar dan saya bersedia memenuhi kewajiban pengembalian pinjaman sesuai ketentuan.
-                </p>
-
-            </div>
-
-            {/* Buttons */}
             {(submitError || submitSuccess) && (
-                <div className={`rounded-xl px-4 py-3 text-sm ${submitError ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>
+                <div className={`mt-5 rounded-lg px-4 py-3 text-sm ${submitError ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>
                     {submitError || submitSuccess}
                 </div>
             )}
 
-            <div className="flex justify-end gap-4 pt-2">
-
+            <div className="mt-7 flex justify-end gap-5 border-t border-[#E5E7EB] pt-3">
                 <button
+                    type="button"
                     onClick={decrementStep}
-                    className="px-6 py-2 text-gray-500 border border-gray-300 rounded-xl hover:bg-gray-100"
+                    className="h-8 rounded-md border border-[#E5E7EB] bg-white px-4 text-xs font-semibold text-[#111827] transition hover:bg-[#F8FAFC]"
                 >
-                    Kembali
+                    Back
                 </button>
 
                 <button
+                    type="button"
                     onClick={handleSubmitApplication}
                     disabled={isSubmitting}
-                    className="px-6 py-2 text-white bg-[#009966] rounded-xl hover:bg-[#007a4d] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="h-8 rounded-md bg-[#009966] px-6 text-xs font-bold text-white transition hover:bg-[#007A52] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                    {isSubmitting ? "Mengajukan..." : "Ajukan"}
+                    {isSubmitting ? "Submitting..." : "Submit Application"}
                 </button>
-
             </div>
-
         </div>
     )
 }

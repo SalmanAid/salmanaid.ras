@@ -1,169 +1,74 @@
 
-import Image from "next/image";
-
-import GreenChecklist from  "../../../../public/green-checklist.svg"
+import { Check } from "lucide-react";
 
 import { useApplicationProgressStore } from "@/hooks/applicationProgressStore";
 
+const steps = [
+    {
+        number: 1,
+        title: "Personal Info",
+        description: "Basic information",
+    },
+    {
+        number: 2,
+        title: "Financial Needs",
+        description: "Loan details",
+    },
+    {
+        number: 3,
+        title: "Document Upload",
+        description: "Required documents",
+    },
+    {
+        number: 4,
+        title: "Agreement",
+        description: "Terms and conditions",
+    },
+];
 
 export default function ApplicantForm_ApplicationProgressSection() {
 
     const applicationProgress = useApplicationProgressStore((state) => (state.application_progress))
+    const activeStep = Number(applicationProgress?.step ?? 1)
 
     return (
-        // main container
-        <div className="flex flex-col justify-center items-start gap-2 h-full w-full bg-white p-4">
+        <div className="mt-5 flex w-full flex-col">
+            {steps.map((step, index) => {
+                const isCompleted = activeStep > step.number;
+                const isActive = activeStep === step.number;
+                const markerClassName = isCompleted
+                    ? "border-[#A7F3D0] bg-[#D1FAE5] text-[#059669]"
+                    : isActive
+                        ? "border-[#FCB82E] bg-[#FCB82E] text-white"
+                        : "border-[#F1F5F9] bg-[#F1F5F9] text-[#94A3B8]";
 
-            {/* personal info part */}
-            <div className="flex justify-start items-center w-full h-fit gap-2">
-
-                {/* number container */}
-                <div className="flex justify-center items-center w-[10%] h-fit">
-
-                    {Number(applicationProgress?.step) < 1 ? 
-                        <span>1</span> : 
-                        <div>
-                            <Image 
-                                src={GreenChecklist}
-                                alt="Green checklist"
-                                width={25}
-                                height={25}
+                return (
+                    <div key={step.number} className="relative flex min-h-19 gap-3">
+                        {index < steps.length - 1 && (
+                            <div
+                                className={`absolute left-3.5 top-7 h-[52px] w-px ${
+                                    isCompleted ? "bg-[#BFF7DD]" : "bg-[#E5E7EB]"
+                                }`}
                             />
+                        )}
+
+                        <div className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center">
+                            <div className={`flex h-7 w-7 items-center justify-center rounded-full border text-xs font-bold ${markerClassName}`}>
+                                {isCompleted ? <Check size={15} strokeWidth={3} /> : step.number}
+                            </div>
                         </div>
-                    }
-                    
-                </div>
 
-                {/* content container : title and caption */}
-                <div className="flex flex-col justify-start items-center w-full h-fit">
-
-                    {/* title */}
-                    <div className="flex justify-start items-start font-bold text-md w-full h-fit">
-                        Informasi Pribadi
-                    </div>
-
-                    {/* caption */}
-                    <div className="flex justify-start items-start font-light text-sm w-full h-fit">
-                        Informasi Dasar
-                    </div>
-
-                </div>
-
-            </div>
-
-            {/* financial needs part */}
-            <div className="flex justify-start items-center w-full h-fit gap-2">
-
-                {/* number container */}
-                <div className="flex justify-center items-center w-[10%] h-fit">
-
-                    {Number(applicationProgress?.step) < 2 ? 
-                        <span>2</span> : 
-                        <div>
-                            <Image 
-                                src={GreenChecklist}
-                                alt="Green checklist"
-                                width={25}
-                                height={25}
-                            />
+                        <div className="pb-5 pt-1">
+                            <div className={`text-sm font-bold ${isActive || isCompleted ? "text-[#111827]" : "text-[#94A3B8]"}`}>
+                                {step.title}
+                            </div>
+                            <div className={`mt-1 text-xs font-medium ${isActive || isCompleted ? "text-[#667085]" : "text-[#94A3B8]"}`}>
+                                {step.description}
+                            </div>
                         </div>
-                    }
-                    
-                </div>
-
-                {/* content container : title and caption */}
-                <div className="flex flex-col justify-start items-center w-full h-fit">
-
-                    {/* title */}
-                    <div className="flex justify-start items-start font-bold text-md w-full h-fit">
-                        Kebutuhan Finansial
                     </div>
-
-                    {/* caption */}
-                    <div className="flex justify-start items-start font-light text-sm w-full h-fit">
-                        Detail Pinjaman
-                    </div>
-
-                </div>
-
-            </div>
-            
-
-            {/* personal info part */}
-            <div className="flex justify-start items-center w-full h-fit gap-2">
-
-                {/* number container */}
-                <div className="flex justify-center items-center w-[10%] h-fit">
-
-                    {Number(applicationProgress?.step) < 3 ? 
-                        <span>3</span> : 
-                        <div>
-                            <Image 
-                                src={GreenChecklist}
-                                alt="Green checklist"
-                                width={25}
-                                height={25}
-                            />
-                        </div>
-                    }
-                    
-                </div>
-
-                {/* content container : title and caption */}
-                <div className="flex flex-col justify-start items-center w-full h-fit">
-
-                    {/* title */}
-                    <div className="flex justify-start items-start font-bold text-md w-full h-fit">
-                        Unggah Berkas
-                    </div>
-
-                    {/* caption */}
-                    <div className="flex justify-start items-start font-light text-sm w-full h-fit">
-                        Berkas yang diperlukan
-                    </div>
-
-                </div>
-
-            </div>
-            
-
-            {/* Agreement part */}
-            <div className="flex justify-start items-center w-full h-fit gap-2">
-
-                {/* number container */}
-                <div className="flex justify-center items-center w-[10%] h-fit">
-
-                    {Number(applicationProgress?.step) < 4 ? 
-                        <span>4</span> : 
-                        <div>
-                            <Image 
-                                src={GreenChecklist}
-                                alt="Green checklist"
-                                width={25}
-                                height={25}
-                            />
-                        </div>
-                    }
-                    
-                </div>
-
-                {/* content container : title and caption */}
-                <div className="flex flex-col justify-start items-center w-full h-fit">
-
-                    {/* title */}
-                    <div className="flex justify-start items-start font-bold text-md w-full h-fit">
-                        Perjanjian
-                    </div>
-
-                    {/* caption */}
-                    <div className="flex justify-start items-start font-light text-sm w-full h-fit">
-                        Syarat dan Ketentuan
-                    </div>
-
-                </div>
-
-            </div>
-
+                );
+            })}
         </div>
     );
 }

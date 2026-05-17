@@ -22,94 +22,74 @@ export default function ApplicantForm_PersonalInformationSection() {
     const handleContinue = async () => {
         incrementStep()
     }
+
+    const inputClassName = "h-8 w-full rounded-md border border-[#D8DEE8] bg-[#F3F4F6] px-3 text-[13px] text-[#111827] shadow-inner outline-none transition placeholder:text-[#7B8190] focus:border-[#FCB82E] focus:bg-white focus:ring-2 focus:ring-[#FCB82E]/20"
+    const labelClassName = "text-xs font-semibold text-[#111827]"
     
     return (
-        <div className="flex flex-col justify-center items-start gap-2 h-fit w-full bg-white p-4 rounded-2xl">
-
-            {/* title */}
-            <div className="flex w-full h-fit font-bold text-2xl">
-                Informasi Pribadi
+        <div className="rounded-lg border border-[#E2E8F0] bg-white px-7 py-8 shadow-[0_1px_3px_rgba(15,23,42,0.08)] sm:px-8">
+            <div>
+                <h2 className="text-[22px] font-extrabold leading-tight text-[#111827]">
+                    Personal Information
+                </h2>
+                <p className="mt-2 text-xs font-medium text-[#667085]">
+                    Please provide your basic information as a student
+                </p>
             </div>
 
-            {/* caption */}
-            <div className="flex w-full h-fit font-light text-sm">
-                Isi informasi yang dinyatakan dibawah
-            </div>
-
-            {/* full name section */}
-            <div className="flex flex-col w-full h-fit gap-2">
-                
-                {/* title */}
-                <div className="flex w-full h-fit justify-start items-center font-bold">
-                    Nama Lengkap*
-                </div>
-
-                {/* input */}
-                <div>
+            <div className="mt-6 space-y-4">
+                <label className="block">
+                    <span className={labelClassName}>Full Name *</span>
                     <input
                         value={String(full_name)}
                         onChange={(e) => setFullName(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter"}
-                        className={ `flex gap-2 border border-black/20 bg-white p-4 w-full h-[40%] rounded-2xl shadow-2xl`}
-                        placeholder="Masukkan nama anda..."
+                        className={`${inputClassName} mt-2`}
+                        placeholder="Enter your full name"
                     />
-                </div>
-            </div>
+                </label>
 
-            {/* university section */}
-            <div className="flex flex-col w-full h-fit gap-2">
-                
-                {/* title */}
-                <div className="flex w-full h-fit justify-start items-center font-bold">
-                    Universitas*
-                </div>
-
-                {/* input */}
-                <div>
+                <label className="block">
+                    <span className={labelClassName}>University *</span>
                     <input
                         value={String(university_name)}
                         onChange={(e) => setUniversityName(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter"}
-                        className={ `flex gap-2 border border-black/20 bg-white p-4 w-full h-[40%] rounded-2xl shadow-2xl`}
-                        placeholder="Masukkan universitas anda..."
+                        className={`${inputClassName} mt-2`}
+                        placeholder="Enter your university name"
                     />
-                </div>
-            </div>
+                </label>
 
-            {/* student id number section */}
-            <div className="flex flex-col w-full h-fit gap-2">
-                
-                {/* title */}
-                <div className="flex w-full h-fit justify-start items-center font-bold">
-                    Nomor Induk Mahasiswa*
-                </div>
-
-                {/* input */}
-                <div>
+                <label className="block">
+                    <span className={labelClassName}>Student ID Number *</span>
                     <input
                         value={String(student_id_number)}
                         onChange={(e) => setStudentIdNumber(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter"}
-                        className={ `flex gap-2 border border-black/20 bg-white p-4 w-full h-[40%] rounded-2xl shadow-2xl`}
-                        placeholder="Masukkan nomor induk mahasiswa anda..."
+                        className={`${inputClassName} mt-2`}
+                        placeholder="Enter your student ID"
                     />
-                </div>
+                </label>
             </div>
 
-            {/* cta button */}
-            <div className="flex w-full h-fit justify-end items-center gap-4 p-2">
+            <div className="mt-7 flex items-center justify-end gap-5 border-t border-[#E5E7EB] pt-3">
+                <button
+                    type="button"
+                    onClick={handleBack}
+                    disabled={Number(applicationProgress?.step ?? 1) <= 1}
+                    className="h-8 rounded-md border border-[#E5E7EB] bg-white px-4 text-xs font-semibold text-[#8A8F98] transition hover:bg-[#F8FAFC] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                    Back
+                </button>
 
-                {/* back button */}
-                <div className="px-6 py-2 flex justify-center items-center text-gray-500 border border-gray-400 rounded-2xl" onClick={handleBack}>
-                    Kembali
-                </div>
-
-                {/* continue button */}
-                <div className="px-6 py-2 flex justify-center items-center text-white border border-gray-009966 rounded-2xl bg-[#009966]/60" onClick={handleContinue}>
-                    Lanjut
-                </div>
+                <button
+                    type="button"
+                    onClick={handleContinue}
+                    className="h-8 rounded-md bg-[#74CDB4] px-4 text-xs font-bold text-white transition hover:bg-[#56B99D]"
+                >
+                    Continue
+                </button>
             </div>
-
         </div>
     );
 }

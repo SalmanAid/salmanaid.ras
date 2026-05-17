@@ -15,83 +15,35 @@ export default function ApplyLoanFormPage(){
     const applicationProgress = useApplicationProgressStore((state) => (state.application_progress))
 
     return (
-        // main container
-        <div className="w-full min-h-screen flex flex-col justify-start items-center p-2">
+        <div className="min-h-screen w-full bg-[#F8FAFC] text-[#111827]">
+            <ApplicantDashboard_ApplicantNavbar showNotifications={false} />
 
-            {/* nav bar */}
-            <div className="flex justify-center items-center w-full h-fit">
-                <ApplicantDashboard_ApplicantNavbar />
-            </div>
+            <main className="mx-auto w-full max-w-[1100px] px-5 pb-16 pt-11 sm:px-6 lg:px-0">
+                <header className="mb-7">
+                    <h1 className="text-[28px] font-extrabold leading-tight tracking-normal text-[#111827] sm:text-[30px]">
+                        Student Loan Application
+                    </h1>
+                    <p className="mt-3 text-sm font-medium text-[#667085]">
+                        Complete all steps to submit your interest-free loan application
+                    </p>
+                </header>
 
-            {/* title container */}
-            <div className="flex justify-center items-center w-full h-fit text-3xl p-4">
-                {/* title */}
-                <div className="flex justify-start items-center w-[60%] h-fit font-bold">
-                    Pengajuan Pinjaman Mahasiswa
-                </div>
-            </div>
-
-            {/* caption container */}
-            <div className="flex justify-center items-center w-full h-fit text-md px-2 pb-2">
-                {/* caption */}
-                <div className="flex justify-start items-center w-[60%] h-fit">
-                    Selesaikan seluruh tahap untuk mengajukan pinjaman tanpa bunga Anda
-                </div>
-            </div>
-
-            {/* main content container : application progress and those sections */}
-            <div className="flex justify-center items-start w-full h-full gap-4">
-
-                {/* application progress */}
-                <div className="flex flex-col justify-center items-start h-full w-[20%] bg-white shadow-xl p-4 rounded-2xl">
-
-                    {/* /title */}
-                    <div className="flex justify-start items-center px-2 font-bold w-full h-fit">
-                        Progres Pengajuan
-                    </div>
-
-                    {/* coontent */}
-                    <div className="flex justify-center items-center h-fit w-full">
+                <div className="grid items-start gap-7 lg:grid-cols-[304px_1fr]">
+                    <aside className="rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-[0_1px_3px_rgba(15,23,42,0.08)]">
+                        <div className="text-base font-bold text-[#111827]">
+                            Application Progress
+                        </div>
                         <ApplicantForm_ApplicationProgressSection />
-                    </div>
+                    </aside>
+
+                    <section className="min-w-0">
+                        { applicationProgress?.step == 1 && <ApplicantForm_PersonalInformationSection /> }
+                        { applicationProgress?.step == 2 && <ApplicantForm_FinancialNeedsSection /> }
+                        { applicationProgress?.step == 3 && <ApplicantForm_DocumentUploadSection /> }
+                        { applicationProgress?.step == 4 && <ApplicantForm_TermsAndAgreementSection /> }
+                    </section>
                 </div>
-
-                {/* section */}
-                <div className="flex justify-center items-center w-[40%] h-full">
-
-                    {/* personal information */}
-                    { applicationProgress?.step == 1 && 
-                        <div className="flex justify-center items-center h-fit w-full">
-                            <ApplicantForm_PersonalInformationSection />   
-                        </div>
-                    }
-
-                    {/* financial needs */}
-                    { applicationProgress?.step == 2 && 
-                        <div className="flex justify-center items-center h-fit w-full">
-                            <ApplicantForm_FinancialNeedsSection />   
-                        </div>
-                    }
-
-                    {/* document upload */}
-                    { applicationProgress?.step == 3 && 
-                        <div className="flex justify-center items-center h-fit w-full">
-                            <ApplicantForm_DocumentUploadSection />   
-                        </div>
-                    }
-
-                    {/* terms and agreement */}
-                    { applicationProgress?.step == 4 && 
-                        <div className="flex justify-center items-center h-fit w-full">
-                            <ApplicantForm_TermsAndAgreementSection />   
-                        </div>
-                    }
-                    
-                </div>
-
-            </div>
-
-
+            </main>
         </div>
     );
 }

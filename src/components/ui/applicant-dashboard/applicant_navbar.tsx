@@ -321,7 +321,11 @@ function NotificationBellButton() {
     );
 }
 
-export default function ApplicantDashboard_ApplicantNavbar() {
+type ApplicantNavbarProps = {
+    showNotifications?: boolean;
+};
+
+export default function ApplicantDashboard_ApplicantNavbar({ showNotifications = true }: ApplicantNavbarProps) {
     const pathname = usePathname();
     const { data: session } = useSession();
     const usernameFromStore = useUserStore((state) => (state.user?.username));
@@ -330,8 +334,8 @@ export default function ApplicantDashboard_ApplicantNavbar() {
     }, [session?.user?.name, usernameFromStore]);
     
     return (
-        <nav className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white shadow-sm">
-            <div className="max-w-350 mx-auto px-6">
+        <nav className="sticky top-0 z-50 w-full border-b border-[#E5E7EB] bg-white shadow-sm">
+            <div className="mx-auto max-w-[1196px] px-5 sm:px-6">
                 <div className="flex h-14.5 items-center justify-between">
                     <Link href="/applicant/dashboard" className="shrink-0 flex items-center">
                         <Image
@@ -356,8 +360,8 @@ export default function ApplicantDashboard_ApplicantNavbar() {
                                     href={item.href}
                                     className={`text-[12.5px] font-medium transition-colors ${
                                         isActive
-                                            ? "text-[#07B0C8] underline decoration-2 underline-offset-8 decoration-[#07B0C8]"
-                                            : "text-gray-700 hover:text-[#07B0C8]"
+                                            ? "text-[#F59E0B] underline decoration-2 underline-offset-8 decoration-[#F59E0B]"
+                                            : "text-gray-700 hover:text-[#F59E0B]"
                                     }`}
                                 >
                                     {item.label}
@@ -367,20 +371,20 @@ export default function ApplicantDashboard_ApplicantNavbar() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <NotificationBellButton />
+                        {showNotifications && <NotificationBellButton />}
 
                         <div className="group relative">
                             <button
                                 type="button"
                                 className="inline-flex items-center gap-2 rounded-full bg-white px-2 py-1 transition-colors hover:bg-gray-50"
                             >
-                                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#DFF3F7]">
+                                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#FCB82E]">
                                     <Image
                                         src={UserPersonaLogo}
                                         alt="User"
                                         width={16}
                                         height={16}
-                                        className="h-4 w-4"
+                                        className="h-4 w-4 brightness-0 invert"
                                     />
                                 </span>
                                 <span className="hidden max-w-27.5 truncate text-[12.5px] font-medium text-[#111827] sm:inline" title={username}>
@@ -393,7 +397,7 @@ export default function ApplicantDashboard_ApplicantNavbar() {
                                 <button
                                     type="button"
                                     onClick={() => signOut({ callbackUrl: "/login" })}
-                                    className="w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
+                                    className="w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#F59E0B]"
                                 >
                                     Logout
                                 </button>

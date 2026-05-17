@@ -1,11 +1,12 @@
 "use client"
 
-import { FileText, Image as ImageIcon, Upload } from "lucide-react"
-import { useMemo } from "react"
+import { Check, Upload } from "lucide-react"
 
 type DocumentFilePreviewProps = {
     file: File | null
     onClick: () => void
+    onFileDrop: (file: File) => void
+    label: string
 }
 
 function formatFileSize(size: number) {
@@ -16,25 +17,32 @@ function formatFileSize(size: number) {
     return `${(size / (1024 * 1024)).toFixed(1)} MB`
 }
 
-export default function ApplicantForm_DocumentFilePreview({ file, onClick }: DocumentFilePreviewProps) {
-    const previewUrl = useMemo(() => {
-        if (!file || !file.type.startsWith("image/")) {
-            return null
-        }
+export default function ApplicantForm_DocumentFilePreview({ file, onClick, onFileDrop, label }: DocumentFilePreviewProps) {
+    const handleDrop = (event: React.DragEvent<HTMLButtonElement>) => {
+        event.preventDefault()
+        const droppedFile = event.dataTransfer.files?.[0]
 
-        return URL.createObjectURL(file)
-    }, [file])
+        if (droppedFile) {
+            onFileDrop(droppedFile)
+        }
+    }
 
     if (!file) {
         return (
             <button
                 type="button"
                 onClick={onClick}
-                className="flex h-40 w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-gray-300 bg-white text-gray-500 transition hover:border-[#009966] hover:bg-emerald-50"
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={handleDrop}
+                className="flex h-38 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-[#D8DEE8] bg-white text-center transition hover:border-[#74CDB4] hover:bg-[#F0FDF9]"
             >
-                <Upload size={28} />
-                <span className="text-sm font-medium">Upload dokumen</span>
-                <span className="text-xs">JPG, PNG, atau PDF</span>
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F1F5F9] text-[#667085]">
+                    <Upload size={20} strokeWidth={2} />
+                </span>
+                <span className="mt-4 text-xs font-semibold text-[#111827]">{label}</span>
+                <span className="mt-2 text-[11px] font-medium text-[#667085]">
+                    Drag and drop or <span className="text-[#F59E0B]">browse</span>
+                </span>
             </button>
         )
     }
@@ -43,34 +51,19 @@ export default function ApplicantForm_DocumentFilePreview({ file, onClick }: Doc
         <button
             type="button"
             onClick={onClick}
-            className="flex w-full items-center gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-left transition hover:border-[#009966] hover:bg-emerald-100"
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={handleDrop}
+            className="flex h-38 w-full flex-col items-center justify-center rounded-lg border border-dashed border-[#A7F3D0] bg-[#ECFDF5] text-center transition hover:border-[#10B981] hover:bg-[#DDFCEE]"
         >
-            <div className="flex h-28 w-36 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-emerald-200 bg-white">
-                {previewUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                        src={previewUrl}
-                        alt={file.name}
-                        className="h-full w-full object-cover"
-                    />
-                ) : file.type === "application/pdf" ? (
-                    <FileText className="text-red-500" size={40} />
-                ) : (
-                    <ImageIcon className="text-gray-500" size={40} />
-                )}
-            </div>
-
-            <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-semibold text-gray-900">
-                    {file.name}
-                </div>
-                <div className="mt-1 text-xs text-gray-600">
-                    {formatFileSize(file.size)} • {file.type || "Unknown type"}
-                </div>
-                <div className="mt-3 inline-flex rounded-full bg-white px-3 py-1 text-xs font-medium text-[#007a4d]">
-                    Klik untuk mengganti dokumen
-                </div>
-            </div>
+            <span className="flex h-10 w-10 items-center justify-center rounded-full border-4 border-[#059669] text-[#059669]">
+                <Check size={21} strokeWidth={3} />
+            </span>
+            <span className="mt-4 max-w-full truncate px-6 text-xs font-semibold text-[#111827]">
+                {file.name}
+            </span>
+            <span className="mt-2 text-[11px] font-medium text-[#667085]">
+                {formatFileSize(file.size)}
+            </span>
         </button>
     )
 }
