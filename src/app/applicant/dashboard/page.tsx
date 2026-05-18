@@ -1,11 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import CalendarLogo from "../../../../public/calendar.svg"
 import { useUserStore } from "@/hooks/userStore";
 import { useSession } from "next-auth/react";
-import { useEffect, useState, useMemo, Suspense } from "react";
+import { useCallback, useEffect, useState, useMemo, Suspense } from "react";
+import { CalendarDays, CreditCard, FileCheck2 } from "lucide-react";
 import ApplicantDashboard_PaymentScheduleRow from "@/components/ui/applicant-dashboard/payment_schedule_block";
 import ApplicantDashboard_ApplicationProgressComponent from "@/components/ui/applicant-dashboard/application_progress_block";
 import ApplicantDashboard_ApplicantNavbar from "@/components/ui/applicant-dashboard/applicant_navbar";
@@ -47,7 +46,6 @@ export default function ApplicantDashboardPage() {
     const installmentFreq = 4;
     const [applications, setApplications] = useState<LoanApplication[]>([]);
     const [selectedLoanId, setSelectedLoanId] = useState<string>("");
-    const [totalValue, setTotalValue] = useState<number>(0);
     const [isLoading, setIsLoading] = useState(true);
     const [fetchError, setFetchError] = useState<string>("");
     const [repaymentTotalPaid, setRepaymentTotalPaid] = useState<number>(0);
@@ -73,7 +71,6 @@ export default function ApplicantDashboardPage() {
 
             if (!userId) {
                 setApplications([]);
-                setTotalValue(0);
                 setFetchError("Gagal memuat data pinjaman karena ID pengguna tidak tersedia.");
                 setIsLoading(false);
                 return;
@@ -89,7 +86,6 @@ export default function ApplicantDashboardPage() {
                 const apps = (result.data?.applications || []) as LoanApplication[];
 
                 setApplications(apps);
-                setTotalValue(result.data.totalLoanedValue || 0);
 
                 // Set initial selection to the first loan
                 if (apps.length > 0) {
@@ -141,7 +137,7 @@ export default function ApplicantDashboardPage() {
             .filter(app => app.status === "APPROVED")
             .map(app => app.loanDetails?.dueDate || app.dueDate)
             .map((dueDate) => (dueDate ? new Date(dueDate).getTime() : null))
-            .filter((date): date is number => date !== null && date > Date.now());
+            .filter((date): date is number => date !== null);
 
         return activeDates.length > 0 ? new Date(Math.min(...activeDates)) : null;
     }, [applications]);
@@ -239,25 +235,43 @@ export default function ApplicantDashboardPage() {
         return map[value] || { bg: "#E5E7EB", text: "#4B5563" };
     };
 
+    const getLoanTotalPaid = useCallback((loan: LoanApplication) => {
+        const totalFromLoanList = Number(loan.loanDetails?.totalPaid || 0);
+        const approvedAmount = Number(loan.loanDetails?.approvedAmount || 0);
+        const isSelectedLoan = loan.id === selectedLoanId;
+        const totalPaid = isSelectedLoan
+            ? Math.max(totalFromLoanList, repaymentTotalPaid)
+            : totalFromLoanList;
+
+        if (loan.loanDetails?.status === "PAID") {
+            return Math.max(totalPaid, approvedAmount);
+        }
+
+        return totalPaid;
+    }, [repaymentTotalPaid, selectedLoanId]);
+
     const generateInstallments = (loan: LoanApplication) => {
         if (!loan || !selectedLoanDueDate) return [];
         const baseDate = new Date(selectedLoanDueDate);
         const approvedAmount = Number(loan.loanDetails?.approvedAmount || 0);
-        const totalPaid = loan.loanDetails?.totalPaid ?? repaymentTotalPaid;
+        const totalPaid = getLoanTotalPaid(loan);
         const installmentAmount = installmentFreq > 0 ? approvedAmount / installmentFreq : 0;
-        const paidInstallments = installmentAmount > 0
-            ? Math.floor(totalPaid / installmentAmount)
-            : 0;
 
         return Array.from({ length: installmentFreq }).map((_, i) => {
             // Subtract months based on index to show progress backwards from due date
             const date = new Date(baseDate);
             date.setMonth(date.getMonth() - (installmentFreq - 1 - i));
-            const isPaid = loan.loanDetails?.status === "PAID" || i < paidInstallments;
+            const installmentPaidAmount = Math.min(
+                Math.max(totalPaid - (installmentAmount * i), 0),
+                installmentAmount
+            );
+            const isPaid = loan.loanDetails?.status === "PAID" || installmentPaidAmount >= installmentAmount;
 
             return {
                 order: i + 1,
                 date: date,
+                paidAmount: installmentPaidAmount,
+                amount: installmentAmount,
                 status: isPaid ? "paid" : getInstallmentStatus(date, loan.loanDetails?.status),
             };
         });
@@ -267,31 +281,43 @@ export default function ApplicantDashboardPage() {
         return applications.reduce((sum, app) => {
             if (!app.loanDetails) return sum;
             const approvedAmount = Number(app.loanDetails.approvedAmount || 0);
-            const paidAmount = Number(app.loanDetails.totalPaid || 0);
+            const paidAmount = getLoanTotalPaid(app);
             const remaining = Math.max(approvedAmount - paidAmount, 0);
             return sum + remaining;
         }, 0);
-    }, [applications]);
+    }, [applications, getLoanTotalPaid]);
 
     const selectedRemainingUnpaid = useMemo(() => {
         if (!selectedLoan?.loanDetails) return 0;
         const approvedAmount = Number(selectedLoan.loanDetails.approvedAmount || 0);
-        const paidAmount = Number(selectedLoan.loanDetails.totalPaid || 0);
+        const paidAmount = getLoanTotalPaid(selectedLoan);
         return Math.max(approvedAmount - paidAmount, 0);
-    }, [selectedLoan]);
+    }, [getLoanTotalPaid, selectedLoan]);
 
-    if (isLoading) return <div className="flex justify-center items-center h-screen">Memuat...</div>;
+    const nearestDueDateLabel = nearestDueDate
+        ? nearestDueDate.toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+        })
+        : "Belum ada jatuh tempo";
+
+    const selectedLoanStatusLabel = selectedLoan
+        ? formatStatus(selectedLoan.loanDetails?.status ?? selectedLoan.status)
+        : "-";
+
+    if (isLoading) return <div className="flex h-screen items-center justify-center bg-[#F3F5F7] text-sm text-[#6B7280]">Memuat...</div>;
 
     return (
-        <div className="flex flex-col justify-start items-center w-full min-h-screen bg-[#F9FAFB] gap-4">
+        <div className="min-h-screen bg-[#F3F5F7] text-[#111827]">
 
             {isRepaymentModalOpen && (
-                <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-100">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4">
                     {/* Background Click to Close */}
                     <div className="absolute inset-0" onClick={() => setIsRepaymentModalOpen(false)}></div>
 
                     <Suspense fallback={<div className="p-10">Loading Payment Details...</div>}>
-                        <div className="relative z-101 bg-white p-8 rounded-2xl shadow-2xl">
+                        <div className="relative z-[101] rounded-xl bg-white p-6 shadow-2xl">
                             <ApplicantDashboard_PaymentApplicantComponent 
                                 searchParams={Promise.resolve({ 
                                     type: 'repayment', 
@@ -313,56 +339,74 @@ export default function ApplicantDashboardPage() {
 
             <ApplicantDashboard_ApplicantNavbar />
 
-            <div className="w-[90%] pt-10">
-                <h1 className="text-4xl font-bold">
-                    Selamat Datang Kembali, <span className="text-[#FCB82E]">{username}</span>
-                </h1>
-                <p className="text-lg text-gray-500 mt-2">
-                    Pantau status pinjaman dan pembayaran Anda di sini.
-                </p>
-                {fetchError && (
-                    <p className="mt-2 text-sm text-red-600">{fetchError}</p>
-                )}
-            </div>
+            <main className="mx-auto w-full max-w-350 px-6 pb-10 pt-8">
+                <section>
+                    <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+                        Welcome back, <span className="text-[#07B0C8]">{username}</span>
+                    </h1>
+                    <p className="mt-1.5 text-sm text-[#6B7280]">
+                        Pantau status pinjaman dan pembayaran Anda di sini.
+                    </p>
+                    {fetchError && (
+                        <p className="mt-2 text-sm text-red-600">{fetchError}</p>
+                    )}
+                </section>
 
-            {/* Loan Status Card */}
-            <div className="flex flex-col gap-2 w-[90%] bg-white shadow-xl p-6 rounded-2xl">
-                <span className="text-sm text-[#4A5565]">Status Pinjaman Terkini</span>
-                <span className="text-5xl font-bold">{formatIdr(totalRemainingUnpaid)}</span>
-                <span className="text-sm text-[#4A5565]">Sisa Pinjaman Belum Lunas</span>
-            </div>
-
-            {/* Nearest Due Date Banner */}
-            <div className="flex justify-between items-center w-[90%] bg-[#FEFCE8] p-4 rounded-2xl border border-yellow-100">
-                <div className="flex items-center gap-4">
-                    <Image src={CalendarLogo} alt="Calendar" width={40} height={40} />
-                    <div>
-                        <p className="font-semibold">Jatuh tempo terdekat</p>
-                        <p className="text-gray-500 text-sm">
-                            {nearestDueDate
-                                ? nearestDueDate.toLocaleDateString('id-ID', { month: 'long', day: 'numeric', year: 'numeric' })
-                                : "Belum ada jatuh tempo terdekat"}
+                <section className="mt-8 grid gap-4 md:grid-cols-3">
+                    <article className="rounded-xl border border-gray-200 bg-white px-4 py-4 shadow-[0_3px_10px_-8px_rgba(17,24,39,0.18)] md:px-5 md:py-5">
+                        <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-[#07B0C8]/12 text-[#07B0C8]">
+                            <CreditCard className="h-4 w-4" strokeWidth={2.2} />
+                        </div>
+                        <p className="text-xs font-medium text-[#6B7280]">Sisa Pinjaman</p>
+                        <p className="mt-1 text-xl font-bold leading-tight tracking-tight text-[#111827]">
+                            {formatIdr(totalRemainingUnpaid)}
                         </p>
-                    </div>
-                </div>
-                <Link href="/applicant/installment" className="inline-flex">
-                    <button
-                        type="button"
-                        className="px-6 py-3 rounded-xl bg-[#009966] text-white font-bold hover:bg-[#007a52] transition-all"
-                    >
-                        Bayar Sekarang
-                    </button>
-                </Link>
-            </div>
+                    </article>
 
-            <div className="w-[90%] flex gap-2 mt-4">
+                    <article className="rounded-xl border border-gray-200 bg-white px-4 py-4 shadow-[0_3px_10px_-8px_rgba(17,24,39,0.18)] md:px-5 md:py-5">
+                        <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-[#FCB82E]/15 text-[#C87900]">
+                            <CalendarDays className="h-4 w-4" strokeWidth={2.2} />
+                        </div>
+                        <p className="text-xs font-medium text-[#6B7280]">Jatuh Tempo Terdekat</p>
+                        <p className="mt-1 text-xl font-bold leading-tight tracking-tight text-[#111827]">
+                            {nearestDueDateLabel}
+                        </p>
+                    </article>
+
+                    <article className="rounded-xl border border-gray-200 bg-white px-4 py-4 shadow-[0_3px_10px_-8px_rgba(17,24,39,0.18)] md:px-5 md:py-5">
+                        <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-[#10B981]/12 text-[#009966]">
+                            <FileCheck2 className="h-4 w-4" strokeWidth={2.2} />
+                        </div>
+                        <p className="text-xs font-medium text-[#6B7280]">Status Pinjaman Dipilih</p>
+                        <p className="mt-1 text-xl font-bold leading-tight tracking-tight text-[#111827]">
+                            {selectedLoanStatusLabel}
+                        </p>
+                    </article>
+                </section>
+
+                <section className="mt-6 rounded-xl border border-[#FDE68A] bg-[#FEFCE8] p-4">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <p className="text-sm font-bold text-[#111827]">Jatuh tempo terdekat</p>
+                            <p className="mt-1 text-[13px] text-[#6B7280]">{nearestDueDateLabel}</p>
+                        </div>
+                        <Link
+                            href="/applicant/installment"
+                            className="inline-flex h-10 items-center justify-center rounded-lg bg-[#009966] px-5 text-[13px] font-semibold text-white transition-colors hover:bg-[#007A52]"
+                        >
+                            Bayar Sekarang
+                        </Link>
+                    </div>
+                </section>
+
+                <section className="mt-6 grid gap-2 sm:grid-cols-2">
                 <button
                     type="button"
                     onClick={() => setActiveTab("detail")}
-                    className={`flex-1 rounded-xl px-4 py-2 font-semibold border ${
+                    className={`h-11 rounded-xl border px-4 text-sm font-semibold transition-colors ${
                         activeTab === "detail"
                             ? "bg-[#07B0C8] text-white border-transparent"
-                            : "bg-white text-[#07B0C8] border-[#D8E4EA]"
+                            : "bg-white text-[#07B0C8] border-[#D8E4EA] hover:bg-[#F0FBFD]"
                     }`}
                 >
                     Detail Pinjaman
@@ -370,61 +414,65 @@ export default function ApplicantDashboardPage() {
                 <button
                     type="button"
                     onClick={() => setActiveTab("riwayat")}
-                    className={`flex-1 rounded-xl px-4 py-2 font-semibold border ${
+                    className={`h-11 rounded-xl border px-4 text-sm font-semibold transition-colors ${
                         activeTab === "riwayat"
                             ? "bg-[#07B0C8] text-white border-transparent"
-                            : "bg-white text-[#07B0C8] border-[#D8E4EA]"
+                            : "bg-white text-[#07B0C8] border-[#D8E4EA] hover:bg-[#F0FBFD]"
                     }`}
                 >
                     Riwayat Pembayaran
                 </button>
-            </div>
+                </section>
 
             {activeTab === "detail" && (
                 <>
                     {/* Selection Dropdown */}
-                    <div className="w-[90%] flex flex-col gap-2">
-                        <label className="text-lg font-semibold">Pilih Pinjaman</label>
+                    <section className="mt-6 flex flex-col gap-2">
+                        <label className="text-sm font-bold text-[#111827]">Pilih Pinjaman</label>
                         <select
                             value={selectedLoanId}
                             onChange={(e) => setSelectedLoanId(e.target.value)}
-                            className="w-full p-4 rounded-xl bg-white border border-gray-200 shadow-sm outline-none focus:ring-2 focus:ring-[#FCB82E]"
+                            className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-[13px] text-[#111827] shadow-[0_3px_10px_-8px_rgba(17,24,39,0.18)] outline-none focus:ring-2 focus:ring-[#07B0C8]/30"
                         >
+                            {applications.length === 0 && (
+                                <option value="">Belum ada pinjaman</option>
+                            )}
                             {applications.map((app) => (
                                 <option key={app.id} value={app.id}>
                                     {app.description} - {formatIdr(Number(app.loanDetails?.approvedAmount ?? app.requestedAmount))} ({app.loanDetails?.status ?? app.status})
                                 </option>
                             ))}
                         </select>
-                    </div>
+                    </section>
 
                     {selectedLoan?.loanDetails && (selectedLoan.loanDetails.status === "ACTIVE" || selectedLoan.loanDetails.status === "PAID") && (
-                        <div className="w-[90%] bg-white shadow-xl rounded-2xl p-6">
-                            <div className="text-sm text-[#4A5565]">Sisa Pinjaman Belum Lunas</div>
-                            <div className="text-2xl font-semibold mt-2">
+                        <section className="mt-4 rounded-xl border border-gray-200 bg-white p-4 shadow-[0_3px_10px_-8px_rgba(17,24,39,0.18)] md:p-5">
+                            <div className="text-xs font-medium text-[#6B7280]">Sisa Pinjaman Belum Lunas</div>
+                            <div className="mt-1 text-xl font-bold text-[#111827]">
                                 {formatIdr(selectedRemainingUnpaid)}
                             </div>
-                        </div>
+                        </section>
                     )}
 
                     {/* Details Section */}
-                    <div className="flex justify-between w-[90%] gap-6 pb-10">
+                    <section className="mt-6 grid gap-4 pb-10 lg:grid-cols-[minmax(0,1fr)_420px] xl:grid-cols-[minmax(0,1fr)_460px]">
                         {/* Installments */}
-                        <div className="flex-1 bg-white rounded-2xl shadow-xl p-6">
-                            <h3 className="font-bold text-lg mb-4">Jadwal Pembayaran</h3>
-                            <div className="flex flex-col gap-3">
+                        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-[0_3px_10px_-8px_rgba(17,24,39,0.18)] md:p-5">
+                            <h2 className="mb-3 text-lg font-bold text-[#111827]">Jadwal Pembayaran</h2>
+                            <div className="min-h-80">
                                 {!selectedLoan && (
-                                    <p className="text-gray-400 text-center py-10">Pilih pinjaman untuk melihat jadwal.</p>
+                                    <p className="py-16 text-center text-[13px] text-[#9CA3AF]">Pilih pinjaman untuk melihat jadwal.</p>
                                 )}
                                 {selectedLoan && !scheduleAvailable && (
-                                    <p className="text-gray-400 text-center py-10">
+                                    <p className="py-16 text-center text-[13px] text-[#9CA3AF]">
                                         Jadwal pembayaran belum tersedia untuk status {formatStatus(selectedApplicationStatus)}.
                                     </p>
                                 )}
                                 {selectedLoan && scheduleAvailable && generateInstallments(selectedLoan).map((inst) => (
                                     <ApplicantDashboard_PaymentScheduleRow
                                         key={inst.order}
-                                        installment_value={installmentValue}
+                                        installment_value={inst.amount || installmentValue}
+                                        installment_paid_value={inst.paidAmount}
                                         installment_date={inst.date}
                                         installment_order={inst.order}
                                         installment_status={inst.status}
@@ -434,22 +482,20 @@ export default function ApplicantDashboardPage() {
                         </div>
 
                         {/* Progress */}
-                        <div className="w-[35%] bg-white rounded-2xl shadow-xl h-full flex ">
-                            <ApplicantDashboard_ApplicationProgressComponent
-                                submitTime={selectedLoan?.createdAt ? new Date(selectedLoan.createdAt) : null}
-                                verifiedTime={selectedLoan?.loanDetails?.approvedAt ? new Date(selectedLoan.loanDetails.approvedAt) : null}
-                                disbursedTime={selectedLoan?.loanDetails?.approvedAt ? new Date(selectedLoan.loanDetails.approvedAt) : null}
-                                applicationStatus={selectedLoan?.status || null}
-                                loanStatus={selectedLoan?.loanDetails?.status || null}
-                            />
-                        </div>
-                    </div>
+                        <ApplicantDashboard_ApplicationProgressComponent
+                            submitTime={selectedLoan?.createdAt ? new Date(selectedLoan.createdAt) : null}
+                            verifiedTime={selectedLoan?.loanDetails?.approvedAt ? new Date(selectedLoan.loanDetails.approvedAt) : null}
+                            disbursedTime={selectedLoan?.loanDetails?.approvedAt ? new Date(selectedLoan.loanDetails.approvedAt) : null}
+                            applicationStatus={selectedLoan?.status || null}
+                            loanStatus={selectedLoan?.loanDetails?.status || null}
+                        />
+                    </section>
                 </>
             )}
 
             {activeTab === "riwayat" && (
-                <div className="w-[90%] pb-10">
-                    <h3 className="font-bold text-lg mb-4">Riwayat Pembayaran</h3>
+                <section className="mt-6 pb-10">
+                    <h2 className="mb-4 text-lg font-bold text-[#111827]">Riwayat Pembayaran</h2>
                     {historyError && (
                         <p className="text-sm text-red-600 mb-4">{historyError}</p>
                     )}
@@ -464,7 +510,7 @@ export default function ApplicantDashboardPage() {
                             const statusStyle = repaymentStatusStyle(item.status);
 
                             return (
-                                <div key={item.id} className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                                <div key={item.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-[0_3px_10px_-8px_rgba(17,24,39,0.18)]">
                                     <div className="flex flex-col gap-2">
                                         <div className="flex flex-wrap items-center justify-between gap-2">
                                             <div className="font-semibold">
@@ -503,8 +549,9 @@ export default function ApplicantDashboardPage() {
                             );
                         })}
                     </div>
-                </div>
+                </section>
             )}
+            </main>
         </div>
     );
 }

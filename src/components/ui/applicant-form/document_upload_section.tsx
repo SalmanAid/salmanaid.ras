@@ -1,117 +1,89 @@
-
-import Image from "next/image";
-
-import DocumentLogo from "../../../../public/document.svg"
-
-import ApplicantForm_StudentIdCardUploadBlock from "./student_id_card_upload_block";
-import ApplicantForm_FamilyCardUploadBlock from "./family_card_upload_block";
+import { FileText } from "lucide-react";
 
 import { useApplicationProgressStore } from "@/hooks/applicationProgressStore";
 
-export default function ApplicantForm_DocumentUploadSection() {
+import ApplicantForm_FamilyCardUploadBlock from "./family_card_upload_block";
+import ApplicantForm_StudentIdCardUploadBlock from "./student_id_card_upload_block";
 
-    const incrementStep = useApplicationProgressStore((state) => state.incrementStep)
-    const decrementStep = useApplicationProgressStore((state) => state.decrementStep)
+export default function ApplicantForm_DocumentUploadSection() {
+    const studentIdCard = useApplicationProgressStore((state) => state.student_id_card);
+    const familyCard = useApplicationProgressStore((state) => state.family_card);
+    const incrementStep = useApplicationProgressStore((state) => state.incrementStep);
+    const decrementStep = useApplicationProgressStore((state) => state.decrementStep);
+    const isStepComplete = Boolean(studentIdCard && familyCard);
 
     const handleBack = async () => {
-        decrementStep()
-    }
+        decrementStep();
+    };
 
     const handleContinue = async () => {
-        incrementStep()
-    }
+        if (!isStepComplete) return;
+        incrementStep();
+    };
 
     return (
-        // main container
-        <div className="flex flex-col justify-center items-start gap-2 h-full w-full bg-white p-4 rounded-2xl">
-
-            {/* title */}
-            <div className="flex w-full h-fit font-bold text-2xl">
-                Unggah Dokumen
+        <div className="rounded-lg border border-[#E2E8F0] bg-white px-7 py-8 shadow-[0_1px_3px_rgba(15,23,42,0.08)] sm:px-8">
+            <div>
+                <h2 className="text-[22px] font-extrabold leading-tight text-[#111827]">
+                    Document Upload
+                </h2>
+                <p className="mt-2 text-xs font-medium text-[#667085]">
+                    Please upload the required documents to verify your identity
+                </p>
             </div>
 
-            {/* caption */}
-            <div className="flex w-full h-fit font-light text-sm">
-                Harap unggah dokumen yang diperlukan untuk melakukan verifikasi identitas Anda
-            </div>
-
-            {/* student id card / ktm container */}
-            <div className="flex flex-col w-full h-fit gap-2">
-
-                {/* title */}
-                <div className="flex w-full h-fit justify-start items-center font-bold">
-                    Kartu Tanda Mahasiswa (KTM)
-                </div>
-
-                {/* upload block */}
-                <div className="flex justify-center items-center w-full h-fit p-2">
-                    <ApplicantForm_StudentIdCardUploadBlock />
-                </div>
-
-            </div>
-
-            {/* family card container */}
-            <div className="flex flex-col w-full h-fit gap-2">
-
-                {/* title */}
-                <div className="flex w-full h-fit justify-start items-center font-bold">
-                    Kartu Keluarga (KK)
-                </div>
-
-                {/* upload block */}
-                <div className="flex justify-center items-center w-full h-fit p-2">
-                    <ApplicantForm_FamilyCardUploadBlock />
-                </div>
-
-            </div>
-
-
-            {/* document requirements */}
-            <div className="flex w-full h-fit gap-2 justify-center items-center bg-[#FFF085]/70 p-2 rounded-2xl">
-                
-                {/* symbols */}
-                <div className="w-[10%] h-full justify-center items-start">
-                    <Image 
-                        src={DocumentLogo}
-                        alt="Document Logo"
-                        className="flex justify-center items-center w-full h-fit"
-                        width={5}
-                        height={5}
-                    />
-                </div>
-
-                {/* content */}
-                <div className="w-[90%] h-fit justify-start items-center">
-                    {/* title */}
-                    <div className="w-full h-fit font-bold">
-                        Syarat Dokumen
+            <div className="mt-6 space-y-6">
+                <div>
+                    <div className="text-xs font-semibold text-[#111827]">
+                        Student ID Card (KTM) *
                     </div>
+                    <div className="mt-2">
+                        <ApplicantForm_StudentIdCardUploadBlock />
+                    </div>
+                </div>
 
-                    {/* points of document requirements */}
-                    <div className="w-full h-fit justify-start items-center text-xs">
-                        <ul >
-                            <li className="py-0.5">Berkas harus dalam format JPG, PNG, atau PDF</li>
-                            <li className="py-0.5">Ukuran maksimum berkas adalah 5MB per berkas</li>
-                            <li className="py-0.5">Berkas harus jelas dan dapat dibaca</li>
-                        </ul>
+                <div>
+                    <div className="text-xs font-semibold text-[#111827]">
+                        Family Card (KK) *
+                    </div>
+                    <div className="mt-2">
+                        <ApplicantForm_FamilyCardUploadBlock />
+                    </div>
+                </div>
+
+                <div className="rounded-lg border border-[#FCD34D] bg-[#FFFBEB] px-4 py-4 text-[#A65F00]">
+                    <div className="flex gap-3">
+                        <FileText className="mt-0.5 h-4 w-4 shrink-0 text-[#F59E0B]" strokeWidth={2.2} />
+                        <div>
+                            <div className="text-xs font-bold">Document Requirements</div>
+                            <ul className="mt-2 list-disc space-y-1 pl-4 text-[11px] font-medium">
+                                <li>Files must be in JPG, PNG, or PDF format</li>
+                                <li>Maximum file size: 5MB per document</li>
+                                <li>Documents should be clear and readable</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* cta button */}
-            <div className="flex w-full h-fit justify-end items-center gap-4 p-2">
+            <div className="mt-7 flex items-center justify-end gap-5 border-t border-[#E5E7EB] pt-3">
+                <button
+                    type="button"
+                    onClick={handleBack}
+                    className="h-8 rounded-md border border-[#E5E7EB] bg-white px-4 text-xs font-semibold text-[#111827] transition hover:bg-[#F8FAFC]"
+                >
+                    Back
+                </button>
 
-                {/* back button */}
-                <div className="px-6 py-2 flex justify-center items-center text-gray-500 border border-gray-400 rounded-2xl" onClick={handleBack}>
-                    Kembali 
-                </div>
-
-                {/* continue button */}
-                <div className="px-6 py-2 flex justify-center items-center text-white border border-gray-009966 rounded-2xl bg-[#009966]/60" onClick={handleContinue}>
-                    Lanjut
-                </div>
+                <button
+                    type="button"
+                    onClick={handleContinue}
+                    disabled={!isStepComplete}
+                    className="h-8 rounded-md px-4 text-xs font-bold text-white transition disabled:cursor-not-allowed disabled:bg-[#B7D9CF] disabled:text-white/80 enabled:bg-[#009966] enabled:hover:bg-[#007A52]"
+                >
+                    Continue
+                </button>
             </div>
-
         </div>
     );
 }

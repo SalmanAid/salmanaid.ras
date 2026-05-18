@@ -180,6 +180,13 @@ export default function LoginPage() {
 
                     </div>
 
+                    <Link
+                        href="/"
+                        className="-mt-2 inline-flex self-center text-sm font-medium text-gray-500 transition-colors hover:text-[#13A6BB] focus:outline-none focus:ring-2 focus:ring-[#16C5DE]/30"
+                    >
+                        Kembali ke Halaman Guest
+                    </Link>
+
                     {/* minimal caption */}
                     <div className="text-xs text-center text-black/40 mt-4 leading-relaxed">
                         Dengan log in, kamu menyetujui Kebijakan Privasi dan Syarat & Ketentuan Rumah Amal Salman

@@ -31,10 +31,16 @@ export default function ApplicantForm_FamilyCardUploadBlock() {
             type="file"
             ref={fileRef}
             onChange={handleFileChange}
+            accept=".jpg,.jpeg,.png,.pdf"
             className="hidden"
         />
 
-        <ApplicantForm_DocumentFilePreview file={familyCard} onClick={handleClick} />
+        <ApplicantForm_DocumentFilePreview
+            file={familyCard}
+            label="Upload your Family Card scan"
+            onClick={handleClick}
+            onFileDrop={setFamilyCard}
+        />
 
     </div>
   )

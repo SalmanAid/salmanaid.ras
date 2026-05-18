@@ -1,10 +1,24 @@
 
 "use client"
 
-export default function ApplicantDashboard_PaymentScheduleRow(props : {installment_value : number, installment_date : Date, installment_order : number, installment_status : string}){
+type PaymentScheduleRowProps = {
+    installment_value: number;
+    installment_paid_value: number;
+    installment_date: Date;
+    installment_order: number;
+    installment_status: string;
+};
 
-    // fetch conditions from the db
-    const installmentStatusColor : any = {
+const formatIdr = (value: number) =>
+    new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        maximumFractionDigits: 0,
+    }).format(value);
+
+export default function ApplicantDashboard_PaymentScheduleRow(props : PaymentScheduleRowProps){
+
+    const installmentStatusColor: Record<string, { "bg-hex": string; "text-hex": string }> = {
         "paid" : {
             "bg-hex" : "D0FAE5",
             "text-hex" : "006045"
@@ -32,51 +46,47 @@ export default function ApplicantDashboard_PaymentScheduleRow(props : {installme
     const statusLabel = statusLabelMap[props.installment_status] || props.installment_status;
 
     return (
-
-        // main container
-        <div className="flex justify-center items-center h-full w-full">
-            
-            {/* symbol */}
-            <div className="flex justify-center items-center w-8">
+        <div className="flex w-full items-center gap-3 border-b border-[#EEF2F6] py-3 last:border-0">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center">
                 <span
                     className="h-3 w-3 rounded-full"
                     style={{ background: `#${installmentStatusColor[props.installment_status]['text-hex']}` }}
                 />
             </div>
 
-            {/* content : date, installment, and status */}
-            <div className="flex flex-col h-fit w-[65%] p-2">
-
-                {/* date */}
-                <div className="flex justify-start items-start p-0.5">
+            <div className="min-w-0 flex-1">
+                <p className="text-[13px] font-semibold text-[#111827]">
                     {props.installment_date.toLocaleDateString("id-ID", {
                         day: "2-digit",
                         month: "long",
                         year: "numeric",
                     })}
-                </div>
-
-                {/* installment */}
-                <div className="flex justify-start items-start p-0.5">
+                </p>
+                <p className="mt-0.5 text-[12px] text-[#6B7280]">
                     Cicilan #{props.installment_order}
-                </div>
-
-                {/* status */}
-                <div className={`flex w-fit rounded-2xl p-2 justify-start items-start font-semibold text-sm`}
+                </p>
+                <span
+                    className="mt-2 inline-flex w-fit rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none"
                     style={{ background : `#${installmentStatusColor[props.installment_status]['bg-hex']}` ,
                             color : `#${installmentStatusColor[props.installment_status]['text-hex']}`
                     }}
                 >
                     {statusLabel}
-                </div>
-
+                </span>
             </div>
 
-            {/* value of payment */}
-            <div className="flex h-fit w-[25%] justify-end items-center">
-                Rp {props.installment_value.toString()}
+            <div className="shrink-0 text-right">
+                <p className="text-[13px] font-semibold text-[#111827]">
+                    <span className={props.installment_paid_value === props.installment_value ? `text-[#111827]` : `text-[#6B7280]`}>
+                        {formatIdr(props.installment_paid_value)}
+                    </span>
+                    <span> / </span>
+                    {formatIdr(props.installment_value)}
+                </p>
+                <p className="mt-0.5 text-[11px] font-medium text-[#6B7280]">
+                    terbayar
+                </p>
             </div>
-
         </div>
     );
 }

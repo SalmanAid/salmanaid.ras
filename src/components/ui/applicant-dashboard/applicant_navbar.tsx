@@ -1,16 +1,18 @@
 
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Bell, CheckCircle2, ChevronDown, CircleDollarSign, Info, XCircle } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import RumahAmalHorizontalLogo from "../../../../public/rumah-amal-horizontal-logo.svg"
 import UserPersonaLogo from "../../../../public/user_persona.svg"
-import ChevronDownLogo from "../../../../public/chevron-down.svg"
 
 import { useUserStore } from "@/hooks/userStore";
 import localFont from "next/font/local";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 type NotificationItem = {
     id: string;
@@ -25,6 +27,13 @@ type NotificationsResponse = {
     pendingCount: number;
     notifications: NotificationItem[];
 };
+
+const menuItems = [
+    { href: "/applicant/dashboard", label: "Dashboard" },
+    { href: "/applicant/apply", label: "Apply Loan" },
+    { href: "/not-found", label: "History" },
+    { href: "/applicant/installment", label: "Installment" },
+];
 
 // init fonts
 const plusJakartaSansFont = localFont({
@@ -93,7 +102,13 @@ function NotificationBellButton() {
     const [error, setError] = useState<string | null>(null);
     const [pendingCount, setPendingCount] = useState(0);
     const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-    const [desktopPermission, setDesktopPermission] = useState<NotificationPermission>("default");
+    const [desktopPermission, setDesktopPermission] = useState<NotificationPermission>(() => {
+        if (typeof window !== "undefined" && "Notification" in window) {
+            return Notification.permission;
+        }
+
+        return "default";
+    });
     const containerRef = useRef<HTMLDivElement | null>(null);
     const deliveredIdsRef = useRef<Set<string>>(new Set());
 
@@ -142,11 +157,9 @@ function NotificationBellButton() {
     }, []);
 
     useEffect(() => {
-        if (typeof window !== "undefined" && "Notification" in window) {
-            setDesktopPermission(Notification.permission);
-        }
-
-        fetchNotifications();
+        const notificationFetchTimer = window.setTimeout(() => {
+            fetchNotifications();
+        }, 0);
 
         const events = new EventSource("/api/notifications/events");
 
@@ -179,6 +192,7 @@ function NotificationBellButton() {
         window.addEventListener("focus", handleFocus);
 
         return () => {
+            window.clearTimeout(notificationFetchTimer);
             events.close();
             window.removeEventListener("online", handleOnline);
             window.removeEventListener("focus", handleFocus);
@@ -209,18 +223,18 @@ function NotificationBellButton() {
                     requestDesktopPermission();
                     fetchNotifications();
                 }}
-                className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#D1D5DB] bg-white text-[#111827] shadow-sm transition hover:border-[#FCB82E] hover:bg-[#FFF7E6] focus:outline-none focus:ring-2 focus:ring-[#FCB82E]/40"
+                className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-[#111827] transition hover:border-[#07B0C8] hover:bg-[#F0FBFD] focus:outline-none focus:ring-2 focus:ring-[#07B0C8]/30"
             >
-                <Bell size={20} strokeWidth={2.2} />
+                <Bell size={18} strokeWidth={2.2} />
                 {pendingCount > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#EF4444] px-1.5 text-[11px] font-bold leading-none text-white ring-2 ring-white">
+                    <span className="absolute -right-1 -top-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-[#EF4444] px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
                         {visibleBadgeCount}
                     </span>
                 )}
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 top-14 z-50 w-md overflow-hidden rounded-xl border border-[#E5E7EB] bg-white shadow-2xl">
+                <div className="absolute right-0 top-12 z-50 w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-[#E5E7EB] bg-white shadow-2xl sm:w-md">
                     <div className="border-b border-[#E5E7EB] bg-[#F9FAFB] px-5 py-4">
                         <div className="flex items-center justify-between gap-4">
                             <div>
@@ -307,89 +321,91 @@ function NotificationBellButton() {
     );
 }
 
-export default function ApplicantDashboard_ApplicantNavbar() {
+type ApplicantNavbarProps = {
+    showNotifications?: boolean;
+};
 
-    const username = useUserStore((state) => (state.user?.username))
+export default function ApplicantDashboard_ApplicantNavbar({ showNotifications = true }: ApplicantNavbarProps) {
+    const pathname = usePathname();
+    const { data: session } = useSession();
+    const usernameFromStore = useUserStore((state) => (state.user?.username));
+    const username = useMemo(() => {
+        return usernameFromStore || session?.user?.name || "Borrower";
+    }, [session?.user?.name, usernameFromStore]);
     
     return (
-        // main container
-        <div className="flex justify-between items-center h-[10%] w-full p-2">
-
-            {/* rumah amal salman logo */}
-            <div className="flex relative w-[10%] justify-center items-center">
-                <Image
-                    src={RumahAmalHorizontalLogo}
-                    alt="Logo Rumah Amal Salman"
-                    width={100}
-                    height={100}
-                />
-            </div>
-
-            {/* navigations */}
-            <div className="flex gap-x-10 w-[70%] justify-center items-center">
-
-                {/* Home */}
-                <div className="font-bold">
-                    <Link href={'/applicant/dashboard'}>Dashboard</Link>
-                </div>
-
-                {/* Donate */}
-                <div className="font-bold">
-                    <Link href={'/applicant/apply'}>Apply Loan</Link>
-                </div>
-
-                {/* History */}
-                <div className="font-bold">
-                    <Link href={'/not-found'}>History</Link>
-                </div>
-
-                {/* Report */}
-                <div className="font-bold">
-                    <Link href={'/applicant/installment'}>Installment</Link>
-                </div>
-
-            </div>
-
-            {/* account */}
-            <div className="flex gap-3 group relative">
-
-                <div className="flex w-[50%] h-fit justify-center items-center">
-                    <NotificationBellButton />
-                </div>
-
-                <button
-                    type="button"
-                    className="inline-flex items-center gap-2 rounded-full bg-white px-2 py-1 transition-colors hover:bg-gray-50"
-                    >
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#DFF3F7]">
+        <nav className="sticky top-0 z-50 w-full border-b border-[#E5E7EB] bg-white shadow-sm">
+            <div className="mx-auto max-w-350 px-6">
+                <div className="flex h-14.5 items-center justify-between">
+                    <Link href="/applicant/dashboard" className="shrink-0 flex items-center">
                         <Image
-                        src={UserPersonaLogo}
-                        alt="User"
-                        width={16}
-                        height={16}
-                        className="h-4 w-4"
+                            src={RumahAmalHorizontalLogo}
+                            alt="Logo Rumah Amal Salman"
+                            width={122}
+                            height={30}
+                            className="h-7 w-auto"
+                            priority
                         />
-                    </span>
-                    <span className="max-w-27.5 truncate text-[12.5px] font-medium text-[#111827]" title={username}>
-                        {username}
-                    </span>
-                    <ChevronDown className="h-3.5 w-3.5 text-gray-500 transition-transform duration-150 group-hover:rotate-180" />
-                </button>
+                    </Link>
 
-                    {/* Dropdown */}
-                    <div className="invisible absolute right-0 top-[calc(100%+8px)] z-20 w-36 rounded-lg border border-gray-200 bg-white p-1 opacity-0 shadow-lg transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-                    <button
-                        type="button"
-                        onClick={() => signOut({ callbackUrl: "/login" })}
-                        className="w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
-                    >
-                        Logout
-                    </button>
+                    <div className="hidden items-center gap-10 md:flex">
+                        {menuItems.map((item) => {
+                            const isActive =
+                                pathname === item.href ||
+                                (item.href !== "/applicant/dashboard" && pathname?.startsWith(item.href));
+
+                            return (
+                                <Link
+                                    key={item.label}
+                                    href={item.href}
+                                    className={`text-[12.5px] font-medium transition-colors ${
+                                        isActive
+                                            ? "text-[#07B0C8] underline decoration-2 underline-offset-8 decoration-[#07B0C8]"
+                                            : "text-gray-800 hover:text-cyan-600"
+                                    }`}
+                                >
+                                    {item.label}
+                                </Link>
+                            );
+                        })}
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        {showNotifications && <NotificationBellButton />}
+
+                        <div className="group relative">
+                            <button
+                                type="button"
+                                className="inline-flex items-center gap-2 rounded-full bg-white px-2 py-1 transition-colors hover:bg-gray-50"
+                            >
+                                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#DFF3F7]">
+                                    <Image
+                                        src={UserPersonaLogo}
+                                        alt="User"
+                                        width={16}
+                                        height={16}
+                                        className="h-4 w-4"
+                                    />
+                                </span>
+                                <span className="hidden max-w-27.5 truncate text-[12.5px] font-medium text-[#111827] sm:inline" title={username}>
+                                    {username}
+                                </span>
+                                <ChevronDown className="h-3.5 w-3.5 text-gray-500 transition-transform duration-150 group-hover:rotate-180" />
+                            </button>
+
+                            <div className="invisible absolute right-0 top-[calc(100%+8px)] z-20 w-36 rounded-lg border border-gray-200 bg-white p-1 opacity-0 shadow-lg transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                                <button
+                                    type="button"
+                                    onClick={() => signOut({ callbackUrl: "/login" })}
+                                    className="w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
+                                >
+                                    Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
             </div>
-
-        </div>
+        </nav>
     );
 }
-
