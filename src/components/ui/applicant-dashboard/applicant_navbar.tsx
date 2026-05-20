@@ -391,7 +391,7 @@ export default function ApplicantDashboard_ApplicantNavbar({ showNotifications =
                                         className="h-4 w-4"
                                     />
                                 </span>
-                                <span className="hidden max-w-27.5 truncate text-[12.5px] font-medium text-[#111827] sm:inline" title={username}>
+                                <span className="max-w-20 xs:max-w-24 sm:max-w-27.5 truncate text-[12.5px] font-medium text-[#111827]" title={username}>
                                     {username}
                                 </span>
                                 <ChevronDown className="h-3.5 w-3.5 text-gray-500 transition-transform duration-150 group-hover:rotate-180" />
