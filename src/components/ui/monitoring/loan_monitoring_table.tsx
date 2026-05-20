@@ -135,10 +135,10 @@ export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { 
                                         />
                                     </div>
                                     <div className="flex flex-col min-w-0">
-                                        <span className="font-bold text-[#1E293B] text-sm truncate max-w-[180px]">
+                                        <span className="font-bold text-[#1E293B] text-sm truncate max-w-45">
                                             {loan.application?.borrower?.name || "Unknown User"}
                                         </span>
-                                        <span className="text-[#64748B] text-[11px] font-medium uppercase tracking-tight truncate max-w-[180px]">
+                                        <span className="text-[#64748B] text-[11px] font-medium uppercase tracking-tight truncate max-w-45">
                                             {loan.application?.borrower?.email}
                                         </span>
                                     </div>

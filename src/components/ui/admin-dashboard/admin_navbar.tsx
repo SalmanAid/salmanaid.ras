@@ -15,9 +15,7 @@ import UserPersonaLogo from "../../../../public/user_persona.svg";
 const navItems = [
   { href: '/admin/dashboard', label: 'Dashboard' },
   { href: '/admin/loan-request', label: 'Loan Request' },
-  { href: '/admin/donation-data', label: 'Donation Data' },
   { href: '/admin/monitoring', label: 'Monitoring' },
-  { href: '/admin/reports', label: 'Reports' },
 ];
 
 export default function AdminDashboard_AdminNavbar() {

@@ -24,8 +24,6 @@ export default function DonorDashboard_DonorNavbar() {
     const menuItems = [
         { href: "/donor/dashboard", label: "Dashboard" },
         { href: "/donor/donate-form", label: "Donate" },
-        { href: "/not-found", label: "History" },
-        { href: "/not-found", label: "Report" },
     ];
     
     return (

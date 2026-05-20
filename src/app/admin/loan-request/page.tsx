@@ -86,7 +86,7 @@ export default function AdminLoanRequestPage() {
         
         {/* ── FILTER TABS (Refactored for horizontal scroll touch behavior on mobile) ── */}
         <div className="w-full border-b border-gray-200 mb-6">
-          <div className="flex gap-1 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth -mb-[1px]">
+          <div className="flex gap-1 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth -mb-px">
             {[
               { label: "All", value: undefined },
               { label: "Pending", value: "PENDING" },

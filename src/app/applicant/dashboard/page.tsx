@@ -312,12 +312,12 @@ export default function ApplicantDashboardPage() {
         <div className="min-h-screen bg-[#F3F5F7] text-[#111827]">
 
             {isRepaymentModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4">
+                <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 px-4">
                     {/* Background Click to Close */}
                     <div className="absolute inset-0" onClick={() => setIsRepaymentModalOpen(false)}></div>
 
                     <Suspense fallback={<div className="p-10">Loading Payment Details...</div>}>
-                        <div className="relative z-[101] rounded-xl bg-white p-6 shadow-2xl">
+                        <div className="relative z-101 rounded-xl bg-white p-6 shadow-2xl">
                             <ApplicantDashboard_PaymentApplicantComponent 
                                 searchParams={Promise.resolve({ 
                                     type: 'repayment', 

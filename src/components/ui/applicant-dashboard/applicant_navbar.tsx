@@ -31,7 +31,6 @@ type NotificationsResponse = {
 const menuItems = [
     { href: "/applicant/dashboard", label: "Dashboard" },
     { href: "/applicant/apply", label: "Apply Loan" },
-    { href: "/not-found", label: "History" },
     { href: "/applicant/installment", label: "Installment" },
 ];
 

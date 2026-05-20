@@ -26,7 +26,7 @@ function InfoBlock({ label, value }: { label: string, value: string | number | n
     return (
         <div className="flex flex-col gap-1">
             <span className="text-[10px] sm:text-xs text-gray-400 font-medium uppercase tracking-wider">{label}</span>
-            <span className="text-sm sm:text-base font-semibold text-slate-700 break-words">{value || "—"}</span>
+            <span className="text-sm sm:text-base font-semibold text-slate-700 wrap-break-word">{value || "—"}</span>
         </div>
     );
 }

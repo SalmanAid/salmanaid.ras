@@ -91,27 +91,8 @@ export default function AdminMonitoringPage() {
 
 		<div className="flex flex-col w-[90%] py-4">
 			{/* Filter Tabs with Hardcoded Dictionary Colors */}
-			{/* <div className="flex gap-4 mb-6 border-b border-gray-200">
-				{[
-					{ label: "All", value: undefined },
-					{ label: "Forgiven", value: "FORGIVEN" },
-					{ label: "Paid", value: "PAID" },
-					{ label: "Active", value: "ACTIVE" },
-					{ label: "Defaulted", value: "DEFAULTED" },
-				].map((tab) => (
-					<button
-					key={tab.label}
-					onClick={() => handleFilterChange(tab.value)}
-					className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${getTabColor(tab.value)} ${statusFilter !== tab.value ? "border-transparent hover:text-gray-700" : ""
-						}`}
-					>
-					{tab.label}
-					</button>
-				))}
-				</div> */}
-
 			<div className="w-full border-b border-gray-200 mb-6">
-				<div className="flex gap-1 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth -mb-[1px]">
+				<div className="flex gap-1 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth -mb-px">
 					{[
 						{ label: "All", value: undefined },
 						{ label: "Forgiven", value: "FORGIVEN" },

@@ -37,13 +37,13 @@ export default function DonorDashboard_RecentDistributionTable({
 
       {/* Wrapper to enforce horizontal scrolling on mobile viewports */}
       <div className="w-full overflow-x-auto invisible-scrollbar">
-        <Table className="min-w-[500px] md:min-w-full">
+        <Table className="min-w-125 md:min-w-full">
           <TableHeader>
             <TableRow className="border-b border-[#E6EBEF]">
-              <TableHead className="h-9 w-[100px] px-2 text-[12px] font-medium text-[#6B7280] md:px-3">Date</TableHead>
+              <TableHead className="h-9 w-25 px-2 text-[12px] font-medium text-[#6B7280] md:px-3">Date</TableHead>
               <TableHead className="h-9 px-2 text-[12px] font-medium text-[#6B7280] md:px-3">Program Name</TableHead>
-              <TableHead className="h-9 w-[110px] px-2 text-[12px] font-medium text-[#6B7280] md:px-3">Amount</TableHead>
-              <TableHead className="h-9 w-[90px] px-2 text-[12px] font-medium text-[#6B7280] md:px-3">Status</TableHead>
+              <TableHead className="h-9 w-27.5 px-2 text-[12px] font-medium text-[#6B7280] md:px-3">Amount</TableHead>
+              <TableHead className="h-9 w-22.5 px-2 text-[12px] font-medium text-[#6B7280] md:px-3">Status</TableHead>
             </TableRow>
           </TableHeader>
 
