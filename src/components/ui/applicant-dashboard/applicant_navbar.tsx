@@ -234,8 +234,7 @@ function NotificationBellButton() {
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 top-12 z-50 w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-[#E5E7EB] bg-white shadow-2xl sm:w-md">
-                    <div className="border-b border-[#E5E7EB] bg-[#F9FAFB] px-5 py-4">
+                    <div className="fixed left-4 right-4 md:absolute md:left-auto md:right-0 top-16 md:top-12 z-50 w-auto md:w-md max-w-none md:max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-[#E5E7EB] bg-white shadow-2xl">                    <div className="border-b border-[#E5E7EB] bg-[#F9FAFB] px-5 py-4">
                         <div className="flex items-center justify-between gap-4">
                             <div>
                                 <div className={`${plusJakartaSansFont.className} text-base font-bold text-[#111827]`}>
