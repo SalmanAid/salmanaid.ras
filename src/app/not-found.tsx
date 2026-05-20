@@ -7,17 +7,30 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-      <h1 className="text-4xl font-bold">404 - Page Not Found</h1>
-      <p className="text-muted-foreground text-center">
-        The page you are looking for does not exist or has been moved.
-      </p>
-      <Link 
-        href="/" 
-        className="text-primary hover:underline font-medium px-4 py-2 border rounded-md"
-      >
-        Return to Home
-      </Link>
+    <div className="flex flex-col items-center justify-center min-h-screen px-6 py-12 bg-white">
+      <div className="flex flex-col items-center max-w-md text-center">
+        
+        {/* Responsive Heading */}
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-gray-950">
+          404 - Page Not Found
+        </h1>
+        
+        {/* Responsive Paragraph Description */}
+        <p className="mt-3 text-[13.5px] sm:text-sm md:text-base text-gray-500 leading-relaxed">
+          The page you are looking for does not exist, has been moved, or is undergoing temporary maintenance.
+        </p>
+        
+        {/* Adaptive Button Layout */}
+        <div className="mt-6 w-full sm:w-auto">
+          <Link 
+            href="/" 
+            className="inline-flex h-10 w-full sm:w-auto items-center justify-center rounded-full bg-[#07B0C8] px-6 text-[13px] font-medium text-white transition hover:bg-[#0699AE] shadow-sm"
+          >
+            Return to Home
+          </Link>
+        </div>
+
+      </div>
     </div>
   );
 }
