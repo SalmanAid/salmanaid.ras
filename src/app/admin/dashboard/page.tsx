@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { DollarSign, TrendingUp, Clock, AlertTriangle } from "lucide-react";
+import { DollarSign, TrendingUp, Clock, AlertTriangle, FileText, Download } from "lucide-react";
 
 import SummaryOfAspect from "@/components/ui/admin-dashboard/summary_of_aspect";
 import AdminDashboard_FinancialOverviewChart from "@/components/ui/admin-dashboard/financial_overview_chart";
@@ -14,9 +14,6 @@ import jsPDF from "jspdf"
 import { svg2pdf } from "svg2pdf.js";
 import { exportAnalyticsToExcel } from "@/lib/xlsx_converter";
 
-// ===============================
-// HELPERS
-// ===============================
 const formatRupiah = (value: number) =>
   new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -74,8 +71,6 @@ export default function AdminDashboardPage() {
   const defaultRate = Number(statistics?.defaultRate ?? 0);
 
   const exportSvgToPdf = async () => {
-    // 1. Target the SVG element inside the Recharts container
-    // Recharts usually renders an <svg> tag inside your ref div
     const container = document.querySelector(".recharts-wrapper");
     const svgElement = container?.querySelector("svg");
 
@@ -84,8 +79,6 @@ export default function AdminDashboardPage() {
       return;
     }
 
-    // 2. Create jsPDF instance
-    // Use the SVG viewbox dimensions for the PDF page size
     const width = svgElement.viewBox.baseVal.width || 800;
     const height = svgElement.viewBox.baseVal.height || 400;
     const pdf = new jsPDF({
@@ -94,8 +87,6 @@ export default function AdminDashboardPage() {
       format: [width, height],
     });
 
-    // 3. Convert SVG to PDF
-    // We use the svg2pdf function which takes the element and the pdf instance
     await svg2pdf(svgElement, pdf, {
       x: 0,
       y: 0,
@@ -103,7 +94,6 @@ export default function AdminDashboardPage() {
       height: height,
     });
 
-    // 4. Save the result
     pdf.save("chart-vector.pdf");
   };
 
@@ -118,11 +108,11 @@ export default function AdminDashboardPage() {
       <AdminDashboard_AdminNavbar />
 
       {/* Page Content */}
-      <div className="flex flex-col w-full max-w-350 mx-auto px-6 py-6 gap-6">
+      <div className="flex flex-col w-full max-w-350 mx-auto px-4 sm:px-6 py-6 gap-6">
 
         {/* ── Stat Cards ── */}
-        <div className="grid grid-cols-4 gap-4">
-
+        {/* Switched from grid-cols-4 to an adaptive responsive column workflow */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <SummaryOfAspect
             title="Total Pool Funds"
             value={formatRupiah(totalDonation)}
@@ -162,53 +152,49 @@ export default function AdminDashboardPage() {
             value_color="#E7000B"
             update_caption_color="#E7000B"
           />
-
         </div>
 
         {/* ── Financial Overview ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <div className="mb-4">
-
-            {/* container for title + button for downloading pdf */}
-            <div className="flex justify-center items-center w-full h-fit">
-
-              {/* conatiner for title */}
-              <div className="flex-col justify-center items-center w-[80%] h-fit p-2">
-                <h2 className="text-lg font-bold text-gray-800">Financial Overview</h2>
-                <p className="text-sm text-gray-400 mt-0.5">Monthly donations vs disbursements</p>
-              </div>
-
-              {/* container for the button for exporting to pdf */}
-              <div className="flex-col justify-center items-center w-[10%] h-fit p-2">
-                <button 
-                  onClick={exportSvgToPdf}
-                  className="p-4 shadow-lg border border-black border-solid rounded-2xl "
-                >
-                  Unduh PDF
-                </button>
-              </div>
-
-              {/* container for the button for exporting to xls */}
-              <div className="flex-col justify-center items-center w-[10%] h-fit p-2">
-                <button 
-                  onClick={downloadAnalyticsXLSX}
-                  className="p-4 shadow-lg border border-black border-solid rounded-2xl"
-                >
-                  Unduh XLSX
-                </button>
-              </div>
-              
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
+          
+          {/* Header Action Row Wrapper */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-gray-50 pb-5 mb-4">
+            
+            {/* Title Block */}
+            <div>
+              <h2 className="text-lg font-bold text-gray-800">Financial Overview</h2>
+              <p className="text-sm text-gray-400 mt-0.5">Monthly donations vs disbursements</p>
             </div>
+
+            {/* Export Actions (Aligned nicely side-by-side or stacked) */}
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              <button 
+                onClick={exportSvgToPdf}
+                className="flex items-center justify-center gap-2 flex-1 sm:flex-none h-10 px-4 rounded-xl border border-gray-200 bg-white text-[12.5px] font-semibold text-gray-700 transition hover:bg-gray-50 hover:text-gray-900 active:scale-95"
+              >
+                <FileText className="h-4 w-4 text-gray-500" />
+                <span>Unduh PDF</span>
+              </button>
+
+              <button 
+                onClick={downloadAnalyticsXLSX}
+                className="flex items-center justify-center gap-2 flex-1 sm:flex-none h-10 px-4 rounded-xl border border-transparent bg-gray-900 text-[12.5px] font-semibold text-white transition hover:bg-gray-800 active:scale-95 shadow-sm"
+              >
+                <Download className="h-4 w-4 text-gray-300" />
+                <span>Unduh XLSX</span>
+              </button>
+            </div>
+            
           </div>
 
-
-          <div ref={chartRef} className="flex justify-center items-center w-full h-fit bg-white">
+          {/* Graph Render Container Wrapper */}
+          <div ref={chartRef} className="w-full overflow-hidden bg-white">
             <AdminDashboard_FinancialOverviewChart />
           </div>
         </div>
 
         {/* ── Recent Activity ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
           <div className="mb-4">
             <h2 className="text-lg font-bold text-gray-800">Recent Activity</h2>
             <p className="text-sm text-gray-400 mt-0.5">Last 5 system activities</p>
