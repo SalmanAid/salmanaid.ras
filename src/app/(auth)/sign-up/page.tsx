@@ -199,7 +199,7 @@ export default function SignUpPage() {
 
                         {/* sign up container */}
                         <button
-                            onClick={handleRegister}
+                            onClick={() => {router.push("/sign-up/role")}}
                             disabled={loading}
                             className="bg-[#16C5DE] flex-1 h-12 flex justify-center items-center rounded-xl text-white font-bold hover:bg-[#13A6BB] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                         >
