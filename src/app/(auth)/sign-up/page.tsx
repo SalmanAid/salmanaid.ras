@@ -4,13 +4,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUserSignUpStore } from "@/hooks/userSignupStore";
 
 export default function SignUpPage() {
     const router = useRouter();
 
     // init variables
-    const [email, setEmail] = useState<string>("")
-    const [password, setPassword] = useState<string>("")
+    const email = useUserSignUpStore((state) => (state.user?.email))
+    const setEmail = useUserSignUpStore((state) => (state.setEmail))
+    const password = useUserSignUpStore((state) => (state.password))
+    const setPassword = useUserSignUpStore((state) => (state.setPassword))
     const [confirmedPassword, setConfirmedPassword] = useState<string>("")
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [showConfirmedPassword, setShowConfirmedPassword] = useState<boolean>(false);

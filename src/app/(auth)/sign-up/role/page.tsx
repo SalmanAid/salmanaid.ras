@@ -17,6 +17,7 @@ export default function ChooseRolePage() {
     const email = useUserSignUpStore((state) => (state.user?.email))
     const password = useUserSignUpStore((state) => (state.password))
     const setRole = useUserSignUpStore((state) => (state.setRole))
+    const clearUserSignUpStore = useUserSignUpStore((state) => (state.clear))
 
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
@@ -40,6 +41,7 @@ export default function ChooseRolePage() {
                     email,
                     password,
                     name: email.split('@')[0], // Default name from email part
+                    role:  role
                 }),
             });
 
@@ -49,6 +51,10 @@ export default function ChooseRolePage() {
                 setError(data.error || "Registrasi gagal.");
                 setLoading(false);
             } else {
+                
+                // clean up the variabel
+                clearUserSignUpStore()
+                
                 // Success, redirect to login
                 router.push("/login");
             }
@@ -102,11 +108,17 @@ export default function ChooseRolePage() {
 
 
                     {/* option role container */}
-                    <div className="flex justify-center items-center w-full h-full gap-2">
+                    <div className="flex justify-center items-stretch w-full gap-4">
 
                         {/* Donatur container */}
-                        <div className="flex flex-col w-[50%] h-full border border-solid border-gray-300 rounded-2xl p-4" onClick={() => setRole("DONOR")}>
-
+                        <div 
+                            className={`flex flex-col w-[50%] border border-solid rounded-2xl p-4 cursor-pointer transition-all duration-300 transform
+                                ${role === "DONOR" 
+                                    ? "bg-[#16C5DE]/10 border-[#16C5DE] -translate-y-2 shadow-xl ring-2 ring-[#16C5DE]/50" 
+                                    : "bg-white border-gray-300 hover:border-gray-400 hover:-translate-y-0.5 hover:shadow-md"
+                                }`} 
+                            onClick={() => setRole("DONOR")}
+                        >
                             {/* love sign */}
                             <div className="flex w-full h-fit p-2 justify-center items-center">
                                 <Image 
@@ -116,20 +128,27 @@ export default function ChooseRolePage() {
                             </div>
 
                             {/* Title */}
-                            <div className="flex w-full h-fit p-2 justify-center items-center font-bold">
+                            <div className={`flex w-full h-fit p-2 justify-center items-center font-bold transition-colors
+                                ${role === "DONOR" ? "text-[#16C5DE]" : "text-black"}`}
+                            >
                                 Donatur
                             </div>
 
                             {/* caption */}
-                            <div className="flex w-full h-fit p-2 justify-center items-center text-center text-sm">
+                            <div className="flex w-full h-fit p-2 justify-center items-center text-center text-sm text-gray-500">
                                 Saya ingin menyalurkan bantuan dana
                             </div>
-                            
                         </div>
 
                         {/* Peminjam container */}
-                        <div className="flex flex-col w-[50%] h-full border border-solid border-gray-300 rounded-2xl p-4" onClick={() => setRole("BORROWER")}>
-
+                        <div 
+                            className={`flex flex-col w-[50%] border border-solid rounded-2xl p-4 cursor-pointer transition-all duration-300 transform
+                                ${role === "BORROWER" 
+                                    ? "bg-[#FCB82E]/10 border-[#FCB82E] -translate-y-2 shadow-xl ring-2 ring-[#FCB82E]/50" 
+                                    : "bg-white border-gray-300 hover:border-gray-400 hover:-translate-y-0.5 hover:shadow-md"
+                                }`} 
+                            onClick={() => setRole("BORROWER")}
+                        >
                             {/* graduation cap sign */}
                             <div className="flex w-full h-fit p-2 justify-center items-center">
                                 <Image 
@@ -139,15 +158,16 @@ export default function ChooseRolePage() {
                             </div>
 
                             {/* Title */}
-                            <div className="flex w-full h-fit p-2 justify-center items-center font-bold">
+                            <div className={`flex w-full h-fit p-2 justify-center items-center font-bold transition-colors
+                                ${role === "BORROWER" ? "text-[#FCB82E]" : "text-black"}`}
+                            >
                                 Peminjam
                             </div>
 
                             {/* caption */}
-                            <div className="flex w-full h-fit p-2 justify-center items-center text-center text-sm">
+                            <div className="flex w-full h-fit p-2 justify-center items-center text-center text-sm text-gray-500">
                                 Saya membutuhkan bantuan dana pendidikan
                             </div>
-
                         </div>    
 
                     </div>

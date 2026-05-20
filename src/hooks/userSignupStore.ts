@@ -5,7 +5,7 @@ import { User }  from "@/types/user"
 
 type UserSignUpStore = {
     // these are the variables that the store store
-    user: User | null
+    user: User
     password : string
     role: string | null
 
@@ -13,15 +13,28 @@ type UserSignUpStore = {
     setUser: (u: User) => void
     setRole : (r : string) => void
     setPassword : (p : string) => void
-    logout : () => void
+    setEmail : (e : string) => void
+    clear : () => void
 
     isLoggedIn: () => boolean
 }
 
 export const useUserSignUpStore = create<UserSignUpStore>((set, get) => ({
-    user : null,
-    role : null,
+    user : {
+        username : "",
+        email : "",
+        id : "",
+    },
+    role : "",
     password : "",
+    
+    setEmail: (e : string) =>
+        set((state) => ({
+            user: {
+                ...state.user,
+                email: e, // Explicitly map 'e' to the 'email' property
+            }
+        })),
     
     setUser(u) {
         set({ user : u })
@@ -35,8 +48,16 @@ export const useUserSignUpStore = create<UserSignUpStore>((set, get) => ({
         set({ password : p })
     },
 
-    logout() {
-        set({ user : null})
+    clear() {
+        set({
+            user : {
+                username : "",
+                email : "",
+                id : "",
+            },
+            role : "",
+            password : "",
+        })
     },
 
     isLoggedIn : () => get().user !== null,
