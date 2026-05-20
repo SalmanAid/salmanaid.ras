@@ -71,40 +71,51 @@ export default function AdminLoanRequestPage() {
     <div className="flex flex-col justify-start items-center w-full min-h-screen bg-[#F9FAFB]">
       <AdminDashboard_AdminNavbar />
 
-      <div className="w-[90%] pt-10 pb-4">
-        <h1 className="text-4xl font-bold text-[#1E293B]">Daftar Pengajuan Pinjaman</h1>
-        <p className="text-lg text-gray-500 mt-2">
+      {/* Header Container - Replaced absolute w-[90%] with fluid bounding constraints */}
+      <div className="w-full max-w-350 px-4 sm:px-6 pt-6 sm:pt-10 pb-4">
+        <h1 className="text-2xl sm:text-4xl font-bold text-[#1E293B] tracking-tight">
+          Daftar Pengajuan Pinjaman
+        </h1>
+        <p className="text-sm sm:text-lg text-gray-500 mt-1.5 sm:mt-2 max-w-2xl">
           Atur dan review pengajuan pinjaman oleh mahasiswa dan dosen.
         </p>
       </div>
 
-      <div className="flex flex-col w-[90%] py-4">
-        {/* Filter Tabs with Hardcoded Dictionary Colors */}
-        <div className="flex gap-4 mb-6 border-b border-gray-200">
-          {[
-            { label: "All", value: undefined },
-            { label: "Pending", value: "PENDING" },
-            { label: "Approved", value: "APPROVED" },
-            { label: "Rejected", value: "REJECTED" },
-          ].map((tab) => (
-            <button
-              key={tab.label}
-              onClick={() => handleFilterChange(tab.value)}
-              className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${getTabColor(tab.value)} ${statusFilter !== tab.value ? "border-transparent hover:text-gray-700" : ""
+      {/* Main Content Area Container */}
+      <div className="flex flex-col w-full max-w-350 px-4 sm:px-6 py-2 sm:py-4">
+        
+        {/* ── FILTER TABS (Refactored for horizontal scroll touch behavior on mobile) ── */}
+        <div className="w-full border-b border-gray-200 mb-6">
+          <div className="flex gap-1 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth -mb-[1px]">
+            {[
+              { label: "All", value: undefined },
+              { label: "Pending", value: "PENDING" },
+              { label: "Approved", value: "APPROVED" },
+              { label: "Rejected", value: "REJECTED" },
+            ].map((tab) => (
+              <button
+                key={tab.label}
+                onClick={() => handleFilterChange(tab.value)}
+                className={`pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold transition-all border-b-2 whitespace-nowrap ${getTabColor(tab.value)} ${
+                  statusFilter !== tab.value ? "border-transparent text-gray-500 hover:text-gray-700" : ""
                 }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
+        {/* Dynamic Inner Table Rendering Element Frame */}
         <div className="w-full mb-6">
           <LoanRequest_LoanRequestsTable isLoading={isLoading} />
         </div>
 
-        {/* Pagination UI */}
-        <div className="flex justify-between items-center w-full py-4 bg-white px-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="text-sm text-gray-500 font-medium">
+        {/* ── PAGINATION CONTROLS (Refactored from single layout row to responsive stack blocks) ── */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center w-full py-4 bg-white px-5 sm:px-6 rounded-xl shadow-sm border border-gray-100">
+          
+          {/* Item Meta Counter Output Block */}
+          <div className="text-xs sm:text-sm text-gray-500 font-medium text-center sm:text-left">
             {totalItems === 0 ? (
               "No data to show"
             ) : (
@@ -116,27 +127,29 @@ export default function AdminLoanRequestPage() {
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Pagination Interactive Navigation Button Group */}
+          <div className="flex items-center justify-center gap-2">
             <button
               disabled={currentPageNumber === 1}
               onClick={() => setCurrentPageNumber((prev) => prev - 1)}
-              className="px-4 py-2 text-sm font-bold text-gray-600 bg-gray-50 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-100 transition-colors"
+              className="px-3.5 py-2 text-xs sm:text-sm font-bold text-gray-600 bg-gray-50 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-100 transition-colors active:scale-95"
             >
               Previous
             </button>
 
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-900 text-white text-sm font-bold">
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-900 text-white text-xs sm:text-sm font-bold shadow-sm">
               {currentPageNumber}
             </div>
 
             <button
               disabled={currentPageNumber >= maxPageNumber}
-              onClick={() => setCurrentPageNumber((prev) => prev + 1)}
-              className="px-4 py-2 text-sm font-bold text-gray-600 bg-gray-50 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-100 transition-colors"
+              onClick={() => setCurrentPageNumber((prev) => prev - 1)}
+              className="px-3.5 py-2 text-xs sm:text-sm font-bold text-gray-600 bg-gray-50 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-100 transition-colors active:scale-95"
             >
               Next
             </button>
           </div>
+
         </div>
       </div>
     </div>
