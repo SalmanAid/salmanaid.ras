@@ -15,6 +15,8 @@ export default auth((req) => {
     const isDonorRoute = pathname.startsWith("/donor");
     const isAdminRoute = pathname.startsWith("/admin");
     const isApplicantRoute = pathname.startsWith("/applicant");
+    const isProfileRoute = pathname.startsWith("/profile");
+    const isAccountRoute = pathname.startsWith("/account");
     const isAuthRoute = pathname === "/login" || pathname === "/register" || pathname === "/sign-up";
     const isRootRoute = pathname === "/";
     const isLoggedInRoute = pathname === "/logged-in";
@@ -27,7 +29,7 @@ export default auth((req) => {
     };
 
     // 1. Redirect pengguna yang belum login ke login (untuk area terproteksi)
-    if ((isDonorRoute || isAdminRoute || isApplicantRoute || isLoggedInRoute) && !isLoggedIn) {
+    if ((isDonorRoute || isAdminRoute || isApplicantRoute || isProfileRoute || isAccountRoute || isLoggedInRoute) && !isLoggedIn) {
         return NextResponse.redirect(new URL("/login", req.nextUrl));
     }
 
@@ -48,5 +50,5 @@ export default auth((req) => {
 });
 
 export const config = {
-    matcher: ["/", "/admin/:path*", "/donor/:path*", "/applicant/:path*", "/login", "/register", "/sign-up", "/logged-in"],
+    matcher: ["/", "/admin/:path*", "/donor/:path*", "/applicant/:path*", "/profile", "/profile/:path*", "/account/:path*", "/login", "/register", "/sign-up", "/logged-in"],
 };
