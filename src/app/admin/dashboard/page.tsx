@@ -17,9 +17,6 @@ import {
   getFinancialReportDateBounds,
 } from "@/lib/xlsx_converter";
 
-// ===============================
-// HELPERS
-// ===============================
 const formatRupiah = (value: number) =>
   new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -224,11 +221,11 @@ export default function AdminDashboardPage() {
       <AdminDashboard_AdminNavbar />
 
       {/* Page Content */}
-      <div className="flex flex-col w-full max-w-350 mx-auto px-6 py-6 gap-6">
+      <div className="flex flex-col w-full max-w-350 mx-auto px-4 sm:px-6 py-6 gap-6">
 
         {/* ── Stat Cards ── */}
-        <div className="grid grid-cols-4 gap-4">
-
+        {/* Switched from grid-cols-4 to an adaptive responsive column workflow */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <SummaryOfAspect
             title="Total Pool Funds"
             value={formatRupiah(totalDonation)}
@@ -268,7 +265,6 @@ export default function AdminDashboardPage() {
             value_color="#E7000B"
             update_caption_color="#E7000B"
           />
-
         </div>
 
         {/* ── Financial Overview ── */}
@@ -308,7 +304,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* ── Recent Activity ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
           <div className="mb-4">
             <h2 className="text-lg font-bold text-gray-800">Recent Activity</h2>
             <p className="text-sm text-gray-400 mt-0.5">Last 5 system activities</p>

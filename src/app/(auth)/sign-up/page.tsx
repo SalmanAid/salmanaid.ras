@@ -4,13 +4,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUserSignUpStore } from "@/hooks/userSignupStore";
 
 export default function SignUpPage() {
     const router = useRouter();
 
     // init variables
-    const [email, setEmail] = useState<string>("")
-    const [password, setPassword] = useState<string>("")
+    const email = useUserSignUpStore((state) => (state.user?.email))
+    const setEmail = useUserSignUpStore((state) => (state.setEmail))
+    const password = useUserSignUpStore((state) => (state.password))
+    const setPassword = useUserSignUpStore((state) => (state.setPassword))
     const [confirmedPassword, setConfirmedPassword] = useState<string>("")
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [showConfirmedPassword, setShowConfirmedPassword] = useState<boolean>(false);
@@ -199,7 +202,7 @@ export default function SignUpPage() {
 
                         {/* sign up container */}
                         <button
-                            onClick={handleRegister}
+                            onClick={() => {router.push("/sign-up/role")}}
                             disabled={loading}
                             className="bg-[#16C5DE] flex-1 h-12 flex justify-center items-center rounded-xl text-white font-bold hover:bg-[#13A6BB] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                         >

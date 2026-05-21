@@ -23,7 +23,7 @@ export default auth((req) => {
         if (roles.includes("ADMIN")) return "/admin/dashboard";
         if (roles.includes("DONOR")) return "/donor/dashboard";
         if (roles.includes("BORROWER")) return "/applicant/dashboard";
-        return "/donor/dashboard";
+        return "/applicant/dashboard";
     };
 
     // 1. Redirect pengguna yang belum login ke login (untuk area terproteksi)

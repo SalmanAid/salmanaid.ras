@@ -31,7 +31,6 @@ type NotificationsResponse = {
 const menuItems = [
     { href: "/applicant/dashboard", label: "Dashboard" },
     { href: "/applicant/apply", label: "Apply Loan" },
-    { href: "/not-found", label: "History" },
     { href: "/applicant/installment", label: "Installment" },
 ];
 
@@ -234,8 +233,7 @@ function NotificationBellButton() {
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 top-12 z-50 w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-[#E5E7EB] bg-white shadow-2xl sm:w-md">
-                    <div className="border-b border-[#E5E7EB] bg-[#F9FAFB] px-5 py-4">
+                    <div className="fixed left-4 right-4 md:absolute md:left-auto md:right-0 top-16 md:top-12 z-50 w-auto md:w-md max-w-none md:max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-[#E5E7EB] bg-white shadow-2xl">                    <div className="border-b border-[#E5E7EB] bg-[#F9FAFB] px-5 py-4">
                         <div className="flex items-center justify-between gap-4">
                             <div>
                                 <div className={`${plusJakartaSansFont.className} text-base font-bold text-[#111827]`}>
@@ -337,6 +335,8 @@ export default function ApplicantDashboard_ApplicantNavbar({ showNotifications =
         <nav className="sticky top-0 z-50 w-full border-b border-[#E5E7EB] bg-white shadow-sm">
             <div className="mx-auto max-w-350 px-6">
                 <div className="flex h-14.5 items-center justify-between">
+                    
+                    {/* Logo */}
                     <Link href="/applicant/dashboard" className="shrink-0 flex items-center">
                         <Image
                             src={RumahAmalHorizontalLogo}
@@ -348,6 +348,7 @@ export default function ApplicantDashboard_ApplicantNavbar({ showNotifications =
                         />
                     </Link>
 
+                    {/* Desktop Navigation Menus (Hidden on Mobile) */}
                     <div className="hidden items-center gap-10 md:flex">
                         {menuItems.map((item) => {
                             const isActive =
@@ -370,13 +371,15 @@ export default function ApplicantDashboard_ApplicantNavbar({ showNotifications =
                         })}
                     </div>
 
+                    {/* Right Controls Container */}
                     <div className="flex items-center gap-3">
                         {showNotifications && <NotificationBellButton />}
 
+                        {/* Profile & Mobile Menu Dropdown */}
                         <div className="group relative">
                             <button
                                 type="button"
-                                className="inline-flex items-center gap-2 rounded-full bg-white px-2 py-1 transition-colors hover:bg-gray-50"
+                                className="inline-flex items-center gap-2 rounded-full bg-white px-2 py-1 transition-colors hover:bg-gray-50 focus:outline-none"
                             >
                                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#DFF3F7]">
                                     <Image
@@ -387,13 +390,45 @@ export default function ApplicantDashboard_ApplicantNavbar({ showNotifications =
                                         className="h-4 w-4"
                                     />
                                 </span>
-                                <span className="hidden max-w-27.5 truncate text-[12.5px] font-medium text-[#111827] sm:inline" title={username}>
+                                <span className="max-w-20 xs:max-w-24 sm:max-w-27.5 truncate text-[12.5px] font-medium text-[#111827]" title={username}>
                                     {username}
                                 </span>
                                 <ChevronDown className="h-3.5 w-3.5 text-gray-500 transition-transform duration-150 group-hover:rotate-180" />
                             </button>
 
-                            <div className="invisible absolute right-0 top-[calc(100%+8px)] z-20 w-36 rounded-lg border border-gray-200 bg-white p-1 opacity-0 shadow-lg transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                            {/* Responsive Dropdown Box */}
+                            <div className="invisible absolute right-0 top-[calc(100%+8px)] z-20 w-48 rounded-xl border border-gray-200 bg-white p-1.5 opacity-0 shadow-lg transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                                
+                                {/* Mobile Menu Section (Hidden on Desktop) */}
+                                <div className="flex flex-col border-b border-gray-100 pb-1.5 mb-1.5 md:hidden">
+                                    <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                        Menu
+                                    </div>
+                                    {menuItems.map((item) => {
+                                        const isActive =
+                                            pathname === item.href ||
+                                            (item.href !== "/applicant/dashboard" && pathname?.startsWith(item.href));
+
+                                        return (
+                                            <Link
+                                                key={item.label}
+                                                href={item.href}
+                                                className={`w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium transition-colors ${
+                                                    isActive 
+                                                        ? "bg-[#F0FBFD] text-[#07B0C8]" 
+                                                        : "text-gray-700 hover:bg-gray-50 hover:text-[#07B0C8]"
+                                                }`}
+                                            >
+                                                {item.label}
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Account / Action Section */}
+                                <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider md:hidden">
+                                    Akun
+                                </div>
                                 <button
                                     type="button"
                                     onClick={() => signOut({ callbackUrl: "/login" })}
@@ -402,6 +437,7 @@ export default function ApplicantDashboard_ApplicantNavbar({ showNotifications =
                                     Logout
                                 </button>
                             </div>
+
                         </div>
                     </div>
                 </div>
