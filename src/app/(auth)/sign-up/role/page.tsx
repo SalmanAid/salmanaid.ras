@@ -4,13 +4,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, FileText, Upload } from "lucide-react";
+import { ArrowLeft, CheckCircle2, FileText, Upload } from "lucide-react";
 
 import HeartBlueIcon from "../../../../../public/heart-blue.svg"
 import GraduationCapIcon from "../../../../../public/graduation-cap.svg"
 import { useUserSignUpStore } from "@/hooks/userSignupStore";
 
 type DocumentKey = "identityCard" | "institutionCard" | "familyCard";
+type SignUpStep = "role" | "documents";
 
 const DOCUMENT_REQUIREMENTS: Record<string, { key: DocumentKey; label: string; helper: string }[]> = {
     DONOR: [
@@ -51,9 +52,9 @@ function DocumentPicker({
                     <div className="text-sm font-bold text-slate-900">{label}</div>
                     <div className="mt-0.5 text-xs leading-5 text-gray-500">{helper}</div>
                     {file && (
-                        <div className="mt-2 flex min-w-0 items-center gap-2 rounded-lg bg-emerald-50 px-2.5 py-2 text-xs font-semibold text-emerald-700">
+                        <div className="mt-2 grid min-w-0 max-w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-lg bg-emerald-50 px-2.5 py-2 text-xs font-semibold text-emerald-700">
                             <CheckCircle2 size={15} className="shrink-0" />
-                            <span className="truncate">{file.name}</span>
+                            <span className="block min-w-0 truncate" title={file.name}>{file.name}</span>
                             <span className="shrink-0 text-emerald-600/80">{formatFileSize(file.size)}</span>
                         </div>
                     )}
@@ -95,13 +96,15 @@ export default function ChooseRolePage() {
 
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [step, setStep] = useState<SignUpStep>("role");
     const [documents, setDocuments] = useState<Record<DocumentKey, File | null>>({
         identityCard: null,
         institutionCard: null,
         familyCard: null,
     });
 
-    const requiredDocuments = role ? DOCUMENT_REQUIREMENTS[role] || [] : [];
+    const hasSelectedRole = role === "DONOR" || role === "BORROWER";
+    const requiredDocuments = hasSelectedRole ? DOCUMENT_REQUIREMENTS[role] || [] : [];
 
     const setDocument = (key: DocumentKey, file: File) => {
         setDocuments((current) => ({
@@ -109,6 +112,22 @@ export default function ChooseRolePage() {
             [key]: file,
         }));
         setError(null);
+    };
+
+    const handleContinueToDocuments = () => {
+        setError(null);
+
+        if (!hasSelectedRole) {
+            setError("Pilih role terlebih dahulu.");
+            return;
+        }
+
+        if (!email || !password) {
+            setError("Email dan password tidak ditemukan. Silakan ulangi pendaftaran.");
+            return;
+        }
+
+        setStep("documents");
     };
 
     // functions for submit actions
@@ -169,7 +188,7 @@ export default function ChooseRolePage() {
 
     return (
         // main container
-        <div className="font-sans flex flex-col w-full min-h-screen overflow-hidden items-center justify-center relative">
+        <div className="font-sans flex min-h-screen w-full flex-col items-center justify-center overflow-x-hidden overflow-y-auto px-4 py-10 relative">
             <Image
                 src="/auth-bg.svg"
                 alt=""
@@ -179,7 +198,7 @@ export default function ChooseRolePage() {
             />
 
             {/* rumah amal salman logo */}
-            <div className="flex relative w-full justify-center items-center h-[30%] mb-8">
+            <div className="flex relative w-full justify-center items-center mb-8">
                 <Image
                     src="/rumah-amal-logo.svg"
                     alt="Logo Rumah Amal Salman"
@@ -190,91 +209,118 @@ export default function ChooseRolePage() {
             </div>
 
             {/* login container */}
-            <div className="flex w-full justify-center items-center px-4">
+            <div className="flex w-full justify-center items-center">
 
-                <div className="border border-black/20 bg-white p-8 w-full max-w-md rounded-2xl shadow-2xl flex flex-col gap-6">
+                <div className={`border border-black/20 bg-white p-6 sm:p-8 w-full rounded-2xl shadow-2xl flex flex-col gap-6 ${step === "documents" ? "max-w-2xl" : "max-w-md"}`}>
 
                     {/* greeting container */}
                     <div className="grid justify-center items-center gap-y-2 text-center">
                         {/* greeting caption container */}
                         <div className="text-lg font-bold">
-                            Selamat Datang! <span className="text-[#16C5DE]">Pilih Peran Anda</span>
+                            {step === "role" ? (
+                                <>Selamat Datang! <span className="text-[#16C5DE]">Pilih Peran Anda</span></>
+                            ) : (
+                                <>Lengkapi <span className="text-[#16C5DE]">Dokumen Identitas</span></>
+                            )}
                         </div>
 
                         {/* sub greeting container */}
                         <div className="text-sm text-gray-500" >
-                            Pilih peran utama Anda untuk menyesuaikan pengalaman dashboard. Anda dapat menambahkan peran lain nanti.
+                            {step === "role"
+                                ? "Pilih peran utama Anda untuk menyesuaikan pengalaman dashboard. Anda dapat menambahkan peran lain nanti."
+                                : "Akun akan masuk antrean verifikasi admin setelah pendaftaran selesai."}
                         </div>
 
                     </div>
 
-
-                    {/* option role container */}
-                    <div className="flex justify-center items-stretch w-full gap-4">
-
-                        {/* Donatur container */}
-                        <div 
-                            className={`flex flex-col w-[50%] border border-solid rounded-2xl p-4 cursor-pointer transition-all duration-300 transform
-                                ${role === "DONOR" 
-                                    ? "bg-[#16C5DE]/10 border-[#16C5DE] -translate-y-2 shadow-xl ring-2 ring-[#16C5DE]/50" 
-                                    : "bg-white border-gray-300 hover:border-gray-400 hover:-translate-y-0.5 hover:shadow-md"
-                                }`} 
-                            onClick={() => setRole("DONOR")}
-                        >
-                            {/* love sign */}
-                            <div className="flex w-full h-fit p-2 justify-center items-center">
-                                <Image 
-                                    src={HeartBlueIcon}
-                                    alt="Donor Icon"
-                                />
-                            </div>
-
-                            {/* Title */}
-                            <div className={`flex w-full h-fit p-2 justify-center items-center font-bold transition-colors
-                                ${role === "DONOR" ? "text-[#16C5DE]" : "text-black"}`}
-                            >
-                                Donatur
-                            </div>
-
-                            {/* caption */}
-                            <div className="flex w-full h-fit p-2 justify-center items-center text-center text-sm text-gray-500">
-                                Saya ingin menyalurkan bantuan dana
-                            </div>
-                        </div>
-
-                        {/* Peminjam container */}
-                        <div 
-                            className={`flex flex-col w-[50%] border border-solid rounded-2xl p-4 cursor-pointer transition-all duration-300 transform
-                                ${role === "BORROWER" 
-                                    ? "bg-[#FCB82E]/10 border-[#FCB82E] -translate-y-2 shadow-xl ring-2 ring-[#FCB82E]/50" 
-                                    : "bg-white border-gray-300 hover:border-gray-400 hover:-translate-y-0.5 hover:shadow-md"
-                                }`} 
-                            onClick={() => setRole("BORROWER")}
-                        >
-                            {/* graduation cap sign */}
-                            <div className="flex w-full h-fit p-2 justify-center items-center">
-                                <Image 
-                                    src={GraduationCapIcon}
-                                    alt="Applicant Icon"
-                                />
-                            </div>
-
-                            {/* Title */}
-                            <div className={`flex w-full h-fit p-2 justify-center items-center font-bold transition-colors
-                                ${role === "BORROWER" ? "text-[#FCB82E]" : "text-black"}`}
-                            >
-                                Peminjam
-                            </div>
-
-                            {/* caption */}
-                            <div className="flex w-full h-fit p-2 justify-center items-center text-center text-sm text-gray-500">
-                                Saya membutuhkan bantuan dana pendidikan
-                            </div>
-                        </div>    
-
+                    <div className="flex items-center justify-center gap-2 text-xs font-bold">
+                        <span className={`rounded-full px-3 py-1 ${step === "role" ? "bg-[#F0FBFD] text-[#07B0C8]" : "bg-emerald-50 text-emerald-700"}`}>
+                            1. Role
+                        </span>
+                        <span className="h-px w-8 bg-gray-200" />
+                        <span className={`rounded-full px-3 py-1 ${step === "documents" ? "bg-[#F0FBFD] text-[#07B0C8]" : "bg-gray-100 text-gray-400"}`}>
+                            2. Dokumen
+                        </span>
                     </div>
 
-                    {role && (
+                    {step === "role" && (
+                        <>
+                            {/* option role container */}
+                            <div className="flex justify-center items-stretch w-full gap-4">
+
+                                {/* Donatur container */}
+                                <div 
+                                    className={`flex flex-col w-[50%] border border-solid rounded-2xl p-4 cursor-pointer transition-all duration-300 transform
+                                        ${role === "DONOR" 
+                                            ? "bg-[#16C5DE]/10 border-[#16C5DE] -translate-y-2 shadow-xl ring-2 ring-[#16C5DE]/50" 
+                                            : "bg-white border-gray-300 hover:border-gray-400 hover:-translate-y-0.5 hover:shadow-md"
+                                        }`} 
+                                    onClick={() => setRole("DONOR")}
+                                >
+                                    {/* love sign */}
+                                    <div className="flex w-full h-fit p-2 justify-center items-center">
+                                        <Image 
+                                            src={HeartBlueIcon}
+                                            alt="Donor Icon"
+                                        />
+                                    </div>
+
+                                    {/* Title */}
+                                    <div className={`flex w-full h-fit p-2 justify-center items-center font-bold transition-colors
+                                        ${role === "DONOR" ? "text-[#16C5DE]" : "text-black"}`}
+                                    >
+                                        Donatur
+                                    </div>
+
+                                    {/* caption */}
+                                    <div className="flex w-full h-fit p-2 justify-center items-center text-center text-sm text-gray-500">
+                                        Saya ingin menyalurkan bantuan dana
+                                    </div>
+                                </div>
+
+                                {/* Peminjam container */}
+                                <div 
+                                    className={`flex flex-col w-[50%] border border-solid rounded-2xl p-4 cursor-pointer transition-all duration-300 transform
+                                        ${role === "BORROWER" 
+                                            ? "bg-[#FCB82E]/10 border-[#FCB82E] -translate-y-2 shadow-xl ring-2 ring-[#FCB82E]/50" 
+                                            : "bg-white border-gray-300 hover:border-gray-400 hover:-translate-y-0.5 hover:shadow-md"
+                                        }`} 
+                                    onClick={() => setRole("BORROWER")}
+                                >
+                                    {/* graduation cap sign */}
+                                    <div className="flex w-full h-fit p-2 justify-center items-center">
+                                        <Image 
+                                            src={GraduationCapIcon}
+                                            alt="Applicant Icon"
+                                        />
+                                    </div>
+
+                                    {/* Title */}
+                                    <div className={`flex w-full h-fit p-2 justify-center items-center font-bold transition-colors
+                                        ${role === "BORROWER" ? "text-[#FCB82E]" : "text-black"}`}
+                                    >
+                                        Peminjam
+                                    </div>
+
+                                    {/* caption */}
+                                    <div className="flex w-full h-fit p-2 justify-center items-center text-center text-sm text-gray-500">
+                                        Saya membutuhkan bantuan dana pendidikan
+                                    </div>
+                                </div>    
+
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={handleContinueToDocuments}
+                                className="bg-[#16C5DE] h-12 flex justify-center items-center rounded-xl text-white font-bold hover:bg-[#13A6BB] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                                Lanjut Upload Dokumen
+                            </button>
+                        </>
+                    )}
+
+                    {step === "documents" && (
                         <div className="rounded-2xl border border-gray-200 bg-[#F8FAFC] p-4">
                             <div className="flex items-start justify-between gap-3">
                                 <div>
@@ -314,19 +360,34 @@ export default function ChooseRolePage() {
                         </div>
                     )}
 
-                    {/* submit buttons container */}
-                    <div className="flex items-center justify-center w-full gap-x-2 mt-2">
+                    {step === "documents" && (
+                        /* submit buttons container */
+                        <div className="flex flex-col-reverse items-stretch justify-center w-full gap-2 mt-2 sm:flex-row sm:items-center">
 
-                        {/* sign up container */}
-                        <button
-                            onClick={handleUserRoleSubmission}
-                            disabled={loading}
-                            className="bg-[#16C5DE] flex-1 h-12 flex justify-center items-center rounded-xl text-white font-bold hover:bg-[#13A6BB] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-                        >
-                            {loading ? "Loading..." : "Selesaikan Pendaftaran"}
-                        </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setError(null);
+                                    setStep("role");
+                                }}
+                                disabled={loading}
+                                className="flex h-12 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 font-bold text-slate-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-70"
+                            >
+                                <ArrowLeft size={18} />
+                                Kembali
+                            </button>
 
-                    </div>
+                            {/* sign up container */}
+                            <button
+                                onClick={handleUserRoleSubmission}
+                                disabled={loading}
+                                className="bg-[#16C5DE] flex-1 h-12 flex justify-center items-center rounded-xl text-white font-bold hover:bg-[#13A6BB] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                                {loading ? "Loading..." : "Selesaikan Pendaftaran"}
+                            </button>
+
+                        </div>
+                    )}
 
                     {/* minimal caption */}
                     <div className="text-xs flex items-center justify-center text-black/40 text-center mt-4">

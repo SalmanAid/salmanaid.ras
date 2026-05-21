@@ -57,7 +57,10 @@ function UploadRow({
           <div className="min-w-0">
             <div className="text-sm font-bold text-slate-900">{label}</div>
             <p className="mt-1 text-xs leading-5 text-gray-500">{helper}</p>
-            <p className={`mt-2 text-xs font-bold ${isComplete ? "text-emerald-700" : "text-amber-700"}`}>
+            <p
+              className={`mt-2 max-w-full truncate text-xs font-bold ${isComplete ? "text-emerald-700" : "text-amber-700"}`}
+              title={file?.name}
+            >
               {file ? file.name : alreadyUploaded ? "Sudah tersedia di akun" : "Belum tersedia"}
             </p>
           </div>
@@ -86,7 +89,12 @@ function UploadRow({
 }
 
 export default function AccountRolesPage() {
-  const [selectedRole, setSelectedRole] = useState<RoleName>("BORROWER");
+  const [selectedRole, setSelectedRole] = useState<RoleName>(() => {
+    if (typeof window === "undefined") return "BORROWER";
+
+    const roleParam = new URLSearchParams(window.location.search).get("role");
+    return roleParam === "DONOR" || roleParam === "BORROWER" ? roleParam : "BORROWER";
+  });
   const [overview, setOverview] = useState<AccountOverview | null>(null);
   const [files, setFiles] = useState<Record<DocumentKey, File | null>>({
     identityCard: null,
@@ -113,11 +121,7 @@ export default function AccountRolesPage() {
   };
 
   useEffect(() => {
-    const roleParam = new URLSearchParams(window.location.search).get("role");
-    if (roleParam === "DONOR" || roleParam === "BORROWER") {
-      setSelectedRole(roleParam);
-    }
-
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadOverview();
   }, []);
 
