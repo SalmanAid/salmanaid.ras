@@ -20,7 +20,6 @@ export default function SignUpPage() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
-    // functions for submit actions
     const handleRegister = async () => {
         setError(null);
 
@@ -35,32 +34,7 @@ export default function SignUpPage() {
         }
 
         setLoading(true);
-
-        try {
-            const res = await fetch("/api/auth/register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    email,
-                    password,
-                    name: email.split('@')[0], // Default name from email part
-                }),
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                setError(data.error || "Registrasi gagal.");
-                setLoading(false);
-            } else {
-                // Success, redirect to login
-                router.push("/login");
-            }
-        } catch (err) {
-            console.error("Register error:", err);
-            setError("Terjadi kesalahan sistem.");
-            setLoading(false);
-        }
+        router.push("/sign-up/role");
     };
 
     return (
@@ -202,7 +176,7 @@ export default function SignUpPage() {
 
                         {/* sign up container */}
                         <button
-                            onClick={() => {router.push("/sign-up/role")}}
+                            onClick={handleRegister}
                             disabled={loading}
                             className="bg-[#16C5DE] flex-1 h-12 flex justify-center items-center rounded-xl text-white font-bold hover:bg-[#13A6BB] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                         >

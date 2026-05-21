@@ -2,12 +2,86 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { CheckCircle2, FileText, Upload } from "lucide-react";
 
 import HeartBlueIcon from "../../../../../public/heart-blue.svg"
 import GraduationCapIcon from "../../../../../public/graduation-cap.svg"
 import { useUserSignUpStore } from "@/hooks/userSignupStore";
+
+type DocumentKey = "identityCard" | "institutionCard" | "familyCard";
+
+const DOCUMENT_REQUIREMENTS: Record<string, { key: DocumentKey; label: string; helper: string }[]> = {
+    DONOR: [
+        { key: "identityCard", label: "KTP", helper: "Upload foto/scan KTP yang jelas." },
+    ],
+    BORROWER: [
+        { key: "identityCard", label: "KTP", helper: "Upload foto/scan KTP yang jelas." },
+        { key: "institutionCard", label: "Kartu Identitas Instansi", helper: "KTM, Kartu Tanda Dosen, atau identitas instansi lain." },
+        { key: "familyCard", label: "Kartu Keluarga", helper: "Upload KK terbaru yang terbaca." },
+    ],
+};
+
+function formatFileSize(size: number) {
+    if (size < 1024 * 1024) return `${Math.max(1, Math.round(size / 1024))} KB`;
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function DocumentPicker({
+    label,
+    helper,
+    file,
+    onChange,
+}: {
+    label: string;
+    helper: string;
+    file: File | null;
+    onChange: (file: File) => void;
+}) {
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    return (
+        <div className="rounded-xl border border-gray-200 bg-white p-3">
+            <div className="flex items-start gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#F0FBFD] text-[#07B0C8]">
+                    <FileText size={18} />
+                </div>
+                <div className="min-w-0 flex-1">
+                    <div className="text-sm font-bold text-slate-900">{label}</div>
+                    <div className="mt-0.5 text-xs leading-5 text-gray-500">{helper}</div>
+                    {file && (
+                        <div className="mt-2 flex min-w-0 items-center gap-2 rounded-lg bg-emerald-50 px-2.5 py-2 text-xs font-semibold text-emerald-700">
+                            <CheckCircle2 size={15} className="shrink-0" />
+                            <span className="truncate">{file.name}</span>
+                            <span className="shrink-0 text-emerald-600/80">{formatFileSize(file.size)}</span>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <input
+                ref={inputRef}
+                type="file"
+                accept=".jpg,.jpeg,.png,.pdf"
+                className="hidden"
+                onChange={(event) => {
+                    const selectedFile = event.target.files?.[0];
+                    if (selectedFile) onChange(selectedFile);
+                }}
+            />
+
+            <button
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                className="mt-3 inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-[#07B0C8]/30 bg-[#F0FBFD] text-xs font-bold text-[#078EA2] transition hover:bg-[#E3F8FC]"
+            >
+                <Upload size={15} />
+                {file ? "Ganti Dokumen" : "Upload Dokumen"}
+            </button>
+        </div>
+    );
+}
 
 export default function ChooseRolePage() {
     const router = useRouter();
@@ -21,6 +95,21 @@ export default function ChooseRolePage() {
 
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [documents, setDocuments] = useState<Record<DocumentKey, File | null>>({
+        identityCard: null,
+        institutionCard: null,
+        familyCard: null,
+    });
+
+    const requiredDocuments = role ? DOCUMENT_REQUIREMENTS[role] || [] : [];
+
+    const setDocument = (key: DocumentKey, file: File) => {
+        setDocuments((current) => ({
+            ...current,
+            [key]: file,
+        }));
+        setError(null);
+    };
 
     // functions for submit actions
     const handleUserRoleSubmission = async () => {
@@ -31,18 +120,31 @@ export default function ChooseRolePage() {
             return;
         }
 
+        const missingDocuments = requiredDocuments.filter((document) => !documents[document.key]);
+        if (missingDocuments.length > 0) {
+            setError(`Lengkapi dokumen: ${missingDocuments.map((document) => document.label).join(", ")}.`);
+            return;
+        }
+
         setLoading(true);
 
         try {
+            const formData = new FormData();
+            formData.append("email", email);
+            formData.append("password", password);
+            formData.append("name", email.split("@")[0]);
+            formData.append("role", role);
+
+            requiredDocuments.forEach((document) => {
+                const file = documents[document.key];
+                if (file) {
+                    formData.append(document.key, file);
+                }
+            });
+
             const res = await fetch("/api/auth/register", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    email,
-                    password,
-                    name: email.split('@')[0], // Default name from email part
-                    role:  role
-                }),
+                body: formData,
             });
 
             const data = await res.json();
@@ -171,6 +273,40 @@ export default function ChooseRolePage() {
                         </div>    
 
                     </div>
+
+                    {role && (
+                        <div className="rounded-2xl border border-gray-200 bg-[#F8FAFC] p-4">
+                            <div className="flex items-start justify-between gap-3">
+                                <div>
+                                    <div className="text-sm font-bold text-slate-900">
+                                        Upload Dokumen Identitas
+                                    </div>
+                                    <p className="mt-1 text-xs leading-5 text-gray-500">
+                                        Akun akan masuk antrean verifikasi admin setelah pendaftaran selesai.
+                                    </p>
+                                </div>
+                                <div className="rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#07B0C8]">
+                                    {requiredDocuments.length} wajib
+                                </div>
+                            </div>
+
+                            <div className="mt-4 grid gap-3">
+                                {requiredDocuments.map((document) => (
+                                    <DocumentPicker
+                                        key={document.key}
+                                        label={document.label}
+                                        helper={document.helper}
+                                        file={documents[document.key]}
+                                        onChange={(file) => setDocument(document.key, file)}
+                                    />
+                                ))}
+                            </div>
+
+                            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] font-medium leading-5 text-amber-800">
+                                Gunakan file JPG, PNG, atau PDF maksimal 10MB. Pastikan semua tulisan terlihat jelas.
+                            </div>
+                        </div>
+                    )}
 
                     {error && (
                         <div className="text-red-500 text-sm text-center bg-red-50 p-2 rounded-lg border border-red-100">
