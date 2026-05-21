@@ -1,6 +1,9 @@
 import { auth } from "@/auth";
 import { UserDocumentsService } from "@/services/user-documents.service";
+import type { UserDocumentType } from "@/services/account-verification.service";
 import { NextRequest, NextResponse } from "next/server";
+
+const USER_DOCUMENT_TYPES: UserDocumentType[] = ["identityCard", "institutionCard", "familyCard"];
 
 /**
  * POST /api/user/documents/upload
@@ -20,9 +23,7 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const file = formData.get("file") as File;
-    const documentType = formData.get("documentType") as
-      | "identityCard"
-      | "familyCard";
+    const documentType = formData.get("documentType") as UserDocumentType;
 
     if (!file) {
       return NextResponse.json(
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!["identityCard", "familyCard"].includes(documentType)) {
+    if (!USER_DOCUMENT_TYPES.includes(documentType)) {
       return NextResponse.json(
         { error: "INVALID_DOCUMENT_TYPE" },
         { status: 400 }
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     if (error.message === "FILE_TOO_LARGE") {
       return NextResponse.json(
-        { error: "File size exceeds 5MB limit" },
+        { error: "File size exceeds 10MB limit" },
         { status: 413 }
       );
     }
@@ -84,8 +85,7 @@ export async function GET(request: NextRequest) {
     }
 
     const documentType = request.nextUrl.searchParams.get("documentType") as
-      | "identityCard"
-      | "familyCard"
+      | UserDocumentType
       | null;
 
     if (!documentType) {
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (!["identityCard", "familyCard"].includes(documentType)) {
+    if (!USER_DOCUMENT_TYPES.includes(documentType)) {
       return NextResponse.json(
         { error: "INVALID_DOCUMENT_TYPE" },
         { status: 400 }
@@ -118,8 +118,9 @@ export async function GET(request: NextRequest) {
       );
     }
     if (
-      error.message === "IDENTITY_CARD_NOT_FOUND" ||
-      error.message === "FAMILY_CARD_NOT_FOUND"
+      error.message === "IDENTITYCARD_NOT_FOUND" ||
+      error.message === "INSTITUTIONCARD_NOT_FOUND" ||
+      error.message === "FAMILYCARD_NOT_FOUND"
     ) {
       return NextResponse.json(
         { error: "Document not found" },
@@ -150,8 +151,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const documentType = request.nextUrl.searchParams.get("documentType") as
-      | "identityCard"
-      | "familyCard"
+      | UserDocumentType
       | null;
 
     if (!documentType) {
@@ -161,7 +161,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    if (!["identityCard", "familyCard"].includes(documentType)) {
+    if (!USER_DOCUMENT_TYPES.includes(documentType)) {
       return NextResponse.json(
         { error: "INVALID_DOCUMENT_TYPE" },
         { status: 400 }
@@ -184,8 +184,9 @@ export async function DELETE(request: NextRequest) {
       );
     }
     if (
-      error.message === "IDENTITY_CARD_NOT_FOUND" ||
-      error.message === "FAMILY_CARD_NOT_FOUND"
+      error.message === "IDENTITYCARD_NOT_FOUND" ||
+      error.message === "INSTITUTIONCARD_NOT_FOUND" ||
+      error.message === "FAMILYCARD_NOT_FOUND"
     ) {
       return NextResponse.json(
         { error: "Document not found" },

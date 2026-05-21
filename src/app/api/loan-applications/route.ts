@@ -3,6 +3,8 @@ import { LoanApplicationSchema } from "@/schemas/loan.schema";
 import { LoanService } from "@/services/loan.service";
 import { LoanApplicationStatus } from "@/generated/prisma";
 import { auth } from "@/auth";
+import { AccountVerificationService } from "@/services/account-verification.service";
+import { ROLES } from "@/lib/roles";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,6 +13,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized. Harap login terlebih dahulu." }, { status: 401 });
     }
     const userId = session.user.id;
+
+    try {
+      await AccountVerificationService.assertRoleVerified(userId, ROLES.BORROWER);
+    } catch (verificationError) {
+      if (verificationError instanceof Error) {
+        if (verificationError.message === "ROLE_NOT_FOUND") {
+          return NextResponse.json(
+            { error: "Akun belum memiliki role Peminjam." },
+            { status: 403 }
+          );
+        }
+
+        if (verificationError.message.startsWith("MISSING_DOCUMENTS:")) {
+          return NextResponse.json(
+            { error: "Dokumen identitas Peminjam belum lengkap." },
+            { status: 403 }
+          );
+        }
+
+        if (verificationError.message.startsWith("ACCOUNT_NOT_VERIFIED:")) {
+          return NextResponse.json(
+            { error: "Akun Belum Terverifikasi, Tunggu Hingga Admin Melakukan Verifikasi." },
+            { status: 403 }
+          );
+        }
+      }
+
+      throw verificationError;
+    }
 
     const body = await req.json();
 
