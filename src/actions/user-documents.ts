@@ -7,7 +7,7 @@
  */
 export async function uploadUserDocument(
   file: File,
-  documentType: "identityCard" | "familyCard"
+  documentType: "identityCard" | "institutionCard" | "familyCard"
 ) {
   try {
     const formData = new FormData();
@@ -36,7 +36,7 @@ export async function uploadUserDocument(
  * const { signedUrl } = await getUserDocumentUrl("identityCard");
  */
 export async function getUserDocumentUrl(
-  documentType: "identityCard" | "familyCard"
+  documentType: "identityCard" | "institutionCard" | "familyCard"
 ) {
   try {
     const response = await fetch(
@@ -63,7 +63,7 @@ export async function getUserDocumentUrl(
  * await deleteUserDocument("identityCard");
  */
 export async function deleteUserDocument(
-  documentType: "identityCard" | "familyCard"
+  documentType: "identityCard" | "institutionCard" | "familyCard"
 ) {
   try {
     const response = await fetch(
