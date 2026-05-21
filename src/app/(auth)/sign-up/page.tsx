@@ -4,20 +4,22 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUserSignUpStore } from "@/hooks/userSignupStore";
 
 export default function SignUpPage() {
     const router = useRouter();
 
     // init variables
-    const [email, setEmail] = useState<string>("")
-    const [password, setPassword] = useState<string>("")
+    const email = useUserSignUpStore((state) => (state.user?.email))
+    const setEmail = useUserSignUpStore((state) => (state.setEmail))
+    const password = useUserSignUpStore((state) => (state.password))
+    const setPassword = useUserSignUpStore((state) => (state.setPassword))
     const [confirmedPassword, setConfirmedPassword] = useState<string>("")
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [showConfirmedPassword, setShowConfirmedPassword] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
-    // functions for submit actions
     const handleRegister = async () => {
         setError(null);
 
@@ -32,32 +34,7 @@ export default function SignUpPage() {
         }
 
         setLoading(true);
-
-        try {
-            const res = await fetch("/api/auth/register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    email,
-                    password,
-                    name: email.split('@')[0], // Default name from email part
-                }),
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                setError(data.error || "Registrasi gagal.");
-                setLoading(false);
-            } else {
-                // Success, redirect to login
-                router.push("/login");
-            }
-        } catch (err) {
-            console.error("Register error:", err);
-            setError("Terjadi kesalahan sistem.");
-            setLoading(false);
-        }
+        router.push("/sign-up/role");
     };
 
     return (

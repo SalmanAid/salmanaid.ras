@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/table"
 import { useLoanRequestStore } from "@/hooks/loanRequestStore"
 import Image from "next/image"
-import { useRouter } from "next/navigation" // Import the router
-import DefaultAvatarLogo from  "../../../../public/default-avatar.svg"
+import { useRouter } from "next/navigation"
+import DefaultAvatarLogo from "../../../../public/default-avatar.svg"
 
 // ===============================
 // HELPERS
@@ -44,7 +44,7 @@ const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR',
-        minimumFractionDigits: 0
+        maximumFractionDigits: 0
     }).format(amount).replace("IDR", "Rp");
 };
 
@@ -113,11 +113,10 @@ type LoanRequestRow = {
 // COMPONENT
 // ===============================
 export default function LoanRequest_LoanRequestsTable({ isLoading = false }: { isLoading?: boolean }) {
-    const router = useRouter(); // Initialize router
+    const router = useRouter();
     const loans = useLoanRequestStore((state) => state.loans);
     const setSelectedLoan = useLoanRequestStore((state) => state.setSelectedLoan);
 
-    // Wrapper function to handle both actions
     const handleActionClick = (loan: LoanRequestRow) => {
         const studentIdAttachment = loan.attachments?.find((attachment) => attachment.documentType === "student_id_card");
         const familyCardAttachment = loan.attachments?.find((attachment) => attachment.documentType === "family_card");
@@ -165,93 +164,168 @@ export default function LoanRequest_LoanRequestsTable({ isLoading = false }: { i
     }
 
     return (
-        <div className="w-full border-t border-gray-100 bg-white rounded-xl shadow-sm overflow-hidden">
-            <Table>
-                <TableHeader className="bg-[#F9FAFB]">
-                    <TableRow>
-                        <TableHead className="text-[#64748B] font-semibold text-xs uppercase px-6">Applicant Details</TableHead>
-                        <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Institution</TableHead>
-                        <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Requested Amount</TableHead>
-                        <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Date Submitted</TableHead>
-                        <TableHead className="text-[#64748B] font-semibold text-xs uppercase text-center">Status</TableHead>
-                        <TableHead className="text-[#64748B] font-semibold text-xs uppercase text-center">Action</TableHead>
-                    </TableRow>
-                </TableHeader>
+        <div className="w-full">
+            
+            {/* ── MOBILE LIST VIEW (Visible on Mobile, Hidden on Desktop) ── */}
+            <div className="flex flex-col gap-4 md:hidden">
+                {loans.map((loan) => {
+                    const statusKey = (loan.status || "PENDING").toUpperCase() as keyof typeof StatusActionDict;
+                    const config = StatusActionDict[statusKey];
 
-                <TableBody>
-                    {loans.map((loan) => {
-                        const statusKey = (loan.status || "PENDING").toUpperCase() as keyof typeof StatusActionDict;
-                        const config = StatusActionDict[statusKey];
-
-                        return (
-                            <TableRow key={loan.id || loan.loanApplicationId} className="hover:bg-gray-50 border-b border-gray-50 transition-colors">
-                                
-                                {/* Applicant Details */}
-                                <TableCell className="py-4 px-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className="relative w-10 h-10 rounded-full overflow-hidden border border-gray-100 shrink-0">
-                                            <Image 
-                                                src={loan.image || DefaultAvatarLogo} 
-                                                alt="Profile" 
-                                                fill
-                                                className="object-cover"
-                                            />
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="font-bold text-[#1E293B] text-sm">{loan.borrower?.name || "Muhammad Fithra Rizki"}</span>
-                                            <span className="text-[#64748B] text-[11px] font-medium uppercase tracking-tight">
-                                                REQ-2023-089 • {loan.idNumber || "13523049"}
-                                            </span>
-                                        </div>
+                    return (
+                        <div 
+                            key={loan.id || loan.loanApplicationId} 
+                            className="w-full bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3.5"
+                        >
+                            {/* Top Header Card Info Row */}
+                            <div className="flex items-start justify-between gap-2">
+                                <div className="flex items-center gap-3">
+                                    <div className="relative w-10 h-10 rounded-full overflow-hidden border border-gray-100 shrink-0">
+                                        <Image 
+                                            src={loan.image || DefaultAvatarLogo} 
+                                            alt="Profile" 
+                                            fill
+                                            className="object-cover"
+                                        />
                                     </div>
-                                </TableCell>
+                                    <div className="flex flex-col">
+                                        <span className="font-bold text-[#1E293B] text-[13.5px]">
+                                            {loan.borrower?.name || "Muhammad Fithra Rizki"}
+                                        </span>
+                                        <span className="text-[#64748B] text-[10.5px] font-medium uppercase tracking-tight">
+                                            REQ-2023-089 • {loan.idNumber || "13523049"}
+                                        </span>
+                                    </div>
+                                </div>
 
-                                {/* Institution */}
-                                <TableCell className="text-[#475569] text-sm font-medium">
-                                    {loan.institution || "Institut Teknologi Bandung (ITB)"}
-                                </TableCell>
+                                {/* Status Pill Badge */}
+                                <div 
+                                    className="px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1.5 shrink-0"
+                                    style={{ backgroundColor: config.status_bg, color: config.status_text }}
+                                >
+                                    <span className="w-1 h-1 rounded-full" style={{ backgroundColor: config.status_text }}></span>
+                                    {loan.status}
+                                </div>
+                            </div>
 
-                                {/* Requested Amount */}
-                                <TableCell className="font-bold text-[#1E293B] text-sm">
-                                    {formatCurrency(Number(loan.requestedAmount))}
-                                </TableCell>
+                            {/* Core Request Information Details Block */}
+                            <div className="grid grid-cols-2 gap-y-2 gap-x-4 pt-1.5 border-t border-gray-50 text-[12.5px]">
+                                <div className="flex flex-col">
+                                    <span className="text-gray-400 font-medium text-[11px] uppercase tracking-wider">Institution</span>
+                                    <span className="text-gray-700 font-medium truncate mt-0.5">
+                                        {loan.institution || "Institut Teknologi Bandung (ITB)"}
+                                    </span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-gray-400 font-medium text-[11px] uppercase tracking-wider">Requested Amount</span>
+                                    <span className="text-[#1E293B] font-bold mt-0.5">
+                                        {formatCurrency(Number(loan.requestedAmount))}
+                                    </span>
+                                </div>
+                                <div className="flex flex-col col-span-2 mt-1">
+                                    <span className="text-gray-400 font-medium text-[11px] uppercase tracking-wider">Date Submitted</span>
+                                    <span className="text-gray-600 mt-0.5">
+                                        {formatDate(loan.createdAt)}
+                                    </span>
+                                </div>
+                            </div>
 
-                                {/* Date Submitted */}
-                                <TableCell className="text-[#64748B] text-sm">
-                                    {formatDate(loan.createdAt)}
-                                </TableCell>
+                            {/* Primary Mobile Touch Interaction Action Button */}
+                            <button 
+                                onClick={() => handleActionClick(loan)}
+                                className="w-full h-9 rounded-lg text-xs font-bold transition-all hover:brightness-95 active:scale-[0.99] shadow-sm mt-1"
+                                style={{ backgroundColor: config.action_bg, color: config.action_text }}
+                            >
+                                {config.action_caption}
+                            </button>
+                        </div>
+                    );
+                })}
+            </div>
 
-                                {/* Status Pill */}
-                                <TableCell>
-                                    <div className="flex justify-center">
-                                        <div 
-                                            className="px-3 py-1 rounded-full text-[11px] font-bold flex items-center gap-1.5"
-                                            style={{ backgroundColor: config.status_bg, color: config.status_text }}
-                                        >
-                                            <span className="w-1 h-1 rounded-full" style={{ backgroundColor: config.status_text }}></span>
-                                            {loan.status}
+            {/* ── DESKTOP TABLE VIEW (Hidden on Mobile, Grid Render on Desktop) ── */}
+            <div className="hidden md:block w-full border-t border-gray-100 bg-white rounded-xl shadow-sm overflow-hidden">
+                <Table>
+                    <TableHeader className="bg-[#F9FAFB]">
+                        <TableRow>
+                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase px-6">Applicant Details</TableHead>
+                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Institution</TableHead>
+                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Requested Amount</TableHead>
+                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Date Submitted</TableHead>
+                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase text-center">Status</TableHead>
+                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase text-center">Action</TableHead>
+                        </TableRow>
+                    </TableHeader>
+
+                    <TableBody>
+                        {loans.map((loan) => {
+                            const statusKey = (loan.status || "PENDING").toUpperCase() as keyof typeof StatusActionDict;
+                            const config = StatusActionDict[statusKey];
+
+                            return (
+                                <TableRow key={loan.id || loan.loanApplicationId} className="hover:bg-gray-50 border-b border-gray-50 transition-colors">
+                                    
+                                    <TableCell className="py-4 px-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="relative w-10 h-10 rounded-full overflow-hidden border border-gray-100 shrink-0">
+                                                <Image 
+                                                    src={loan.image || DefaultAvatarLogo} 
+                                                    alt="Profile" 
+                                                    fill
+                                                    className="object-cover"
+                                                />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-[#1E293B] text-sm">{loan.borrower?.name || "Muhammad Fithra Rizki"}</span>
+                                                <span className="text-[#64748B] text-[11px] font-medium uppercase tracking-tight">
+                                                    REQ-2023-089 • {loan.idNumber || "13523049"}
+                                                </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                </TableCell>
+                                    </TableCell>
 
-                                {/* Action Button */}
-                                <TableCell>
-                                    <div className="flex justify-center">
-                                        <button 
-                                            onClick={() => handleActionClick(loan)}
-                                            className="px-5 py-1.5 rounded-lg text-xs font-bold transition-all hover:brightness-95 active:scale-95 shadow-sm"
-                                            style={{ backgroundColor: config.action_bg, color: config.action_text }}
-                                        >
-                                            {config.action_caption}
-                                        </button>
-                                    </div>
-                                </TableCell>
+                                    <TableCell className="text-[#475569] text-sm font-medium">
+                                        {loan.institution || "Institut Teknologi Bandung (ITB)"}
+                                    </TableCell>
 
-                            </TableRow>
-                        );
-                    })}
-                </TableBody>
-            </Table>
+                                    <TableCell className="font-bold text-[#1E293B] text-sm">
+                                        {formatCurrency(Number(loan.requestedAmount))}
+                                    </TableCell>
+
+                                    <TableCell className="text-[#64748B] text-sm">
+                                        {formatDate(loan.createdAt)}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        <div className="flex justify-center">
+                                            <div 
+                                                className="px-3 py-1 rounded-full text-[11px] font-bold flex items-center gap-1.5"
+                                                style={{ backgroundColor: config.status_bg, color: config.status_text }}
+                                            >
+                                                <span className="w-1 h-1 rounded-full" style={{ backgroundColor: config.status_text }}></span>
+                                                {loan.status}
+                                            </div>
+                                        </div>
+                                    </TableCell>
+
+                                    <TableCell>
+                                        <div className="flex justify-center">
+                                            <button 
+                                                onClick={() => handleActionClick(loan)}
+                                                className="px-5 py-1.5 rounded-lg text-xs font-bold transition-all hover:brightness-95 active:scale-95 shadow-sm"
+                                                style={{ backgroundColor: config.action_bg, color: config.action_text }}
+                                            >
+                                                {config.action_caption}
+                                            </button>
+                                        </div>
+                                    </TableCell>
+
+                                </TableRow>
+                            );
+                        })}
+                    </TableBody>
+                </Table>
+            </div>
         </div>
     );
 }

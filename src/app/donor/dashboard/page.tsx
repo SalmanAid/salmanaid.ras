@@ -145,9 +145,8 @@ export default function DonorDashboardPage(){
             />
           </section>
 
-          <section className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_420px] xl:grid-cols-[minmax(0,1fr)_460px]">
+          <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_420px] xl:grid-cols-[minmax(0,1fr)_460px]">
             <DonorDashboard_RecentDistributionTable rows={tableRows} isLoading={isLoading} />
-
             <DonorDashboard_StartNewDonation quickSelectAmounts={dashboardData.quickSelectAmounts} />
           </section>
         </main>

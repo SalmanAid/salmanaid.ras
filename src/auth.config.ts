@@ -1,5 +1,14 @@
 import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
+import { normalizeRoleName } from "@/lib/roles";
+
+type SessionRole = string | { role?: string | { name?: string } };
+
+function extractRoleName(role: SessionRole) {
+  if (typeof role === "string") return role;
+  if (typeof role.role === "string") return role.role;
+  return role.role?.name || "";
+}
 
 /**
  * Edge-compatible auth config.
@@ -24,9 +33,8 @@ export const authConfig: NextAuthConfig = {
       if (user) {
         token.sub = user.id;
         // Handle both raw Prisma includes {role: {name: 'ADMIN'}} and flat arrays ['ADMIN'] safely
-        token.roles = (user as any).roles?.map((ur: any) => 
-          typeof ur === "string" ? ur : (ur.role?.name || ur.role)
-        ) || [];
+        const roles = (user as { roles?: SessionRole[] }).roles || [];
+        token.roles = roles.map((role) => normalizeRoleName(extractRoleName(role))).filter(Boolean);
       }
       return token;
     },

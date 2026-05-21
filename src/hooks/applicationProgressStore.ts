@@ -93,7 +93,7 @@ export const useApplicationProgressStore = create<ApplicationProgressStore>((set
         set((state) => {
             if (!state.application_progress) return state
 
-            if (state.application_progress.step < 4) {
+            if (state.application_progress.step < 3) {
                 return {
                     application_progress: {
                         ...state.application_progress,

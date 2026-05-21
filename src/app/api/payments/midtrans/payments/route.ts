@@ -12,6 +12,8 @@ import {
   validateRepaymentOwnership,
   type CreatePaymentBody,
 } from '@/services/midtrans-payment-request.service';
+import { AccountVerificationService } from '@/services/account-verification.service';
+import { ROLES } from '@/lib/roles';
 
 /**
  * POST /api/payments/midtrans/payments
@@ -45,6 +47,32 @@ export async function POST(request: NextRequest) {
     }
 
     const { data } = normalizedRequest;
+
+    if (data.transactionType === 'donation') {
+      try {
+        await AccountVerificationService.assertRoleVerified(currentUser.id, ROLES.DONOR);
+      } catch (verificationError) {
+        if (verificationError instanceof Error) {
+          if (verificationError.message === 'ROLE_NOT_FOUND') {
+            return NextResponse.json({ error: 'Akun belum memiliki role Donatur.' }, { status: 403 });
+          }
+
+          if (verificationError.message.startsWith('MISSING_DOCUMENTS:')) {
+            return NextResponse.json({ error: 'Dokumen identitas Donatur belum lengkap.' }, { status: 403 });
+          }
+
+          if (verificationError.message.startsWith('ACCOUNT_NOT_VERIFIED:')) {
+            return NextResponse.json(
+              { error: 'Akun Belum Terverifikasi, Tunggu Hingga Admin Melakukan Verifikasi.' },
+              { status: 403 }
+            );
+          }
+        }
+
+        throw verificationError;
+      }
+    }
+
     const ownershipCheck = await validateRepaymentOwnership({
       transactionType: data.transactionType,
       referenceId: data.referenceId,

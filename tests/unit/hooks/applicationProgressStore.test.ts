@@ -28,13 +28,13 @@ describe('useApplicationProgressStore', () => {
 
     act(() => { result.current.incrementStep(); });
     act(() => { result.current.incrementStep(); });
-    expect(result.current.application_progress?.step).toBe(4);
+    expect(result.current.application_progress?.step).toBe(3);
 
-    act(() => { result.current.incrementStep(); }); // Should stay at 4
-    expect(result.current.application_progress?.step).toBe(4);
+    act(() => { result.current.incrementStep(); }); // Should stay at 3
+    expect(result.current.application_progress?.step).toBe(3);
 
     act(() => { result.current.decrementStep(); });
-    expect(result.current.application_progress?.step).toBe(3);
+    expect(result.current.application_progress?.step).toBe(2);
   });
 
   it('should update personal information', () => {

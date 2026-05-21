@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { ROLES } from "@/lib/roles";
+import { normalizeRoleName, ROLES } from "@/lib/roles";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
 import type { RegisterInput } from "@/schemas/auth.schema";
@@ -71,7 +71,7 @@ export const UserService = {
       id: user.id,
       name: user.name,
       email: user.email,
-      roles: user.roles.map((ur) => ur.role.name),
+      roles: Array.from(new Set(user.roles.map((ur) => normalizeRoleName(ur.role.name)))),
     };
   },
 

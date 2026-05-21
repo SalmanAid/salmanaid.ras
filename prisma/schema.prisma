@@ -23,6 +23,8 @@ model User {
   address                 String?
   identityCard            String?
   identityCardUploadedAt  DateTime?
+  institutionCard         String?
+  institutionCardUploadedAt DateTime?
   familyCard              String?
   familyCardUploadedAt    DateTime?
   isVerified              Boolean   @default(false)
@@ -90,10 +92,16 @@ model Role {
 }
 
 model UserRole {
-  userId String @db.Uuid
-  roleId String @db.Uuid
-  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                String                    @db.Uuid
+  roleId                String                    @db.Uuid
+  verificationStatus    AccountVerificationStatus @default(PENDING)
+  verificationMessage   String?
+  verificationRequestedAt DateTime                @default(now())
+  documentsUpdatedAt    DateTime?
+  reviewedAt            DateTime?
+  reviewedBy            String?
+  role                  Role                      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user                  User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, roleId])
 }
@@ -244,4 +252,11 @@ enum TransactionStatus {
 enum TransactionCategory {
   DONATION
   REPAYMENT
+}
+
+enum AccountVerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  REVISION_REQUESTED
 }

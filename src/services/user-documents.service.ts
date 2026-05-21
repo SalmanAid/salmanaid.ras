@@ -1,22 +1,31 @@
 import { prisma } from "@/lib/prisma";
 import { supabaseAdmin } from "@/lib/supabase";
 import crypto from "crypto";
+import {
+  AccountVerificationService,
+  type UserDocumentType,
+} from "@/services/account-verification.service";
 
 const BUCKET_NAME = process.env.SUPABASE_USER_BUCKET_NAME || "user-documents";
+const USER_DOCUMENT_TYPES: UserDocumentType[] = ["identityCard", "institutionCard", "familyCard"];
 
 export const UserDocumentsService = {
   /**
-   * Uploads identity card or family card to Supabase Storage and updates User record.
+   * Uploads identity, institution, or family card to Supabase Storage and updates User record.
    */
   async uploadUserDocument(
     userId: string,
-    documentType: "identityCard" | "familyCard",
+    documentType: UserDocumentType,
     file: File
   ) {
     // Validate file exists and is not too large
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     if (file.size > MAX_FILE_SIZE) {
       throw new Error("FILE_TOO_LARGE");
+    }
+
+    if (!USER_DOCUMENT_TYPES.includes(documentType)) {
+      throw new Error("INVALID_DOCUMENT_TYPE");
     }
 
     // Upload file to Supabase
@@ -46,9 +55,19 @@ export const UserDocumentsService = {
       [`${documentType}UploadedAt`]: new Date(),
     };
 
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: updateData,
+    const updatedUser = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.update({
+        where: { id: userId },
+        data: updateData,
+      });
+
+      await AccountVerificationService.markRolesPendingAfterDocumentUpdate(
+        userId,
+        documentType,
+        tx
+      );
+
+      return user;
     });
 
     return {
@@ -64,7 +83,7 @@ export const UserDocumentsService = {
    */
   async getUserDocumentUrl(
     userId: string,
-    documentType: "identityCard" | "familyCard"
+    documentType: UserDocumentType
   ) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -110,7 +129,7 @@ export const UserDocumentsService = {
 
     const documents: any = {};
 
-    for (const docType of ["identityCard", "familyCard"] as const) {
+    for (const docType of USER_DOCUMENT_TYPES) {
       const storagePath = user[docType as keyof typeof user] as string | null;
       if (storagePath) {
         try {
@@ -136,7 +155,7 @@ export const UserDocumentsService = {
    */
   async deleteUserDocument(
     userId: string,
-    documentType: "identityCard" | "familyCard"
+    documentType: UserDocumentType
   ) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -168,9 +187,17 @@ export const UserDocumentsService = {
       [`${documentType}UploadedAt`]: null,
     };
 
-    await prisma.user.update({
-      where: { id: userId },
-      data: updateData,
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: userId },
+        data: updateData,
+      });
+
+      await AccountVerificationService.markRolesPendingAfterDocumentUpdate(
+        userId,
+        documentType,
+        tx
+      );
     });
 
     return true;

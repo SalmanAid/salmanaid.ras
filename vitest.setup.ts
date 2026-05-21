@@ -1,4 +1,3 @@
-import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
 // Mock Next.js router
@@ -23,6 +22,25 @@ vi.mock('next/navigation', () => ({
   }),
   usePathname: () => '/',
   useSearchParams: () => new URLSearchParams(),
+}));
+
+vi.mock('@/lib/supabase', () => ({
+  supabase: {
+    storage: {
+      from: vi.fn().mockReturnThis(),
+      upload: vi.fn(),
+      createSignedUrl: vi.fn(),
+      remove: vi.fn(),
+    },
+  },
+  supabaseAdmin: {
+    storage: {
+      from: vi.fn().mockReturnThis(),
+      upload: vi.fn(),
+      createSignedUrl: vi.fn(),
+      remove: vi.fn(),
+    },
+  },
 }));
 
 // Mock Prisma

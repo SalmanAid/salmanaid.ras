@@ -16,11 +16,6 @@ const steps = [
     },
     {
         number: 3,
-        title: "Document Upload",
-        description: "Required documents",
-    },
-    {
-        number: 4,
         title: "Agreement",
         description: "Terms and conditions",
     },

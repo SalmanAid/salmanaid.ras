@@ -40,7 +40,7 @@ describe('ApplicantForm_PersonalInformationSection', () => {
 
     render(<ApplicantForm_PersonalInformationSection />);
     
-    const input = screen.getByPlaceholderText(/masukkan nama anda/i);
+    const input = screen.getByPlaceholderText(/enter your full name/i);
     fireEvent.change(input, { target: { value: 'Jane Doe' } });
     
     expect(setFullName).toHaveBeenCalledWith('Jane Doe');

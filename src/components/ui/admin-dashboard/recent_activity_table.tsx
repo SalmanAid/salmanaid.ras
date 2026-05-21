@@ -45,38 +45,52 @@ export default function AdminDashboard_RecentActivityTable() {
 
   return (
     <div className="w-full">
-      {/* Table header */}
-      <div className="grid grid-cols-[1fr_120px_140px] gap-4 px-4 pb-2 border-b border-gray-100">
+      {/* Table header (Hidden on Mobile, Grid on Desktop) */}
+      <div className="hidden md:grid grid-cols-[1fr_120px_140px] gap-4 px-4 pb-2 border-b border-gray-100">
         <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Activity</span>
         <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Time</span>
         <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide text-right">Amount</span>
       </div>
 
       {/* Rows */}
-      <div className="divide-y divide-gray-50">
+      <div className="divide-y divide-gray-100 md:divide-gray-50">
         {items.map((item) => (
           <div
             key={item.id}
-            className="grid grid-cols-[1fr_120px_140px] gap-4 px-4 py-3 items-center hover:bg-gray-50 transition-colors"
+            className="flex flex-col gap-2 p-4 md:grid md:grid-cols-[1fr_120px_140px] md:gap-4 md:px-4 md:py-3 items-start md:items-center hover:bg-gray-50/70 md:hover:bg-gray-50 transition-colors"
           >
-            {/* Activity */}
-            <div className="flex items-center gap-3">
-              <span className="shrink-0 w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
+            {/* Left side: Activity Text & Icon */}
+            <div className="flex items-start gap-3 w-full">
+              <span className="shrink-0 w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center mt-0.5 md:mt-0">
                 <FileText className="w-4 h-4 text-blue-500" />
               </span>
-              <span className="text-sm text-gray-700 font-medium leading-snug">
-                New Application Submitted from{" "}
-                <span className="text-gray-900">{item.borrower.name}</span>
-              </span>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[13.5px] md:text-sm text-gray-700 font-medium leading-snug">
+                  New Application Submitted from{" "}
+                  <span className="text-gray-900 font-semibold md:font-medium">{item.borrower.name}</span>
+                </span>
+                
+                {/* Mobile Meta (Hidden on Desktop, shows cleanly underneath title) */}
+                <span className="text-[12px] text-gray-400 md:hidden">
+                  {timeAgo(item.requestedAt)}
+                </span>
+              </div>
             </div>
 
-            {/* Time */}
-            <span className="text-sm text-gray-400">{timeAgo(item.requestedAt)}</span>
-
-            {/* Amount */}
-            <span className="text-sm font-semibold text-orange-500 text-right">
-              {formatRupiah(item.requestedAmount)}
+            {/* Middle Column: Time (Desktop Only) */}
+            <span className="hidden md:inline text-sm text-gray-400">
+              {timeAgo(item.requestedAt)}
             </span>
+
+            {/* Right Column: Amount (Adaptive layout alignment positions) */}
+            <div className="flex w-full justify-between items-center pl-11 md:pl-0 md:justify-end md:w-auto">
+              <span className="text-[12px] text-gray-400 font-medium md:hidden">
+                Requested Amount:
+              </span>
+              <span className="text-[13.5px] md:text-sm font-bold md:font-semibold text-orange-500 text-right">
+                {formatRupiah(item.requestedAmount)}
+              </span>
+            </div>
           </div>
         ))}
       </div>

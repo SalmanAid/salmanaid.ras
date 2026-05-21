@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from "next/image";
@@ -12,6 +11,7 @@ import RumahAmalHorizontalLogo from "../../../../public/rumah-amal-horizontal-lo
 import UserPersonaLogo from "../../../../public/user_persona.svg"
 
 import { useUserStore } from "@/hooks/userStore";
+import AccountVerificationBanner from "@/components/ui/account-verification-banner";
 
 export default function DonorDashboard_DonorNavbar() {
     const pathname = usePathname();
@@ -21,18 +21,23 @@ export default function DonorDashboard_DonorNavbar() {
         const fallback = session?.user?.name || "Donor";
         return usernameFromStore || fallback;
     }, [session?.user?.name, usernameFromStore]);
+    const roles = ((session?.user as { roles?: string[] } | undefined)?.roles || []) as string[];
+    const borrowerAction = roles.includes("BORROWER")
+        ? { href: "/applicant/dashboard", label: "Ganti Role (Peminjam)" }
+        : { href: "/account/roles?role=BORROWER&from=DONOR", label: "Daftar sebagai Peminjam" };
 
     const menuItems = [
         { href: "/donor/dashboard", label: "Dashboard" },
         { href: "/donor/donate-form", label: "Donate" },
-        { href: "/not-found", label: "History" },
-        { href: "/not-found", label: "Report" },
     ];
     
     return (
+        <>
         <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
             <div className="max-w-350 mx-auto px-6">
                 <div className="flex justify-between items-center h-14.5">
+                    
+                    {/* Logo */}
                     <div className="shrink-0">
                         <Link href="/donor/dashboard" className="flex items-center">
                             <Image
@@ -46,6 +51,7 @@ export default function DonorDashboard_DonorNavbar() {
                         </Link>
                     </div>
 
+                    {/* Desktop Navigation Menus (Hidden on Mobile) */}
                     <div className="hidden items-center gap-10 md:flex">
                         {menuItems.map((item) => (
                             <Link
@@ -58,10 +64,11 @@ export default function DonorDashboard_DonorNavbar() {
                         ))}
                     </div>
 
-                    <div className="group relative hidden md:flex">
+                    {/* Unified Profile & Menu Dropdown (Visible on all screens) */}
+                    <div className="group relative flex">
                         <button
                             type="button"
-                            className="inline-flex items-center gap-2 rounded-full bg-white px-2 py-1 transition-colors hover:bg-gray-50"
+                            className="inline-flex items-center gap-2 rounded-full bg-white px-2 py-1 transition-colors hover:bg-gray-50 focus:outline-none"
                         >
                             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#DFF3F7]">
                                 <Image
@@ -72,37 +79,71 @@ export default function DonorDashboard_DonorNavbar() {
                                     className="h-4 w-4"
                                 />
                             </span>
-                            <span className="max-w-27.5 truncate text-[12.5px] font-medium text-[#111827]" title={username}>
+                            <span className="max-w-24 sm:max-w-27.5 truncate text-[12.5px] font-medium text-[#111827]" title={username}>
                                 {username}
                             </span>
                             <ChevronDown className="h-3.5 w-3.5 text-gray-500 transition-transform duration-150 group-hover:rotate-180" />
                         </button>
 
-                        <div className="invisible absolute right-0 top-[calc(100%+8px)] z-20 w-36 rounded-lg border border-gray-200 bg-white p-1 opacity-0 shadow-lg transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-                            <button
-                                type="button"
-                                onClick={() => signOut({ callbackUrl: "/login" })}
-                                className="w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
-                            >
-                                Logout
-                            </button>
+                        {/* Responsive Menu Drawer Container */}
+                        <div className="invisible absolute right-0 top-[calc(100%+8px)] z-20 w-64 rounded-2xl border border-gray-200 bg-white p-2 opacity-0 shadow-xl transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                            
+                            {/* Mobile Drawer Navigation Links (Hidden on Desktop) */}
+                            <div className="flex flex-col border-b border-gray-100 pb-1.5 mb-1.5 md:hidden">
+                                <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                    Menu
+                                </div>
+                                {menuItems.map((item) => {
+                                    const isActive = pathname === item.href;
+
+                                    return (
+                                        <Link
+                                            key={item.label}
+                                            href={item.href}
+                                            className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-[12.5px] font-medium transition-colors ${
+                                                isActive 
+                                                    ? "bg-[#F0FBFD] text-[#07B0C8]" 
+                                                    : "text-gray-700 hover:bg-gray-50 hover:text-[#07B0C8]"
+                                            }`}
+                                        >
+                                            {item.label}
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Account Actions Section */}
+                            <div className="flex flex-col gap-1">
+                                <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider md:hidden">
+                                    Akun
+                                </div>
+                                <Link
+                                    href="/profile?from=DONOR"
+                                    className="flex w-full items-center rounded-lg px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
+                                >
+                                    Profil
+                                </Link>
+                                <Link
+                                    href={borrowerAction.href}
+                                    className="flex w-full items-center rounded-lg px-3 py-2 text-left text-[12.5px] font-bold text-[#FCB82E] transition-colors hover:bg-[#FFF8E8]"
+                                >
+                                    {borrowerAction.label}
+                                </Link>
+                                <button
+                                    type="button"
+                                    onClick={() => signOut({ callbackUrl: "/login" })}
+                                    className="flex w-full items-center rounded-lg px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
+                                >
+                                    Logout
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 md:hidden">
-                        <span className="max-w-24 truncate text-[12.5px] font-medium text-[#111827]" title={username}>
-                            {username}
-                        </span>
-                        <button
-                            type="button"
-                            onClick={() => signOut({ callbackUrl: "/login" })}
-                            className="rounded-full border border-gray-200 px-3 py-1 text-[12px] font-medium text-gray-700"
-                        >
-                            Logout
-                        </button>
-                    </div>
                 </div>
             </div>
         </nav>
+        <AccountVerificationBanner role="DONOR" />
+        </>
     );
 }
