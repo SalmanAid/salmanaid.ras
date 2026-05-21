@@ -88,7 +88,7 @@ export default function AdminDashboard_AdminNavbar() {
             </button>
 
             {/* Responsive Dropdown Menu Drawer */}
-            <div className="invisible absolute right-0 top-[calc(100%+8px)] z-20 w-48 rounded-xl border border-gray-200 bg-white p-1.5 opacity-0 shadow-lg transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+            <div className="invisible absolute right-0 top-[calc(100%+8px)] z-20 w-64 rounded-2xl border border-gray-200 bg-white p-2 opacity-0 shadow-xl transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
               
               {/* Mobile Drawer Links (Hidden on Desktop) */}
               <div className="flex flex-col border-b border-gray-100 pb-1.5 mb-1.5 md:hidden">
@@ -104,7 +104,7 @@ export default function AdminDashboard_AdminNavbar() {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium transition-colors ${
+                      className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-[12.5px] font-medium transition-colors ${
                         isActive 
                           ? "bg-[#F0FBFD] text-[#07B0C8]" 
                           : "text-gray-700 hover:bg-gray-50 hover:text-[#07B0C8]"
@@ -116,23 +116,19 @@ export default function AdminDashboard_AdminNavbar() {
                 })}
               </div>
 
-              {/* Account Label and Action */}
-              <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider md:hidden">
-                Akun
+              {/* Account Action */}
+              <div className="flex flex-col gap-1">
+                <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider md:hidden">
+                  Akun
+                </div>
+                <button
+                  type="button"
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  className="flex w-full items-center rounded-lg px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
+                >
+                  Logout
+                </button>
               </div>
-              <Link
-                href="/profile"
-                className="w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
-              >
-                Profil
-              </Link>
-              <button
-                type="button"
-                onClick={() => signOut({ callbackUrl: "/login" })}
-                className="w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
-              >
-                Logout
-              </button>
             </div>
 
           </div>

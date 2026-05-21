@@ -9,7 +9,7 @@ const { auth } = NextAuth({
 
 export default auth((req) => {
     const isLoggedIn = !!req.auth?.user;
-    const roles = (req.auth?.user as any)?.roles || [];
+    const roles = ((req.auth?.user as { roles?: string[] } | undefined)?.roles || []);
     const pathname = req.nextUrl.pathname;
 
     const isDonorRoute = pathname.startsWith("/donor");
@@ -36,6 +36,9 @@ export default auth((req) => {
     // 2. Access Control: Pastikan role sesuai dengan prefix route
     if (isAdminRoute && !roles.includes("ADMIN")) {
         return NextResponse.redirect(new URL(getRoleDashboardPath(), req.nextUrl));
+    }
+    if ((isProfileRoute || isAccountRoute) && roles.includes("ADMIN")) {
+        return NextResponse.redirect(new URL("/admin/dashboard", req.nextUrl));
     }
     if (isDonorRoute && !roles.includes("DONOR") && !roles.includes("ADMIN")) {
         return NextResponse.redirect(new URL(getRoleDashboardPath(), req.nextUrl));
