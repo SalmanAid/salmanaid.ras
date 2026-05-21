@@ -4,7 +4,7 @@ export const RegisterSchema = z.object({
   name: z.string().optional(),
   email: z.string().email("Format email tidak valid"),
   password: z.string().min(8, "Password minimal 8 karakter"),
-  role: z.string().optional(),
+  role: z.enum(["DONOR", "BORROWER"]).optional(),
 });
 
 export const VerifySchema = z.object({

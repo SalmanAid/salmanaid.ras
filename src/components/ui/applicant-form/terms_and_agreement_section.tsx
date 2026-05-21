@@ -29,8 +29,6 @@ export default function ApplicantForm_TermsAndAgreementSection() {
             loan_title,
             requested_amount,
             loan_purpose,
-            family_card,
-            student_id_card,
             comply_to_terms_and_agreement
         } = state
 
@@ -41,8 +39,6 @@ export default function ApplicantForm_TermsAndAgreementSection() {
             !loan_title ||
             !requested_amount ||
             !loan_purpose ||
-            !family_card ||
-            !student_id_card ||
             !comply_to_terms_and_agreement
         ) {
             setSubmitError("Please complete all data and accept the agreement before submitting.")
@@ -76,27 +72,7 @@ export default function ApplicantForm_TermsAndAgreementSection() {
                 throw new Error(errorBody?.error || "Failed to create loan application.")
             }
 
-            const createdApplication = (await createApplicationResponse.json()) as CreatedLoanApplicationResponse
-            const applicationId = createdApplication.data.id
-
-            const uploadAttachment = async (file: File, documentType: string) => {
-                const formData = new FormData()
-                formData.append("file", file)
-                formData.append("documentType", documentType)
-
-                const response = await fetch(`/api/applications/${applicationId}/attachments`, {
-                    method: "POST",
-                    body: formData,
-                })
-
-                if (!response.ok) {
-                    const errorBody = await response.json().catch(() => null)
-                    throw new Error(errorBody?.error || "Failed to upload document.")
-                }
-            }
-
-            await uploadAttachment(family_card, "family_card")
-            await uploadAttachment(student_id_card, "student_id_card")
+            await createApplicationResponse.json() as CreatedLoanApplicationResponse
 
             setSubmitSuccess("Application submitted successfully.")
             router.push("/applicant/dashboard")
@@ -114,8 +90,6 @@ export default function ApplicantForm_TermsAndAgreementSection() {
     const loanTitle = useApplicationProgressStore((state) => state.loan_title)
     const requestedAmount = useApplicationProgressStore((state) => state.requested_amount)
     const loanPurpose = useApplicationProgressStore((state) => state.loan_purpose)
-    const familyCard = useApplicationProgressStore((state) => state.family_card)
-    const studentIdCard = useApplicationProgressStore((state) => state.student_id_card)
     const complyToTermsAndAgreement = useApplicationProgressStore((state) => state.comply_to_terms_and_agreement)
     const switchComplyToTermsAndAgreement = useApplicationProgressStore((state) => state.switchComplyToTermsAndAgreement)
     const isApplicationComplete = Boolean(
@@ -125,8 +99,6 @@ export default function ApplicantForm_TermsAndAgreementSection() {
         loanTitle?.trim() &&
         Number(requestedAmount) > 0 &&
         loanPurpose?.trim() &&
-        familyCard &&
-        studentIdCard &&
         complyToTermsAndAgreement
     )
 

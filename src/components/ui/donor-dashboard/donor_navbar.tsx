@@ -20,6 +20,10 @@ export default function DonorDashboard_DonorNavbar() {
         const fallback = session?.user?.name || "Donor";
         return usernameFromStore || fallback;
     }, [session?.user?.name, usernameFromStore]);
+    const roles = ((session?.user as { roles?: string[] } | undefined)?.roles || []) as string[];
+    const borrowerAction = roles.includes("BORROWER")
+        ? { href: "/applicant/dashboard", label: "Ganti Role (Peminjam)" }
+        : { href: "/account/roles?role=BORROWER", label: "Daftar sebagai Peminjam" };
 
     const menuItems = [
         { href: "/donor/dashboard", label: "Dashboard" },
@@ -110,6 +114,18 @@ export default function DonorDashboard_DonorNavbar() {
                             <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider md:hidden">
                                 Akun
                             </div>
+                            <Link
+                                href="/profile"
+                                className="w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
+                            >
+                                Profil
+                            </Link>
+                            <Link
+                                href={borrowerAction.href}
+                                className="w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
+                            >
+                                {borrowerAction.label}
+                            </Link>
                             <button
                                 type="button"
                                 onClick={() => signOut({ callbackUrl: "/login" })}
