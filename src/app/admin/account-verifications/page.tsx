@@ -107,6 +107,7 @@ export default function AdminAccountVerificationsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [messages, setMessages] = useState<Record<string, string>>({});
+  const [messageErrors, setMessageErrors] = useState<Record<string, string>>({});
   const [submittingKey, setSubmittingKey] = useState("");
 
   const fetchRequests = async (status?: VerificationStatus) => {
@@ -141,11 +142,20 @@ export default function AdminAccountVerificationsPage() {
     const message = messages[key] || "";
 
     if ((status === "REJECTED" || status === "REVISION_REQUESTED") && !message.trim()) {
-      setError("Pesan wajib diisi untuk menolak atau meminta perbaikan dokumen.");
+      setMessageErrors((current) => ({
+        ...current,
+        [key]: "Alasan wajib diisi untuk Pending atau Tolak.",
+      }));
+      setError("");
       return;
     }
 
     setSubmittingKey(`${key}:${status}`);
+    setMessageErrors((current) => {
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
     setError("");
 
     try {
@@ -281,11 +291,27 @@ export default function AdminAccountVerificationsPage() {
                     Pesan untuk user
                     <textarea
                       value={messages[key] || ""}
-                      onChange={(event) => setMessages((current) => ({ ...current, [key]: event.target.value }))}
+                      onChange={(event) => {
+                        setMessages((current) => ({ ...current, [key]: event.target.value }));
+                        if (messageErrors[key]) {
+                          setMessageErrors((current) => {
+                            const next = { ...current };
+                            delete next[key];
+                            return next;
+                          });
+                        }
+                      }}
                       disabled={isVerified}
-                      className="min-h-22 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium outline-none transition focus:border-[#07B0C8] focus:ring-3 focus:ring-cyan-100 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400"
+                      className={`min-h-22 rounded-lg border px-3 py-2 text-sm font-medium outline-none transition focus:border-[#07B0C8] focus:ring-3 focus:ring-cyan-100 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400 ${
+                        messageErrors[key] ? "border-red-300 bg-red-50 focus:ring-red-100" : "border-gray-200"
+                      }`}
                       placeholder="Contoh: Foto KTP buram, mohon upload ulang bagian depan KTP."
                     />
+                    {messageErrors[key] && (
+                      <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700">
+                        {messageErrors[key]}
+                      </div>
+                    )}
                   </label>
 
                   <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">

@@ -1,6 +1,6 @@
 import { AccountVerificationStatus, Prisma } from "@/generated/prisma";
 import { prisma } from "@/lib/prisma";
-import { ROLES } from "@/lib/roles";
+import { normalizeRoleName, ROLES } from "@/lib/roles";
 import { supabaseAdmin } from "@/lib/supabase";
 
 const USER_DOCUMENT_BUCKET = process.env.SUPABASE_USER_BUCKET_NAME || "user-documents";
@@ -34,11 +34,13 @@ type UserWithDocuments = {
 };
 
 function isVerifiableRole(role: string): role is VerifiableRole {
-  return role === ROLES.DONOR || role === ROLES.BORROWER;
+  const normalizedRole = normalizeRoleName(role);
+  return normalizedRole === ROLES.DONOR || normalizedRole === ROLES.BORROWER;
 }
 
 function getRoleLabel(role: string) {
-  return isVerifiableRole(role) ? ROLE_LABELS[role] : role;
+  const normalizedRole = normalizeRoleName(role);
+  return isVerifiableRole(normalizedRole) ? ROLE_LABELS[normalizedRole] : role;
 }
 
 function getDocumentUploadedAtKey(documentType: UserDocumentType) {
@@ -61,8 +63,9 @@ async function createSignedDocumentUrl(storagePath: string | null) {
 }
 
 async function buildDocumentSummaries(user: UserWithDocuments, role?: string) {
-  const documentTypes = role && isVerifiableRole(role)
-    ? ROLE_DOCUMENT_REQUIREMENTS[role]
+  const normalizedRole = role ? normalizeRoleName(role) : undefined;
+  const documentTypes = normalizedRole && isVerifiableRole(normalizedRole)
+    ? ROLE_DOCUMENT_REQUIREMENTS[normalizedRole]
     : (["identityCard", "institutionCard", "familyCard"] as UserDocumentType[]);
 
   return Promise.all(
@@ -85,7 +88,8 @@ export const AccountVerificationService = {
   isVerifiableRole,
 
   getRequiredDocuments(role: string) {
-    return isVerifiableRole(role) ? ROLE_DOCUMENT_REQUIREMENTS[role] : [];
+    const normalizedRole = normalizeRoleName(role);
+    return isVerifiableRole(normalizedRole) ? ROLE_DOCUMENT_REQUIREMENTS[normalizedRole] : [];
   },
 
   getMissingDocuments(user: UserWithDocuments, role: string) {
@@ -122,12 +126,23 @@ export const AccountVerificationService = {
       throw new Error("USER_NOT_FOUND");
     }
 
-    const roles = user.roles.map((userRole) => {
-      const missingDocuments = this.getMissingDocuments(user, userRole.role.name);
+    const dedupedRoles = new Map<string, typeof user.roles[number]>();
+
+    user.roles.forEach((userRole) => {
+      const normalizedRole = normalizeRoleName(userRole.role.name);
+      const currentRole = dedupedRoles.get(normalizedRole);
+
+      if (!currentRole || currentRole.role.name !== normalizedRole) {
+        dedupedRoles.set(normalizedRole, userRole);
+      }
+    });
+
+    const roles = Array.from(dedupedRoles.entries()).map(([normalizedRole, userRole]) => {
+      const missingDocuments = this.getMissingDocuments(user, normalizedRole);
 
       return {
-        role: userRole.role.name,
-        label: getRoleLabel(userRole.role.name),
+        role: normalizedRole,
+        label: getRoleLabel(normalizedRole),
         verificationStatus: userRole.verificationStatus,
         verificationMessage: userRole.verificationMessage,
         verificationRequestedAt: userRole.verificationRequestedAt,
