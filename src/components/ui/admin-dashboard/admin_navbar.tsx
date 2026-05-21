@@ -15,6 +15,7 @@ import UserPersonaLogo from "../../../../public/user_persona.svg";
 const navItems = [
   { href: '/admin/dashboard', label: 'Dashboard' },
   { href: '/admin/loan-request', label: 'Loan Request' },
+  { href: '/admin/account-verifications', label: 'Account Verification' },
   { href: '/admin/monitoring', label: 'Monitoring' },
 ];
 
@@ -119,6 +120,12 @@ export default function AdminDashboard_AdminNavbar() {
               <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider md:hidden">
                 Akun
               </div>
+              <Link
+                href="/profile"
+                className="w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
+              >
+                Profil
+              </Link>
               <button
                 type="button"
                 onClick={() => signOut({ callbackUrl: "/login" })}

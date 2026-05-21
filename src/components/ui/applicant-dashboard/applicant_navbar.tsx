@@ -330,6 +330,10 @@ export default function ApplicantDashboard_ApplicantNavbar({ showNotifications =
     const username = useMemo(() => {
         return usernameFromStore || session?.user?.name || "Borrower";
     }, [session?.user?.name, usernameFromStore]);
+    const roles = ((session?.user as { roles?: string[] } | undefined)?.roles || []) as string[];
+    const donorAction = roles.includes("DONOR")
+        ? { href: "/donor/dashboard", label: "Ganti Role (Donatur)" }
+        : { href: "/account/roles?role=DONOR", label: "Daftar sebagai Donatur" };
     
     return (
         <nav className="sticky top-0 z-50 w-full border-b border-[#E5E7EB] bg-white shadow-sm">
@@ -429,6 +433,18 @@ export default function ApplicantDashboard_ApplicantNavbar({ showNotifications =
                                 <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider md:hidden">
                                     Akun
                                 </div>
+                                <Link
+                                    href="/profile"
+                                    className="w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
+                                >
+                                    Profil
+                                </Link>
+                                <Link
+                                    href={donorAction.href}
+                                    className="w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
+                                >
+                                    {donorAction.label}
+                                </Link>
                                 <button
                                     type="button"
                                     onClick={() => signOut({ callbackUrl: "/login" })}
