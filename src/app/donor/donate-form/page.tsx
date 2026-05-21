@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, use } from 'react';
+import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useDonationStore } from '@/hooks/donationStore';
 import { PaymentMethod, VABank, TransactionType } from '@/types/donation';
 import DonorDashboard_DonorNavbar from '@/components/ui/donor-dashboard/donor_navbar';
+import { ShieldAlert } from 'lucide-react';
 
 const DONATION_STEPS = [
   { id: 1, label: 'Select Amount' },
@@ -43,10 +44,52 @@ export default function DonateFormPage({
   const setVaBank = useDonationStore((state) => (state.setVABank))
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  const [isCheckingVerification, setIsCheckingVerification] = useState(true);
+  const [donorRole, setDonorRole] = useState<{
+    verificationStatus: string;
+    verificationMessage?: string | null;
+    missingDocumentLabels?: string[];
+  } | null>(null);
 
   const transactionType: TransactionType = (params.type as TransactionType) || 'donation';
   const referenceId =
     params.referenceId || (transactionType === 'donation' ? session?.user?.id || '' : '');
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchAccountStatus = async () => {
+      try {
+        const response = await fetch('/api/user/me', { cache: 'no-store' });
+        if (!response.ok) throw new Error('ACCOUNT_STATUS_FETCH_FAILED');
+
+        const payload = await response.json();
+        const role = (payload.data?.roles || []).find((item: { role: string }) => item.role === 'DONOR') || null;
+        if (isMounted) setDonorRole(role);
+      } catch {
+        if (isMounted) setDonorRole(null);
+      } finally {
+        if (isMounted) setIsCheckingVerification(false);
+      }
+    };
+
+    void fetchAccountStatus();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const isDonorVerified = donorRole?.verificationStatus === 'VERIFIED';
+  const donorBlockedMessage = !donorRole
+    ? 'Akun belum terdaftar sebagai Donatur. Daftar sebagai Donatur terlebih dahulu untuk melakukan donasi.'
+    : donorRole.verificationStatus === 'REVISION_REQUESTED'
+      ? donorRole.verificationMessage || 'Admin meminta perbaikan dokumen. Perbarui dokumen yang diminta agar akun dapat ditinjau ulang.'
+      : donorRole.verificationStatus === 'REJECTED'
+        ? donorRole.verificationMessage || 'Verifikasi akun Donatur ditolak. Perbarui data atau hubungi admin untuk bantuan.'
+        : (donorRole.missingDocumentLabels || []).length > 0
+          ? `Dokumen Donatur belum lengkap: ${(donorRole.missingDocumentLabels || []).join(', ')}.`
+          : 'Akun Belum Terverifikasi, Tunggu Hingga Admin Melakukan Verifikasi.';
 
   const handlePaymentMethodSelect = (method: PaymentMethod) => {
     setPaymentMethod(String(method));
@@ -63,6 +106,11 @@ export default function DonateFormPage({
 
     if (!paymentMethod) {
       setError('Please select a payment method');
+      return;
+    }
+
+    if (transactionType === 'donation' && !isDonorVerified) {
+      setError(donorBlockedMessage);
       return;
     }
 
@@ -189,6 +237,22 @@ export default function DonateFormPage({
                   ? ' Please sign in again before continuing.'
                   : ' This payment still needs a repayment reference ID.'}
               </p>
+            </div>
+          )}
+
+          {transactionType === 'donation' && (isCheckingVerification || !isDonorVerified) && (
+            <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
+              <div className="flex gap-3">
+                <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+                <div>
+                  <p className="text-sm font-bold text-amber-900">
+                    {isCheckingVerification ? 'Memeriksa status verifikasi akun...' : 'Akun Donatur Belum Terverifikasi'}
+                  </p>
+                  {!isCheckingVerification && (
+                    <p className="mt-1 text-sm leading-6 text-amber-800">{donorBlockedMessage}</p>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
@@ -337,9 +401,9 @@ export default function DonateFormPage({
         {/* Submit Button */}
         <button
           onClick={handleSubmit}
-          disabled={loading || !paymentMethod || !amount || !referenceId}
+          disabled={loading || !paymentMethod || !amount || !referenceId || isCheckingVerification || (transactionType === 'donation' && !isDonorVerified)}
           className={`w-full py-2 px-4 rounded-md font-medium text-white transition ${
-            loading || !paymentMethod || !amount || !referenceId
+            loading || !paymentMethod || !amount || !referenceId || isCheckingVerification || (transactionType === 'donation' && !isDonorVerified)
               ? 'bg-gray-400 cursor-not-allowed'
               : 'bg-[#07B0C8] hover:bg-[#059BB0]'
           }`}
