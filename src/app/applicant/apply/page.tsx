@@ -108,7 +108,7 @@ export default function ApplyLoanFormPage(){
                                         <p className="mt-2 text-sm leading-6 text-slate-600">{blockedMessage}</p>
                                         <div className="mt-5 flex flex-col gap-2 sm:flex-row">
                                             <Link
-                                                href={borrowerRole ? "/profile" : "/account/roles?role=BORROWER"}
+                                                href={borrowerRole ? "/profile?from=BORROWER" : "/account/roles?role=BORROWER&from=BORROWER"}
                                                 className="inline-flex h-10 items-center justify-center rounded-lg bg-[#07B0C8] px-4 text-sm font-bold text-white transition hover:bg-[#069CB1]"
                                             >
                                                 {borrowerRole ? "Perbarui Dokumen" : "Daftar sebagai Peminjam"}

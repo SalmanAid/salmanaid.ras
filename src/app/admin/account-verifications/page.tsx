@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle2, Clock, FileText, RefreshCw, ShieldCheck, XCircle } from "lucide-react";
+import { Clock, FileText, RefreshCw, ShieldCheck, XCircle } from "lucide-react";
 
 import AdminDashboard_AdminNavbar from "@/components/ui/admin-dashboard/admin_navbar";
 
@@ -48,6 +48,11 @@ const statusClassName: Record<VerificationStatus, string> = {
   REVISION_REQUESTED: "border-orange-200 bg-orange-50 text-orange-700",
   VERIFIED: "border-emerald-200 bg-emerald-50 text-emerald-700",
   REJECTED: "border-red-200 bg-red-50 text-red-700",
+};
+
+const roleBadgeClassName: Record<VerificationRequest["role"], string> = {
+  DONOR: "bg-[#F0FBFD] text-[#07B0C8]",
+  BORROWER: "bg-[#FFF8E8] text-[#FCB82E]",
 };
 
 function formatDate(value?: string | null) {
@@ -123,12 +128,15 @@ export default function AdminAccountVerificationsPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchRequests(statusFilter);
   }, [statusFilter]);
 
   const requestKey = (request: VerificationRequest) => `${request.userId}:${request.role}`;
 
   const handleDecision = async (request: VerificationRequest, status: VerificationStatus) => {
+    if (request.verificationStatus === "VERIFIED") return;
+
     const key = requestKey(request);
     const message = messages[key] || "";
 
@@ -224,13 +232,16 @@ export default function AdminAccountVerificationsPage() {
         <div className="mt-6 grid gap-5">
           {requests.map((request) => {
             const key = requestKey(request);
+            const isVerified = request.verificationStatus === "VERIFIED";
             return (
               <article key={key} className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="text-lg font-extrabold text-slate-900">{request.user.name}</h2>
-                      <span className="rounded-full bg-[#F0FBFD] px-2.5 py-1 text-xs font-bold text-[#07B0C8]">{request.roleLabel}</span>
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${roleBadgeClassName[request.role]}`}>
+                        {request.roleLabel}
+                      </span>
                       <span className={`rounded-full border px-2.5 py-1 text-xs font-bold ${statusClassName[request.verificationStatus]}`}>
                         {request.verificationStatus}
                       </span>
@@ -271,7 +282,8 @@ export default function AdminAccountVerificationsPage() {
                     <textarea
                       value={messages[key] || ""}
                       onChange={(event) => setMessages((current) => ({ ...current, [key]: event.target.value }))}
-                      className="min-h-22 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium outline-none transition focus:border-[#07B0C8] focus:ring-3 focus:ring-cyan-100"
+                      disabled={isVerified}
+                      className="min-h-22 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium outline-none transition focus:border-[#07B0C8] focus:ring-3 focus:ring-cyan-100 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400"
                       placeholder="Contoh: Foto KTP buram, mohon upload ulang bagian depan KTP."
                     />
                   </label>
@@ -280,7 +292,7 @@ export default function AdminAccountVerificationsPage() {
                     <button
                       type="button"
                       onClick={() => handleDecision(request, "VERIFIED")}
-                      disabled={Boolean(submittingKey) || request.missingDocumentLabels.length > 0}
+                      disabled={isVerified || Boolean(submittingKey) || request.missingDocumentLabels.length > 0}
                       className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
                     >
                       <ShieldCheck size={16} />
@@ -289,8 +301,8 @@ export default function AdminAccountVerificationsPage() {
                     <button
                       type="button"
                       onClick={() => handleDecision(request, "REVISION_REQUESTED")}
-                      disabled={Boolean(submittingKey)}
-                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 text-sm font-bold text-amber-700 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={isVerified || Boolean(submittingKey)}
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 text-sm font-bold text-amber-700 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400"
                     >
                       <Clock size={16} />
                       Pending
@@ -298,8 +310,8 @@ export default function AdminAccountVerificationsPage() {
                     <button
                       type="button"
                       onClick={() => handleDecision(request, "REJECTED")}
-                      disabled={Boolean(submittingKey)}
-                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={isVerified || Boolean(submittingKey)}
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400"
                     >
                       <XCircle size={16} />
                       Tolak

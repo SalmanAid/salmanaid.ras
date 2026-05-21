@@ -11,6 +11,7 @@ import RumahAmalHorizontalLogo from "../../../../public/rumah-amal-horizontal-lo
 import UserPersonaLogo from "../../../../public/user_persona.svg"
 
 import { useUserStore } from "@/hooks/userStore";
+import AccountVerificationBanner from "@/components/ui/account-verification-banner";
 
 export default function DonorDashboard_DonorNavbar() {
     const pathname = usePathname();
@@ -23,7 +24,7 @@ export default function DonorDashboard_DonorNavbar() {
     const roles = ((session?.user as { roles?: string[] } | undefined)?.roles || []) as string[];
     const borrowerAction = roles.includes("BORROWER")
         ? { href: "/applicant/dashboard", label: "Ganti Role (Peminjam)" }
-        : { href: "/account/roles?role=BORROWER", label: "Daftar sebagai Peminjam" };
+        : { href: "/account/roles?role=BORROWER&from=DONOR", label: "Daftar sebagai Peminjam" };
 
     const menuItems = [
         { href: "/donor/dashboard", label: "Dashboard" },
@@ -31,6 +32,7 @@ export default function DonorDashboard_DonorNavbar() {
     ];
     
     return (
+        <>
         <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
             <div className="max-w-350 mx-auto px-6">
                 <div className="flex justify-between items-center h-14.5">
@@ -116,7 +118,7 @@ export default function DonorDashboard_DonorNavbar() {
                                     Akun
                                 </div>
                                 <Link
-                                    href="/profile"
+                                    href="/profile?from=DONOR"
                                     className="flex w-full items-center rounded-lg px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
                                 >
                                     Profil
@@ -141,5 +143,7 @@ export default function DonorDashboard_DonorNavbar() {
                 </div>
             </div>
         </nav>
+        <AccountVerificationBanner role="DONOR" />
+        </>
     );
 }

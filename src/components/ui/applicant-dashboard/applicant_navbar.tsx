@@ -13,6 +13,7 @@ import UserPersonaLogo from "../../../../public/user_persona.svg"
 import { useUserStore } from "@/hooks/userStore";
 import localFont from "next/font/local";
 import { signOut, useSession } from "next-auth/react";
+import AccountVerificationBanner from "@/components/ui/account-verification-banner";
 
 type NotificationItem = {
     id: string;
@@ -333,9 +334,10 @@ export default function ApplicantDashboard_ApplicantNavbar({ showNotifications =
     const roles = ((session?.user as { roles?: string[] } | undefined)?.roles || []) as string[];
     const donorAction = roles.includes("DONOR")
         ? { href: "/donor/dashboard", label: "Ganti Role (Donatur)" }
-        : { href: "/account/roles?role=DONOR", label: "Daftar sebagai Donatur" };
+        : { href: "/account/roles?role=DONOR&from=BORROWER", label: "Daftar sebagai Donatur" };
     
     return (
+        <>
         <nav className="sticky top-0 z-50 w-full border-b border-[#E5E7EB] bg-white shadow-sm">
             <div className="mx-auto max-w-350 px-6">
                 <div className="flex h-14.5 items-center justify-between">
@@ -435,7 +437,7 @@ export default function ApplicantDashboard_ApplicantNavbar({ showNotifications =
                                         Akun
                                     </div>
                                     <Link
-                                        href="/profile"
+                                        href="/profile?from=BORROWER"
                                         className="flex w-full items-center rounded-lg px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
                                     >
                                         Profil
@@ -461,5 +463,7 @@ export default function ApplicantDashboard_ApplicantNavbar({ showNotifications =
                 </div>
             </div>
         </nav>
+        <AccountVerificationBanner role="BORROWER" />
+        </>
     );
 }

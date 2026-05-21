@@ -1,11 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { CheckCircle2, FileText, Upload } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import RumahAmalHorizontalLogo from "../../../../public/rumah-amal-horizontal-logo.svg";
+import RoleAwareUserNavbar from "@/components/ui/role-aware-user-navbar";
 
 type RoleName = "DONOR" | "BORROWER";
 type DocumentKey = "identityCard" | "institutionCard" | "familyCard";
@@ -30,6 +29,45 @@ type AccountOverview = {
   roles: { role: string; label: string; verificationStatus: string }[];
   documents: { type: DocumentKey; isUploaded: boolean; uploadedAt: string | null }[];
 };
+
+const roleStatusClassName: Record<string, string> = {
+  VERIFIED: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  PENDING: "border-amber-200 bg-amber-50 text-amber-700",
+  REVISION_REQUESTED: "border-orange-200 bg-orange-50 text-orange-700",
+  REJECTED: "border-red-200 bg-red-50 text-red-700",
+};
+
+function getExistingRoleCopy(label: string, status: string) {
+  if (status === "VERIFIED") {
+    return {
+      title: `Role ${label} sudah terverifikasi dan siap digunakan.`,
+      body: `Anda bisa masuk ke dashboard ${label} kapan saja.`,
+      canOpenDashboard: true,
+    };
+  }
+
+  if (status === "REVISION_REQUESTED") {
+    return {
+      title: `Verifikasi role ${label} membutuhkan perbaikan dokumen.`,
+      body: "Perbarui dokumen yang diminta, lalu akun akan ditinjau ulang oleh admin.",
+      canOpenDashboard: false,
+    };
+  }
+
+  if (status === "REJECTED") {
+    return {
+      title: `Verifikasi role ${label} ditolak.`,
+      body: "Perbarui dokumen atau hubungi admin untuk bantuan sebelum role ini dapat digunakan.",
+      canOpenDashboard: false,
+    };
+  }
+
+  return {
+    title: `Pendaftaran role ${label} sedang menunggu verifikasi admin.`,
+    body: "Dokumen Anda sudah masuk antrean review. Role ini baru bisa digunakan setelah admin menyetujui verifikasi.",
+    canOpenDashboard: false,
+  };
+}
 
 function UploadRow({
   label,
@@ -134,6 +172,9 @@ export default function AccountRolesPage() {
   }, [overview]);
   const isComplete = requirements.every((document) => documentStatus.get(document.key) || files[document.key]);
   const selectedRoleMeta = ROLE_OPTIONS.find((option) => option.role === selectedRole) || ROLE_OPTIONS[0];
+  const existingRoleCopy = existingRole
+    ? getExistingRoleCopy(selectedRoleMeta.label, existingRole.verificationStatus)
+    : null;
 
   const handleSubmit = async () => {
     setError("");
@@ -173,14 +214,7 @@ export default function AccountRolesPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900">
-      <nav className="sticky top-0 z-40 border-b border-gray-100 bg-white shadow-sm">
-        <div className="mx-auto flex h-14.5 max-w-350 items-center justify-between px-5 sm:px-6">
-          <Link href="/profile" className="flex items-center">
-            <Image src={RumahAmalHorizontalLogo} alt="Rumah Amal Salman" width={122} height={30} className="h-7 w-auto" />
-          </Link>
-          <Link href="/profile" className="text-sm font-bold text-[#07B0C8] hover:underline">Profil</Link>
-        </div>
-      </nav>
+      <RoleAwareUserNavbar />
 
       <main className="mx-auto max-w-4xl px-5 py-8 sm:px-6">
         <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Daftar Role Tambahan</h1>
@@ -212,12 +246,26 @@ export default function AccountRolesPage() {
           </div>
         )}
 
-        {!isLoading && existingRole && (
-          <div className="mt-6 rounded-lg border border-emerald-200 bg-emerald-50 p-5 text-emerald-800">
-            <div className="text-sm font-bold">Role {selectedRoleMeta.label} sudah ada di akun Anda.</div>
-            <Link href={selectedRoleMeta.dashboard} className="mt-3 inline-flex text-sm font-bold text-emerald-700 hover:underline">
-              Ganti ke dashboard {selectedRoleMeta.label}
-            </Link>
+        {!isLoading && existingRole && existingRoleCopy && (
+          <div className={`mt-6 rounded-lg border p-5 ${roleStatusClassName[existingRole.verificationStatus] || "border-gray-200 bg-white text-slate-700"}`}>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <div className="text-sm font-bold">{existingRoleCopy.title}</div>
+                <p className="mt-2 text-sm leading-6 opacity-90">{existingRoleCopy.body}</p>
+              </div>
+              <span className="w-fit rounded-full border border-current px-2.5 py-1 text-[11px] font-bold">
+                {existingRole.verificationStatus}
+              </span>
+            </div>
+            {existingRoleCopy.canOpenDashboard ? (
+              <Link href={selectedRoleMeta.dashboard} className="mt-4 inline-flex text-sm font-bold hover:underline">
+                Ganti ke dashboard {selectedRoleMeta.label}
+              </Link>
+            ) : (
+              <p className="mt-4 text-sm font-bold">
+                Step selanjutnya: tunggu verifikasi admin sebelum membuka dashboard {selectedRoleMeta.label}.
+              </p>
+            )}
           </div>
         )}
 

@@ -1,11 +1,9 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, FileText, Save, Upload } from "lucide-react";
 
-import RumahAmalHorizontalLogo from "../../../public/rumah-amal-horizontal-logo.svg";
+import RoleAwareUserNavbar from "@/components/ui/role-aware-user-navbar";
 
 type DocumentType = "identityCard" | "institutionCard" | "familyCard";
 
@@ -176,12 +174,9 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadOverview();
   }, []);
-
-  const dashboardHref = overview?.roles.some((role) => role.role === "DONOR")
-    ? "/donor/dashboard"
-    : "/applicant/dashboard";
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
@@ -213,16 +208,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900">
-      <nav className="sticky top-0 z-40 border-b border-gray-100 bg-white shadow-sm">
-        <div className="mx-auto flex h-14.5 max-w-350 items-center justify-between px-5 sm:px-6">
-          <Link href={dashboardHref} className="flex items-center">
-            <Image src={RumahAmalHorizontalLogo} alt="Rumah Amal Salman" width={122} height={30} className="h-7 w-auto" />
-          </Link>
-          <Link href={dashboardHref} className="text-sm font-bold text-[#07B0C8] hover:underline">
-            Kembali
-          </Link>
-        </div>
-      </nav>
+      <RoleAwareUserNavbar />
 
       <main className="mx-auto max-w-5xl px-5 py-8 sm:px-6">
         <header>
