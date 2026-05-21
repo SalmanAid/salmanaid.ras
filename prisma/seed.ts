@@ -80,14 +80,20 @@ async function main() {
       {
         userId: admin.id,
         roleId: adminRole.id,
+        verificationStatus: "VERIFIED",
+        reviewedAt: new Date(),
       },
       {
         userId: donor.id,
         roleId: donorRole.id,
+        verificationStatus: "VERIFIED",
+        reviewedAt: new Date(),
       },
       {
         userId: borrower.id,
         roleId: borrowerRole.id,
+        verificationStatus: "VERIFIED",
+        reviewedAt: new Date(),
       },
     ],
   });
