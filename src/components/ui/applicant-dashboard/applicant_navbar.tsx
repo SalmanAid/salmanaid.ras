@@ -401,7 +401,7 @@ export default function ApplicantDashboard_ApplicantNavbar({ showNotifications =
                             </button>
 
                             {/* Responsive Dropdown Box */}
-                            <div className="invisible absolute right-0 top-[calc(100%+8px)] z-20 w-48 rounded-xl border border-gray-200 bg-white p-1.5 opacity-0 shadow-lg transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                            <div className="invisible absolute right-0 top-[calc(100%+8px)] z-20 w-64 rounded-2xl border border-gray-200 bg-white p-2 opacity-0 shadow-xl transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                                 
                                 {/* Mobile Menu Section (Hidden on Desktop) */}
                                 <div className="flex flex-col border-b border-gray-100 pb-1.5 mb-1.5 md:hidden">
@@ -417,7 +417,7 @@ export default function ApplicantDashboard_ApplicantNavbar({ showNotifications =
                                             <Link
                                                 key={item.label}
                                                 href={item.href}
-                                                className={`w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium transition-colors ${
+                                                className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-[12.5px] font-medium transition-colors ${
                                                     isActive 
                                                         ? "bg-[#F0FBFD] text-[#07B0C8]" 
                                                         : "text-gray-700 hover:bg-gray-50 hover:text-[#07B0C8]"
@@ -430,28 +430,30 @@ export default function ApplicantDashboard_ApplicantNavbar({ showNotifications =
                                 </div>
 
                                 {/* Account / Action Section */}
-                                <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider md:hidden">
-                                    Akun
+                                <div className="flex flex-col gap-1">
+                                    <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider md:hidden">
+                                        Akun
+                                    </div>
+                                    <Link
+                                        href="/profile"
+                                        className="flex w-full items-center rounded-lg px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
+                                    >
+                                        Profil
+                                    </Link>
+                                    <Link
+                                        href={donorAction.href}
+                                        className="flex w-full items-center rounded-lg px-3 py-2 text-left text-[12.5px] font-bold text-[#07B0C8] transition-colors hover:bg-[#F0FBFD]"
+                                    >
+                                        {donorAction.label}
+                                    </Link>
+                                    <button
+                                        type="button"
+                                        onClick={() => signOut({ callbackUrl: "/login" })}
+                                        className="flex w-full items-center rounded-lg px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
+                                    >
+                                        Logout
+                                    </button>
                                 </div>
-                                <Link
-                                    href="/profile"
-                                    className="w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
-                                >
-                                    Profil
-                                </Link>
-                                <Link
-                                    href={donorAction.href}
-                                    className="w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
-                                >
-                                    {donorAction.label}
-                                </Link>
-                                <button
-                                    type="button"
-                                    onClick={() => signOut({ callbackUrl: "/login" })}
-                                    className="w-full rounded-md px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
-                                >
-                                    Logout
-                                </button>
                             </div>
 
                         </div>
