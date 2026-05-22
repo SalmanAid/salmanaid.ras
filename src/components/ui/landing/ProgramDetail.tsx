@@ -1,32 +1,49 @@
+interface ProgramDetailProps {
+  title: string;
+  caption: string;
+  terms: string[]; // Fixed tuple definition to standard string array
+}
 
+export default function ProgramDetailComponent({ title, caption, terms }: ProgramDetailProps) {
+  return (
+    <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm max-w-xl mx-auto text-slate-800">
+      
+      {/* Title Section */}
+      <div className="mb-4">
+        <h2 className="text-xl font-bold text-[#FCB82E]">Detail Program : {title}</h2>
+      </div>
 
-export default function ProgramDetailComponent( props : { title : string, caption : string, terms : [string]}) {
+      {/* Caption Section */}
+      <p className="text-sm text-slate-500 leading-relaxed mb-6">
+        {caption}
+      </p>
 
-    return (
-        <div>
-            
-            {/* title */}
-            <div>
-                
+      {/* Terms and Conditions Section */}
+      <div className="border-t border-slate-50 pt-4">
+        <h3 className="font-bold text-sm text-slate-600 mb-3">
+          Syarat Dan Ketentuan
+        </h3>
+
+        {/* Content Terms and Conditions */}
+        <div className="flex flex-col gap-2.5">
+          {terms && terms.map((term, index) => (
+            // Fixed: Changed from forEach to map, and explicitly returning the JSX container
+            <div key={index} className="flex items-start gap-2.5 text-sm text-slate-600">
+              
+              {/* Checklist Icon */}
+              <div className="flex items-center justify-center min-w-4.5 h-4.5 rounded-full bg-emerald-50 text-emerald-600 font-bold text-[10px] mt-0.5">
+                ✓
+              </div>
+
+              {/* Term String */}
+              <div className="flex-1 leading-tight">
+                {term}
+              </div>
             </div>
-
-            {/* caption */}
-            <p>
-                {props.caption}
-            </p>
-
-            {/* terms */}
-            <div>
-
-                {/* title terms and condition */}
-                <div>
-
-                </div>
-
-                {/* content terms and conditions */}
-
-            </div>
-            
+          ))}
         </div>
-    );
+      </div>
+      
+    </div>
+  );
 }
