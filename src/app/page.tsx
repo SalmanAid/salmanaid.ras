@@ -4,6 +4,8 @@ import { Hero } from "@/components/ui/landing/Hero";
 import { HowItWorks } from "@/components/ui/landing/HowItWorks";
 import { ImpactStats } from "@/components/ui/landing/ImpactStats";
 import { TrustTransparency } from "@/components/ui/landing/TrustTransparency";
+import ProgramComponent from "@/components/ui/landing/Program";
+import FAQComponent from "@/components/ui/landing/FAQ";
 
 export default function Home() {
   return (
@@ -12,7 +14,9 @@ export default function Home() {
       <Hero />
       <HowItWorks />
       <ImpactStats />
+      <ProgramComponent/>
       <TrustTransparency />
+      <FAQComponent/>
       <CallToAction />
 
       <section id="faq" className="sr-only" aria-hidden="true">
