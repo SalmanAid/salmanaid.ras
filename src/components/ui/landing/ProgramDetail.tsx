@@ -1,12 +1,17 @@
+import { useRouter } from "next/navigation";
+
 interface ProgramDetailProps {
   title: string;
   caption: string;
   terms: string[]; // Fixed tuple definition to standard string array
+  url: string;
 }
 
-export default function ProgramDetailComponent({ title, caption, terms }: ProgramDetailProps) {
+export default function ProgramDetailComponent({ title, caption, terms, url }: ProgramDetailProps) {
+  const router = useRouter()
+
   return (
-    <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm max-w-xl mx-auto text-slate-800">
+    <div className="flex flex-col bg-white border border-slate-100 rounded-3xl p-6 shadow-sm max-w-xl mx-auto text-slate-800">
       
       {/* Title Section */}
       <div className="mb-4">
@@ -19,7 +24,7 @@ export default function ProgramDetailComponent({ title, caption, terms }: Progra
       </p>
 
       {/* Terms and Conditions Section */}
-      <div className="border-t border-slate-50 pt-4">
+      <div className="border-t border-slate-50 py-4">
         <h3 className="font-bold text-sm text-slate-600 mb-3">
           Syarat Dan Ketentuan
         </h3>
@@ -42,6 +47,11 @@ export default function ProgramDetailComponent({ title, caption, terms }: Progra
             </div>
           ))}
         </div>
+      </div>
+
+      {/* cta */}
+      <div className="flex justify-center items-center w-full h-fit p-2 font-semibold rounded-2xl bg-[#FCB82E] text-white" onClick={() => router.push(url)}>
+        Ajukan Sekarang
       </div>
       
     </div>

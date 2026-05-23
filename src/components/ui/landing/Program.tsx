@@ -31,6 +31,7 @@ export default function ProgramComponent () {
                             "Mampu menunjukkan kebutuhan finansial dengan dokumen pendukung", 
                             "Aktif dalam kegiatan kemahasiswaan atau organisasi kampus"
                         ]}
+                        url="/applicant/apply"
                     />
                 </div>
             )}
@@ -52,6 +53,7 @@ export default function ProgramComponent () {
                             "Mampu menunjukkan kebutuhan finansial dengan dokumen pendukung", 
                             "Aktif dalam kegiatan kemahasiswaan atau organisasi kampus"
                         ]}
+                        url="/donate/apply"
                     />
                 </div>
             )}
