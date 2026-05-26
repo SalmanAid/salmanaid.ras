@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Clock, FileText, RefreshCw, ShieldCheck, XCircle } from "lucide-react";
+import type { ReactNode } from "react";
+import { Clock, FileText, IdCard, MapPin, Phone, RefreshCw, ShieldCheck, XCircle } from "lucide-react";
 
 import AdminDashboard_AdminNavbar from "@/components/ui/admin-dashboard/admin_navbar";
 
@@ -26,9 +27,11 @@ type VerificationRequest = {
   reviewedAt?: string | null;
   hasDocumentUpdate: boolean;
   missingDocumentLabels: string[];
+  missingIdentityLabels: string[];
   user: {
     name: string;
     email: string;
+    nik?: string | null;
     phone_number?: string | null;
     address?: string | null;
   };
@@ -64,6 +67,34 @@ function formatDate(value?: string | null) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(value));
+}
+
+function IdentityItem({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value?: string | null;
+}) {
+  const hasValue = Boolean(value?.trim());
+
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white p-3">
+      <div className="flex items-start gap-3">
+        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${hasValue ? "bg-[#F0FBFD] text-[#07B0C8]" : "bg-red-50 text-red-500"}`}>
+          {icon}
+        </div>
+        <div className="min-w-0">
+          <div className="text-xs font-bold text-gray-500">{label}</div>
+          <div className={`mt-1 break-words text-sm font-bold ${hasValue ? "text-slate-800" : "text-red-600"}`}>
+            {hasValue ? value : "Belum diisi"}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function DocumentTile({ document }: { document: VerificationDocument }) {
@@ -277,6 +308,20 @@ export default function AdminAccountVerificationsPage() {
                         Dokumen kurang: {request.missingDocumentLabels.join(", ")}
                       </p>
                     )}
+                    {request.missingIdentityLabels.length > 0 && (
+                      <p className="mt-3 text-sm font-bold text-red-600">
+                        Data identitas kurang: {request.missingIdentityLabels.join(", ")}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-5 rounded-lg border border-gray-200 bg-[#F8FAFC] p-4">
+                  <div className="text-sm font-bold text-slate-900">Data Identitas</div>
+                  <div className="mt-3 grid gap-3 md:grid-cols-3">
+                    <IdentityItem icon={<IdCard size={17} />} label="NIK" value={request.user.nik} />
+                    <IdentityItem icon={<Phone size={17} />} label="No. Telepon" value={request.user.phone_number} />
+                    <IdentityItem icon={<MapPin size={17} />} label="Alamat" value={request.user.address} />
                   </div>
                 </div>
 
@@ -318,7 +363,7 @@ export default function AdminAccountVerificationsPage() {
                     <button
                       type="button"
                       onClick={() => handleDecision(request, "VERIFIED")}
-                      disabled={isVerified || Boolean(submittingKey) || request.missingDocumentLabels.length > 0}
+                      disabled={isVerified || Boolean(submittingKey) || request.missingDocumentLabels.length > 0 || request.missingIdentityLabels.length > 0}
                       className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
                     >
                       <ShieldCheck size={16} />
