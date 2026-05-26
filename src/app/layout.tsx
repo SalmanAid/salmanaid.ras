@@ -6,6 +6,7 @@ import "./globals.css";
 
 import QueryClientProvider from "@/providers/QueryClientProvider";
 import AuthSessionProvider from "@/providers/SessionProvider";
+import { ToastProvider } from "@/components/ui/toast";
 
 const plusJakartaSans = localFont({
     src: "../../public/fonts/PlusJakartaSans-VariableFont.ttf",
@@ -36,10 +37,12 @@ export default function RootLayout({
             >
                 <AuthSessionProvider>
                     <QueryClientProvider>
-                        <main className="grow">
-                            {children}
-                            <Footer />
-                        </main>
+                        <ToastProvider>
+                            <main className="grow">
+                                {children}
+                                <Footer />
+                            </main>
+                        </ToastProvider>
                     </QueryClientProvider>
                 </AuthSessionProvider>
             </body>
