@@ -264,7 +264,7 @@ export default function ChooseRolePage() {
                 clearUserSignUpStore()
                 
                 // Success, redirect to login
-                router.push("/login");
+                router.push("/login?registered=1");
             }
         } catch (err) {
             console.error("Register error:", err);

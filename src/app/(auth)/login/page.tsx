@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast";
 
 export default function LoginPage() {
     const router = useRouter();
+    const toast = useToast();
 
     // init variables
     const [email, setEmail] = useState<string>("")
@@ -15,6 +17,18 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.get("registered") === "1") {
+            window.history.replaceState(null, "", "/login");
+            toast.success({
+                title: "Registrasi berhasil",
+                description: "Silakan login dengan akun yang baru Anda daftarkan.",
+            });
+        }
+    }, [router, toast]);
 
     // function for login action
     const handleLogin = async () => {
