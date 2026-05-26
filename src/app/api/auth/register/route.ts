@@ -9,6 +9,12 @@ import {
 import { validateFile } from "@/schemas/document.schema";
 
 const REGISTER_DOCUMENT_TYPES: UserDocumentType[] = ["identityCard", "institutionCard", "familyCard"];
+const REGISTER_IDENTITY_FIELDS = [
+  { key: "name", label: "Nama" },
+  { key: "nik", label: "NIK" },
+  { key: "phone_number", label: "No. telepon" },
+  { key: "address", label: "Alamat" },
+] as const;
 
 function getFormString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -31,6 +37,9 @@ export async function POST(req: Request) {
         name: getFormString(formData, "name"),
         email: getFormString(formData, "email"),
         password: getFormString(formData, "password"),
+        nik: getFormString(formData, "nik"),
+        phone_number: getFormString(formData, "phone_number"),
+        address: getFormString(formData, "address"),
         role,
       });
 
@@ -42,6 +51,18 @@ export async function POST(req: Request) {
       }
 
       const selectedRole = parsed.data.role || "DONOR";
+      const missingIdentityFields = REGISTER_IDENTITY_FIELDS.filter((field) => !parsed.data[field.key]?.trim());
+
+      if (missingIdentityFields.length > 0) {
+        return NextResponse.json(
+          {
+            error: "Data identitas belum lengkap",
+            missingFields: missingIdentityFields.map((field) => field.label),
+          },
+          { status: 400 }
+        );
+      }
+
       const requiredDocuments = AccountVerificationService.getRequiredDocuments(selectedRole);
       const missingDocuments = requiredDocuments.filter((documentType) => !getFormFile(formData, documentType));
 
@@ -101,6 +122,9 @@ export async function POST(req: Request) {
   } catch (error) {
     if (error instanceof Error && error.message === "EMAIL_TAKEN") {
       return NextResponse.json({ error: "Email sudah terdaftar" }, { status: 400 });
+    }
+    if (error instanceof Error && error.message === "NIK_TAKEN") {
+      return NextResponse.json({ error: "NIK sudah terdaftar" }, { status: 400 });
     }
     console.error("Register error:", error);
     return NextResponse.json({ error: "Terjadi kesalahan sistem" }, { status: 500 });

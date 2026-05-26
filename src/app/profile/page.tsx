@@ -13,6 +13,7 @@ type AccountRole = {
   verificationStatus: string;
   verificationMessage?: string | null;
   missingDocumentLabels?: string[];
+  missingIdentityLabels?: string[];
 };
 
 type AccountDocument = {
@@ -27,6 +28,7 @@ type AccountOverview = {
   user: {
     name: string;
     email: string;
+    nik?: string | null;
     phone_number?: string | null;
     address?: string | null;
   };
@@ -149,6 +151,7 @@ export default function ProfilePage() {
   const [error, setError] = useState("");
   const [profileForm, setProfileForm] = useState({
     name: "",
+    nik: "",
     phone_number: "",
     address: "",
   });
@@ -163,6 +166,7 @@ export default function ProfilePage() {
       setOverview(payload.data);
       setProfileForm({
         name: payload.data.user.name || "",
+        nik: payload.data.user.nik || "",
         phone_number: payload.data.user.phone_number || "",
         address: payload.data.user.address || "",
       });
@@ -189,6 +193,7 @@ export default function ProfilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: profileForm.name,
+          nik: profileForm.nik || null,
           phone_number: profileForm.phone_number || null,
           address: profileForm.address || null,
         }),
@@ -254,6 +259,18 @@ export default function ProfilePage() {
                       className="h-10 rounded-lg border border-gray-200 px-3 text-sm outline-none transition focus:border-[#07B0C8] focus:ring-3 focus:ring-cyan-100"
                     />
                   </label>
+                  <label className="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+                    NIK
+                    <input
+                      inputMode="numeric"
+                      value={profileForm.nik}
+                      onChange={(event) => {
+                        const nextNik = event.target.value.replace(/\D/g, "").slice(0, 16);
+                        setProfileForm((current) => ({ ...current, nik: nextNik }));
+                      }}
+                      className="h-10 rounded-lg border border-gray-200 px-3 text-sm outline-none transition focus:border-[#07B0C8] focus:ring-3 focus:ring-cyan-100"
+                    />
+                  </label>
                   <label className="flex flex-col gap-2 text-sm font-semibold text-slate-700 sm:col-span-2">
                     Alamat
                     <textarea
@@ -316,6 +333,11 @@ export default function ProfilePage() {
                       {(role.missingDocumentLabels || []).length > 0 && (
                         <p className="mt-2 text-xs font-semibold leading-5 text-red-600">
                           Kurang: {role.missingDocumentLabels?.join(", ")}
+                        </p>
+                      )}
+                      {(role.missingIdentityLabels || []).length > 0 && (
+                        <p className="mt-2 text-xs font-semibold leading-5 text-red-600">
+                          Data identitas kurang: {role.missingIdentityLabels?.join(", ")}
                         </p>
                       )}
                       {role.verificationStatus === "VERIFIED" && (

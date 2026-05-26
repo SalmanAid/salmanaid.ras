@@ -1,9 +1,17 @@
 import { z } from "zod";
 
 export const RegisterSchema = z.object({
-  name: z.string().optional(),
+  name: z.string().trim().min(1, "Nama wajib diisi").max(100, "Nama maksimal 100 karakter").optional(),
   email: z.string().email("Format email tidak valid"),
   password: z.string().min(8, "Password minimal 8 karakter"),
+  nik: z.string().trim().regex(/^\d{16}$/, "NIK harus terdiri dari 16 digit angka").optional(),
+  phone_number: z.string()
+    .trim()
+    .min(8, "No. telepon minimal 8 karakter")
+    .max(30, "No. telepon maksimal 30 karakter")
+    .regex(/^\+?[0-9\s-]+$/, "No. telepon hanya boleh berisi angka, spasi, tanda +, atau tanda -")
+    .optional(),
+  address: z.string().trim().min(10, "Alamat minimal 10 karakter").max(500, "Alamat maksimal 500 karakter").optional(),
   role: z.enum(["DONOR", "BORROWER"]).optional(),
 });
 

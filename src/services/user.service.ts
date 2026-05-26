@@ -10,11 +10,18 @@ export const UserService = {
    * Throws "EMAIL_TAKEN" if the email already exists.
    */
   async register(data: RegisterInput) {
-    const { name, email, password, role } = data;
+    const { name, email, password, role, nik, phone_number, address } = data;
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       throw new Error("EMAIL_TAKEN");
+    }
+
+    if (nik) {
+      const existingNik = await prisma.user.findUnique({ where: { nik } });
+      if (existingNik) {
+        throw new Error("NIK_TAKEN");
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -25,6 +32,9 @@ export const UserService = {
         name: name || email.split("@")[0],
         email,
         password: hashedPassword,
+        nik: nik || null,
+        phone_number: phone_number || null,
+        address: address || null,
         roles: {
           create: {
             role: {
