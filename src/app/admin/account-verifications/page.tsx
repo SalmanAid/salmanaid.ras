@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { Clock, FileText, IdCard, MapPin, Phone, RefreshCw, ShieldCheck, XCircle } from "lucide-react";
 
 import AdminDashboard_AdminNavbar from "@/components/ui/admin-dashboard/admin_navbar";
+import { useToast } from "@/components/ui/toast";
 
 type VerificationStatus = "PENDING" | "VERIFIED" | "REJECTED" | "REVISION_REQUESTED";
 
@@ -133,6 +134,7 @@ function DocumentTile({ document }: { document: VerificationDocument }) {
 }
 
 export default function AdminAccountVerificationsPage() {
+  const toast = useToast();
   const [requests, setRequests] = useState<VerificationRequest[]>([]);
   const [statusFilter, setStatusFilter] = useState<VerificationStatus | undefined>();
   const [isLoading, setIsLoading] = useState(true);
@@ -205,8 +207,32 @@ export default function AdminAccountVerificationsPage() {
       if (!response.ok) throw new Error(payload.error || "Gagal memperbarui status verifikasi");
 
       await fetchRequests(statusFilter);
+      const toastCopy: Record<VerificationStatus, { title: string; description: string }> = {
+        VERIFIED: {
+          title: "Akun berhasil diverifikasi",
+          description: `${request.user.name} sudah dapat menggunakan role ${request.roleLabel}.`,
+        },
+        REVISION_REQUESTED: {
+          title: "Permintaan perbaikan terkirim",
+          description: `Status ${request.roleLabel} untuk ${request.user.name} dikembalikan ke pending.`,
+        },
+        REJECTED: {
+          title: "Verifikasi ditolak",
+          description: `Penolakan akun ${request.user.name} berhasil disimpan.`,
+        },
+        PENDING: {
+          title: "Status diperbarui",
+          description: `Status verifikasi ${request.user.name} berhasil diperbarui.`,
+        },
+      };
+      toast.success(toastCopy[status]);
     } catch (decisionError) {
-      setError(decisionError instanceof Error ? decisionError.message : "Gagal memperbarui status verifikasi");
+      const errorMessage = decisionError instanceof Error ? decisionError.message : "Gagal memperbarui status verifikasi";
+      setError(errorMessage);
+      toast.error({
+        title: "Gagal memperbarui verifikasi",
+        description: errorMessage,
+      });
     } finally {
       setSubmittingKey("");
     }
