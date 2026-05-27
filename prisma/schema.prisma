@@ -108,6 +108,7 @@ model UserRole {
   user                  User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, roleId])
+  @@index([userId])
   @@index([verificationStatus])
   @@index([documentsUpdatedAt, verificationRequestedAt])
 }
