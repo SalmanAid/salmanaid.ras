@@ -11,9 +11,18 @@ import { VerifySchema } from "@/schemas/auth.schema";
  * The Credentials provider lives here (not in auth.config.ts) because
  * it depends on bcrypt and Prisma which are Node.js-only and would fail in Edge middleware.
  */
+
+// Session configuration from environment variables
+const SESSION_MAX_AGE = parseInt(process.env.AUTH_SESSION_MAX_AGE || String(24 * 60 * 60), 10); // Default: 24 hours
+const SESSION_UPDATE_AGE = parseInt(process.env.AUTH_SESSION_UPDATE_AGE || String(60 * 60), 10); // Default: 1 hour
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
+  session: { 
+    strategy: "jwt",
+    maxAge: SESSION_MAX_AGE,
+    updateAge: SESSION_UPDATE_AGE,
+  },
   secret: process.env.AUTH_SECRET,
   ...authConfig,
   providers: [
