@@ -45,6 +45,9 @@ model User {
   roles            UserRole[]
 
   @@map("users")
+  @@index([email])
+  @@index([createdAt])
+  @@index([isVerified])
 }
 
 model Account {
@@ -105,6 +108,8 @@ model UserRole {
   user                  User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, roleId])
+  @@index([verificationStatus])
+  @@index([documentsUpdatedAt, verificationRequestedAt])
 }
 
 // ==========================================
@@ -121,6 +126,9 @@ model DonorFund {
   donor        User          @relation(fields: [donorId], references: [id], onDelete: Cascade)
   loanFundings LoanFunding[]
   paymentTransaction PaymentTransaction? @relation(fields: [paymentTransactionId], references: [id], onDelete: SetNull)
+
+  @@index([donorId])
+  @@index([createdAt])
 }
 
 model LoanApplication {
@@ -135,7 +143,11 @@ model LoanApplication {
   loan                  Loan?
   borrower              User                  @relation(fields: [borrowerId], references: [id], onDelete: Cascade)
   statusHistories       ApplicationStatusHistory[]
-  attachments           ApplicationAttachment[]  
+  attachments           ApplicationAttachment[]
+
+  @@index([status])
+  @@index([borrowerId])
+  @@index([createdAt])
 }
 
 model Loan {
@@ -148,6 +160,10 @@ model Loan {
   application    LoanApplication @relation(fields: [applicationId], references: [id])
   fundings       LoanFunding[]
   repayments     Repayment[]
+
+  @@index([status])
+  @@index([status, dueDate])
+  @@index([approvedAt])
 }
 
 model LoanFunding {
@@ -158,6 +174,9 @@ model LoanFunding {
   amount      Decimal           @db.Decimal(12, 2)
   donorFund   DonorFund?        @relation(fields: [donorFundId], references: [id])
   loan        Loan              @relation(fields: [loanId], references: [id], onDelete: Cascade)
+
+  @@index([loanId])
+  @@index([donorFundId])
 }
 
 model Repayment {
@@ -169,6 +188,9 @@ model Repayment {
   status RepaymentStatus
   loan   Loan            @relation(fields: [loanId], references: [id], onDelete: Cascade)
   paymentTransaction PaymentTransaction? @relation(fields: [paymentTransactionId], references: [id], onDelete: SetNull)
+
+  @@index([loanId])
+  @@index([status])
 }
 
 model Notification {
@@ -179,6 +201,9 @@ model Notification {
   scheduledAt DateTime
   sentAt      DateTime?
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sentAt])
 }
 
 model PaymentTransaction {
@@ -205,6 +230,9 @@ model ApplicationStatusHistory {
   notes         String?
   createdAt     DateTime  @default(now())
   loanApplication LoanApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@index([createdAt])
 }
 
 model ApplicationAttachment {
@@ -214,6 +242,8 @@ model ApplicationAttachment {
   fileUrl       String
   uploadedAt    DateTime  @default(now())
   loanApplication LoanApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
 }
 
 // ==========================================

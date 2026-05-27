@@ -2,6 +2,7 @@ import { AccountVerificationStatus, Prisma } from "@/generated/prisma";
 import { prisma } from "@/lib/prisma";
 import { normalizeRoleName, ROLES } from "@/lib/roles";
 import { supabaseAdmin } from "@/lib/supabase";
+import { batchGenerateSignedUrls } from "@/lib/supabase-batch";
 
 const USER_DOCUMENT_BUCKET = process.env.SUPABASE_USER_BUCKET_NAME || "user-documents";
 
@@ -56,19 +57,17 @@ function getDocumentUploadedAtKey(documentType: UserDocumentType) {
   return `${documentType}UploadedAt` as const;
 }
 
+/**
+ * OPTIMIZED: Batch generates signed URLs for multiple users' documents
+ * BEFORE: 30+ Supabase API calls per verification list (1 per document per user)
+ * AFTER: 1-3 API calls total (batch all unique paths first)
+ */
 async function createSignedDocumentUrl(storagePath: string | null) {
   if (!storagePath) return null;
 
-  const { data, error } = await supabaseAdmin.storage
-    .from(USER_DOCUMENT_BUCKET)
-    .createSignedUrl(storagePath, 3600);
-
-  if (error || !data?.signedUrl) {
-    console.error("Supabase signed URL error:", error);
-    return null;
-  }
-
-  return data.signedUrl;
+  // Fall back to single URL generation (cached)
+  const signedUrlMap = await batchGenerateSignedUrls([storagePath]);
+  return signedUrlMap.get(storagePath) || null;
 }
 
 async function buildDocumentSummaries(user: UserWithDocuments, role?: string) {
@@ -77,20 +76,28 @@ async function buildDocumentSummaries(user: UserWithDocuments, role?: string) {
     ? ROLE_DOCUMENT_REQUIREMENTS[normalizedRole]
     : (["identityCard", "institutionCard", "familyCard"] as UserDocumentType[]);
 
-  return Promise.all(
-    documentTypes.map(async (documentType) => {
-      const storagePath = user[documentType];
-      const uploadedAt = user[getDocumentUploadedAtKey(documentType)];
+  // Collect all paths first for batch processing
+  const paths = documentTypes
+    .map((documentType) => user[documentType])
+    .filter(Boolean) as string[];
 
-      return {
-        type: documentType,
-        label: DOCUMENT_LABELS[documentType],
-        uploadedAt,
-        signedUrl: await createSignedDocumentUrl(storagePath),
-        isUploaded: Boolean(storagePath),
-      };
-    })
-  );
+  // Batch generate all signed URLs at once
+  const signedUrlMap = paths.length > 0 
+    ? await batchGenerateSignedUrls(paths)
+    : new Map<string, string>();
+
+  return documentTypes.map((documentType) => {
+    const storagePath = user[documentType];
+    const uploadedAt = user[getDocumentUploadedAtKey(documentType)];
+
+    return {
+      type: documentType,
+      label: DOCUMENT_LABELS[documentType],
+      uploadedAt,
+      signedUrl: storagePath ? signedUrlMap.get(storagePath) || null : null,
+      isUploaded: Boolean(storagePath),
+    };
+  });
 }
 
 export const AccountVerificationService = {
@@ -427,44 +434,82 @@ export const AccountVerificationService = {
       ],
     });
 
-    return Promise.all(
-      requests.map(async (request) => {
-        const documents = await buildDocumentSummaries(request.user, request.role.name);
-        const missingDocuments = this.getMissingDocuments(request.user, request.role.name);
-        const missingIdentityFields = this.getMissingIdentityFields(request.user);
-        const hasDocumentUpdate = Boolean(
-          request.documentsUpdatedAt &&
-          (!request.reviewedAt || request.documentsUpdatedAt > request.reviewedAt)
-        );
+    /**
+     * OPTIMIZED: Batch all document URL signing
+     * BEFORE: 30+ Supabase API calls (1 per document per user)
+     * AFTER: 1-3 API calls (batch all unique paths first)
+     */
+    // Collect all unique document paths from all users
+    const allDocumentPaths = new Set<string>();
+    for (const request of requests) {
+      const documentPaths = [
+        request.user.identityCard,
+        request.user.institutionCard,
+        request.user.familyCard,
+      ].filter(Boolean) as string[];
+      
+      documentPaths.forEach((path) => allDocumentPaths.add(path));
+    }
+
+    // Batch generate all signed URLs at once
+    const signedUrlMap = allDocumentPaths.size > 0
+      ? await batchGenerateSignedUrls(Array.from(allDocumentPaths))
+      : new Map<string, string>();
+
+    // Build response with signed URLs
+    return requests.map((request) => {
+      // Build documents using already-signed URLs (no await needed)
+      const documentTypes = isVerifiableRole(request.role.name)
+        ? ROLE_DOCUMENT_REQUIREMENTS[request.role.name]
+        : (["identityCard", "institutionCard", "familyCard"] as UserDocumentType[]);
+
+      const documents = documentTypes.map((documentType) => {
+        const storagePath = request.user[documentType];
+        const uploadedAt = request.user[getDocumentUploadedAtKey(documentType)];
 
         return {
-          userId: request.userId,
-          roleId: request.roleId,
-          role: request.role.name,
-          roleLabel: getRoleLabel(request.role.name),
-          verificationStatus: request.verificationStatus,
-          verificationMessage: request.verificationMessage,
-          verificationRequestedAt: request.verificationRequestedAt,
-          documentsUpdatedAt: request.documentsUpdatedAt,
-          reviewedAt: request.reviewedAt,
-          reviewedBy: request.reviewedBy,
-          hasDocumentUpdate,
-          missingDocuments,
-          missingDocumentLabels: missingDocuments.map((documentType) => DOCUMENT_LABELS[documentType]),
-          missingIdentityFields,
-          missingIdentityLabels: missingIdentityFields.map((field) => IDENTITY_FIELD_LABELS[field]),
-          user: {
-            id: request.user.id,
-            name: request.user.name,
-            email: request.user.email,
-            nik: request.user.nik,
-            phone_number: request.user.phone_number,
-            address: request.user.address,
-          },
-          documents,
+          type: documentType,
+          label: DOCUMENT_LABELS[documentType],
+          uploadedAt,
+          signedUrl: storagePath ? signedUrlMap.get(storagePath) || null : null,
+          isUploaded: Boolean(storagePath),
         };
-      })
-    );
+      });
+
+      const missingDocuments = this.getMissingDocuments(request.user, request.role.name);
+      const missingIdentityFields = this.getMissingIdentityFields(request.user);
+      const hasDocumentUpdate = Boolean(
+        request.documentsUpdatedAt &&
+        (!request.reviewedAt || request.documentsUpdatedAt > request.reviewedAt)
+      );
+
+      return {
+        userId: request.userId,
+        roleId: request.roleId,
+        role: request.role.name,
+        roleLabel: getRoleLabel(request.role.name),
+        verificationStatus: request.verificationStatus,
+        verificationMessage: request.verificationMessage,
+        verificationRequestedAt: request.verificationRequestedAt,
+        documentsUpdatedAt: request.documentsUpdatedAt,
+        reviewedAt: request.reviewedAt,
+        reviewedBy: request.reviewedBy,
+        hasDocumentUpdate,
+        missingDocuments,
+        missingDocumentLabels: missingDocuments.map((documentType) => DOCUMENT_LABELS[documentType]),
+        missingIdentityFields,
+        missingIdentityLabels: missingIdentityFields.map((field) => IDENTITY_FIELD_LABELS[field]),
+        user: {
+          id: request.user.id,
+          name: request.user.name,
+          email: request.user.email,
+          nik: request.user.nik,
+          phone_number: request.user.phone_number,
+          address: request.user.address,
+        },
+        documents,
+      };
+    });
   },
 
   async updateVerificationDecision(input: {
