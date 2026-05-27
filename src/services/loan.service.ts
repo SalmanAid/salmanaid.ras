@@ -1,8 +1,10 @@
 import { LoanApplicationStatus, LoanStatus, Prisma, RepaymentStatus } from "@/generated/prisma";
 import { prisma } from "@/lib/prisma";
+import { ROLES } from "@/lib/roles";
 import { supabaseAdmin } from "@/lib/supabase";
 import { batchGenerateSignedUrls } from "@/lib/supabase-batch";
 import { LoanApplicationInput } from "@/schemas/loan.schema";
+import { AccountVerificationService } from "@/services/account-verification.service";
 import { NotificationService } from "@/services/notification.service";
 
 const BUCKET_NAME = process.env.SUPABASE_BUCKET_NAME || "loan-documents";
@@ -72,6 +74,9 @@ async function withSignedAttachmentUrls<
 export const LoanService = {
   async createLoanApplication(userId: string, data: LoanApplicationInput) {
     try {
+      // Add verification check
+      await AccountVerificationService.assertRoleVerified(userId, ROLES.BORROWER);
+
       const loanApp = await prisma.loanApplication.create({
         data: {
           borrowerId: userId,
@@ -85,6 +90,16 @@ export const LoanService = {
 
       return loanApp;
     } catch (error) {
+      // Handle verification errors
+      if (error instanceof Error) {
+        if (
+          error.message === "ROLE_NOT_FOUND" ||
+          error.message === "ACCOUNT_NOT_VERIFIED"
+        ) {
+          throw error;
+        }
+      }
+
       console.error("Error creating loan application:", error);
       throw new Error("Gagal merekam pengajuan pinjaman ke database.");
     }

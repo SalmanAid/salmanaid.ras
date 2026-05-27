@@ -38,10 +38,12 @@ export default function RootLayout({
                 <AuthSessionProvider>
                     <QueryClientProvider>
                         <ToastProvider>
-                            <main className="grow">
-                                {children}
+                            <div className="flex flex-col min-h-screen">
+                                <main className="flex-1">
+                                    {children}
+                                </main>
                                 <Footer />
-                            </main>
+                            </div>
                         </ToastProvider>
                     </QueryClientProvider>
                 </AuthSessionProvider>

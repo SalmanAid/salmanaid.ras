@@ -240,23 +240,41 @@ export default function DonateFormPage({
             </div>
           )}
 
-          {transactionType === 'donation' && (isCheckingVerification || !isDonorVerified) && (
-            <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
-              <div className="flex gap-3">
-                <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
-                <div>
-                  <p className="text-sm font-bold text-amber-900">
-                    {isCheckingVerification ? 'Memeriksa status verifikasi akun...' : 'Akun Donatur Belum Terverifikasi'}
-                  </p>
-                  {!isCheckingVerification && (
-                    <p className="mt-1 text-sm leading-6 text-amber-800">{donorBlockedMessage}</p>
-                  )}
+          {isCheckingVerification && transactionType === 'donation' && (
+            <div className="mb-6 rounded-lg border border-[#E2E8F0] bg-white p-8 text-sm font-semibold text-[#667085] shadow-[0_1px_3px_rgba(15,23,42,0.08)]">
+              Memeriksa status verifikasi akun...
+            </div>
+          )}
+
+          {!isCheckingVerification && transactionType === 'donation' && !isDonorVerified && (
+            <div className="rounded-lg border border-amber-200 bg-white p-6 shadow-[0_1px_3px_rgba(15,23,42,0.08)]">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                  <ShieldAlert size={22} />
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-lg font-extrabold text-slate-900">Akun Donatur Belum Terverifikasi</h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{donorBlockedMessage}</p>
+                  <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+                    <Link
+                      href={donorRole ? "/profile?from=DONOR" : "/account/roles?role=DONOR&from=DONOR"}
+                      className="inline-flex h-10 items-center justify-center rounded-lg bg-[#07B0C8] px-4 text-sm font-bold text-white transition hover:bg-[#069CB1]"
+                    >
+                      {donorRole ? "Perbarui Dokumen" : "Daftar sebagai Donatur"}
+                    </Link>
+                    <Link
+                      href="/donor/dashboard"
+                      className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-bold text-slate-700 transition hover:bg-gray-50"
+                    >
+                      Kembali ke Dashboard
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
-        {/* select amount section */}
+        {!isCheckingVerification && (transactionType !== 'donation' || isDonorVerified) && (
         <div className="space-y-4">
 
           {/* title + idr */}
@@ -312,30 +330,28 @@ export default function DonateFormPage({
             </p>
           </div>
 
-        </div>
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-red-700 text-sm">{error}</p>
+            </div>
+          )}
 
-        {/* Error Message */}
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-red-700 text-sm">{error}</p>
-          </div>
-        )}
+          {/* Payment Method Selection */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Select Payment Method
+            </label>
 
-        {/* Payment Method Selection */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Select Payment Method
-          </label>
-
-          {/* QRIS Option */}
-          <div
-            onClick={() => handlePaymentMethodSelect('qris')}
-            className={`mb-3 p-4 border-2 rounded-lg cursor-pointer transition ${
-              paymentMethod === 'qris'
-                ? 'border-[#07B0C8] bg-[#07B0C8]/10'
-                : 'border-gray-200 bg-white hover:border-gray-300'
-            }`}
-          >
+            {/* QRIS Option */}
+            <div
+              onClick={() => handlePaymentMethodSelect('qris')}
+              className={`mb-3 p-4 border-2 rounded-lg cursor-pointer transition ${
+                paymentMethod === 'qris'
+                  ? 'border-[#07B0C8] bg-[#07B0C8]/10'
+                  : 'border-gray-200 bg-white hover:border-gray-300'
+              }`}
+            >
             <div className="flex items-center">
               <div
                 className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
@@ -380,43 +396,45 @@ export default function DonateFormPage({
           </div>
         </div>
 
-        {paymentMethod === 'va' && (
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">VA Bank</label>
-            <select
-              value={vaBank}
-              onChange={(e) => setVaBank(e.target.value as VABank)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#07B0C8]"
-            >
-              <option value="bca">BCA</option>
-              <option value="bri">BRI</option>
-              <option value="bni">BNI</option>
-              <option value="permata">Permata</option>
-              <option value="cimb">CIMB</option>
-              <option value="mandiri_bill">Mandiri Bill</option>
-            </select>
+          {paymentMethod === 'va' && (
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">VA Bank</label>
+              <select
+                value={vaBank}
+                onChange={(e) => setVaBank(e.target.value as VABank)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#07B0C8]"
+              >
+                <option value="bca">BCA</option>
+                <option value="bri">BRI</option>
+                <option value="bni">BNI</option>
+                <option value="permata">Permata</option>
+                <option value="cimb">CIMB</option>
+                <option value="mandiri_bill">Mandiri Bill</option>
+              </select>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            onClick={handleSubmit}
+            disabled={loading || !paymentMethod || !amount || !referenceId || isCheckingVerification}
+            className={`w-full py-2 px-4 rounded-md font-medium text-white transition ${
+              loading || !paymentMethod || !amount || !referenceId || isCheckingVerification
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-[#07B0C8] hover:bg-[#059BB0]'
+            }`}
+          >
+            {loading ? 'Processing...' : 'Continue to Payment'}
+          </button>
+
+          {/* Back Link */}
+          <div className="mt-4 text-center">
+            <Link href="/donor/dashboard" className="text-sm text-[#07B0C8] hover:underline">
+              Back to Dashboard
+            </Link>
           </div>
-        )}
-
-        {/* Submit Button */}
-        <button
-          onClick={handleSubmit}
-          disabled={loading || !paymentMethod || !amount || !referenceId || isCheckingVerification || (transactionType === 'donation' && !isDonorVerified)}
-          className={`w-full py-2 px-4 rounded-md font-medium text-white transition ${
-            loading || !paymentMethod || !amount || !referenceId || isCheckingVerification || (transactionType === 'donation' && !isDonorVerified)
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-[#07B0C8] hover:bg-[#059BB0]'
-          }`}
-        >
-          {loading ? 'Processing...' : 'Continue to Payment'}
-        </button>
-
-        {/* Back Link */}
-        <div className="mt-4 text-center">
-          <Link href="/donor/dashboard" className="text-sm text-[#07B0C8] hover:underline">
-            Back to Dashboard
-          </Link>
         </div>
+        )}
       </div>
       </main>
     </div>

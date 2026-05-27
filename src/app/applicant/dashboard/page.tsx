@@ -4,11 +4,18 @@ import Link from "next/link";
 import { useUserStore } from "@/hooks/userStore";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState, useMemo, Suspense } from "react";
-import { CalendarDays, CreditCard, FileCheck2 } from "lucide-react";
+import { CalendarDays, CreditCard, FileCheck2, ShieldAlert } from "lucide-react";
 import ApplicantDashboard_PaymentScheduleRow from "@/components/ui/applicant-dashboard/payment_schedule_block";
 import ApplicantDashboard_ApplicationProgressComponent from "@/components/ui/applicant-dashboard/application_progress_block";
 import ApplicantDashboard_ApplicantNavbar from "@/components/ui/applicant-dashboard/applicant_navbar";
 import ApplicantDashboard_PaymentApplicantComponent from "@/components/ui/applicant-dashboard/payment_applicant_modal";
+
+type UserRoleOverview = {
+    role: string;
+    verificationStatus: string;
+    verificationMessage?: string | null;
+    missingDocumentLabels?: string[];
+};
 
 type LoanApplication = {
     id: string;
@@ -52,6 +59,8 @@ export default function ApplicantDashboardPage() {
     const [repaymentHistory, setRepaymentHistory] = useState<RepaymentHistoryItem[]>([]);
     const [historyLoading, setHistoryLoading] = useState(false);
     const [historyError, setHistoryError] = useState<string>("");
+    const [isCheckingVerification, setIsCheckingVerification] = useState(true);
+    const [borrowerRole, setBorrowerRole] = useState<UserRoleOverview | null>(null);
 
     const { data: session, status } = useSession();
     const username =
@@ -62,6 +71,47 @@ export default function ApplicantDashboardPage() {
         useUserStore((state) => state.user?.id) ||
         (session?.user as { id?: string } | null)?.id ||
         null;
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const fetchAccountStatus = async () => {
+            try {
+                const response = await fetch("/api/user/me", { cache: "no-store" });
+                if (!response.ok) {
+                    throw new Error("ACCOUNT_STATUS_FETCH_FAILED");
+                }
+
+                const payload = await response.json();
+                const role = (payload.data?.roles || []).find((item: UserRoleOverview) => item.role === "BORROWER") || null;
+                if (isMounted) setBorrowerRole(role);
+            } catch {
+                if (isMounted) setBorrowerRole(null);
+            } finally {
+                if (isMounted) setIsCheckingVerification(false);
+            }
+        };
+
+        void fetchAccountStatus();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    const isBorrowerVerified = borrowerRole?.verificationStatus === "VERIFIED";
+    const missingDocuments = borrowerRole?.missingDocumentLabels || [];
+    const verificationMessage = borrowerRole?.verificationMessage;
+
+    const blockedMessage = !borrowerRole
+        ? "Akun belum terdaftar sebagai Peminjam. Daftar sebagai Peminjam terlebih dahulu untuk mengakses dashboard."
+        : borrowerRole.verificationStatus === "REVISION_REQUESTED"
+            ? verificationMessage || "Admin meminta perbaikan dokumen. Perbarui dokumen yang diminta agar akun dapat ditinjau ulang."
+            : borrowerRole.verificationStatus === "REJECTED"
+                ? verificationMessage || "Verifikasi akun Peminjam ditolak. Perbarui data atau hubungi admin untuk bantuan."
+                : missingDocuments.length > 0
+                    ? `Dokumen Peminjam belum lengkap: ${missingDocuments.join(", ")}.`
+                    : "Akun Belum Terverifikasi, Tunggu Hingga Admin Melakukan Verifikasi.";
 
     useEffect(() => {
         const fetchAllLoans = async () => {
@@ -307,6 +357,50 @@ export default function ApplicantDashboardPage() {
         : "-";
 
     if (isLoading) return <div className="flex h-screen items-center justify-center bg-[#F3F5F7] text-sm text-[#6B7280]">Memuat...</div>;
+
+    if (isCheckingVerification) return (
+        <div className="min-h-screen bg-[#F3F5F7] text-[#111827]">
+            <ApplicantDashboard_ApplicantNavbar />
+            <main className="mx-auto w-full max-w-350 px-6 pb-10 pt-8">
+                <div className="rounded-lg border border-[#E2E8F0] bg-white p-8 text-sm font-semibold text-[#667085] shadow-[0_1px_3px_rgba(15,23,42,0.08)]">
+                    Memeriksa status verifikasi akun...
+                </div>
+            </main>
+        </div>
+    );
+
+    if (!isBorrowerVerified) return (
+        <div className="min-h-screen bg-[#F3F5F7] text-[#111827]">
+            <ApplicantDashboard_ApplicantNavbar />
+            <main className="mx-auto w-full max-w-350 px-6 pb-10 pt-8">
+                <div className="rounded-lg border border-amber-200 bg-white p-6 shadow-[0_1px_3px_rgba(15,23,42,0.08)]">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                            <ShieldAlert size={22} />
+                        </div>
+                        <div className="min-w-0">
+                            <h2 className="text-lg font-extrabold text-slate-900">Akun Peminjam Belum Terverifikasi</h2>
+                            <p className="mt-2 text-sm leading-6 text-slate-600">{blockedMessage}</p>
+                            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+                                <Link
+                                    href={borrowerRole ? "/profile?from=BORROWER" : "/account/roles?role=BORROWER&from=BORROWER"}
+                                    className="inline-flex h-10 items-center justify-center rounded-lg bg-[#07B0C8] px-4 text-sm font-bold text-white transition hover:bg-[#069CB1]"
+                                >
+                                    {borrowerRole ? "Perbarui Dokumen" : "Daftar sebagai Peminjam"}
+                                </Link>
+                                <Link
+                                    href="/"
+                                    className="inline-flex h-10 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-bold text-slate-700 transition hover:bg-gray-50"
+                                >
+                                    Kembali ke Beranda
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-[#F3F5F7] text-[#111827]">
