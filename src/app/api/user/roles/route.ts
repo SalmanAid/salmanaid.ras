@@ -78,6 +78,14 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+
+      if (error.message.startsWith("MISSING_IDENTITY:")) {
+        const missingIdentityFields = error.message.replace("MISSING_IDENTITY:", "").split(",").filter(Boolean);
+        return NextResponse.json(
+          { error: "Lengkapi data identitas di halaman profil sebelum mendaftarkan role tambahan", missingIdentityFields },
+          { status: 400 }
+        );
+      }
     }
 
     console.error("Add role error:", error);

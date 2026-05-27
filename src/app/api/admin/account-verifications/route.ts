@@ -103,6 +103,14 @@ export async function PATCH(request: NextRequest) {
           { status: 400 }
         );
       }
+
+      if (error.message.startsWith("MISSING_IDENTITY:")) {
+        const missingIdentityFields = error.message.replace("MISSING_IDENTITY:", "").split(",").filter(Boolean);
+        return NextResponse.json(
+          { error: "Data identitas belum lengkap", missingIdentityFields },
+          { status: 400 }
+        );
+      }
     }
 
     console.error("Update account verification error:", error);

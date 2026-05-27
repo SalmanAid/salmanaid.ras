@@ -19,6 +19,7 @@ model User {
   phoneVerified           DateTime?
   password                String
   image                   String?
+  nik                     String?  @unique
   phone_number            String?
   address                 String?
   identityCard            String?

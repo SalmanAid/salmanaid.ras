@@ -2,16 +2,22 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle2, FileText, Upload } from "lucide-react";
+import { ArrowLeft, CheckCircle2, FileText, IdCard, MapPin, Phone, Upload, UserRound } from "lucide-react";
 
 import HeartBlueIcon from "../../../../../public/heart-blue.svg"
 import GraduationCapIcon from "../../../../../public/graduation-cap.svg"
 import { useUserSignUpStore } from "@/hooks/userSignupStore";
 
 type DocumentKey = "identityCard" | "institutionCard" | "familyCard";
-type SignUpStep = "role" | "documents";
+type SignUpStep = "role" | "identity" | "documents";
+type IdentityForm = {
+    name: string;
+    nik: string;
+    phone_number: string;
+    address: string;
+};
 
 const DOCUMENT_REQUIREMENTS: Record<string, { key: DocumentKey; label: string; helper: string }[]> = {
     DONOR: [
@@ -84,6 +90,30 @@ function DocumentPicker({
     );
 }
 
+function IdentityField({
+    label,
+    required = true,
+    icon,
+    children,
+}: {
+    label: string;
+    required?: boolean;
+    icon: ReactNode;
+    children: ReactNode;
+}) {
+    return (
+        <label className="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+            <span className="flex items-center gap-2">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0FBFD] text-[#07B0C8]">
+                    {icon}
+                </span>
+                {label} {required && <span className="text-red-500">*</span>}
+            </span>
+            {children}
+        </label>
+    );
+}
+
 export default function ChooseRolePage() {
     const router = useRouter();
 
@@ -97,6 +127,12 @@ export default function ChooseRolePage() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [step, setStep] = useState<SignUpStep>("role");
+    const [identity, setIdentity] = useState<IdentityForm>({
+        name: "",
+        nik: "",
+        phone_number: "",
+        address: "",
+    });
     const [documents, setDocuments] = useState<Record<DocumentKey, File | null>>({
         identityCard: null,
         institutionCard: null,
@@ -114,7 +150,40 @@ export default function ChooseRolePage() {
         setError(null);
     };
 
-    const handleContinueToDocuments = () => {
+    const getTrimmedIdentity = () => ({
+        name: identity.name.trim(),
+        nik: identity.nik.trim(),
+        phone_number: identity.phone_number.trim(),
+        address: identity.address.trim(),
+    });
+
+    const validateIdentity = () => {
+        const trimmedIdentity = getTrimmedIdentity();
+
+        if (!trimmedIdentity.name || !trimmedIdentity.nik || !trimmedIdentity.phone_number || !trimmedIdentity.address) {
+            setError("Nama, NIK, No. Telepon, dan Alamat harus diisi.");
+            return false;
+        }
+
+        if (!/^\d{16}$/.test(trimmedIdentity.nik)) {
+            setError("NIK harus terdiri dari 16 digit angka.");
+            return false;
+        }
+
+        if (!/^\+?[0-9\s-]{8,30}$/.test(trimmedIdentity.phone_number)) {
+            setError("No. Telepon harus 8-30 karakter dan hanya berisi angka, spasi, tanda +, atau tanda -.");
+            return false;
+        }
+
+        if (trimmedIdentity.address.length < 10) {
+            setError("Alamat minimal 10 karakter.");
+            return false;
+        }
+
+        return true;
+    };
+
+    const handleContinueToIdentity = () => {
         setError(null);
 
         if (!hasSelectedRole) {
@@ -124,6 +193,16 @@ export default function ChooseRolePage() {
 
         if (!email || !password) {
             setError("Email dan password tidak ditemukan. Silakan ulangi pendaftaran.");
+            return;
+        }
+
+        setStep("identity");
+    };
+
+    const handleContinueToDocuments = () => {
+        setError(null);
+
+        if (!validateIdentity()) {
             return;
         }
 
@@ -139,6 +218,10 @@ export default function ChooseRolePage() {
             return;
         }
 
+        if (!validateIdentity()) {
+            return;
+        }
+
         const missingDocuments = requiredDocuments.filter((document) => !documents[document.key]);
         if (missingDocuments.length > 0) {
             setError(`Lengkapi dokumen: ${missingDocuments.map((document) => document.label).join(", ")}.`);
@@ -148,10 +231,14 @@ export default function ChooseRolePage() {
         setLoading(true);
 
         try {
+            const trimmedIdentity = getTrimmedIdentity();
             const formData = new FormData();
             formData.append("email", email);
             formData.append("password", password);
-            formData.append("name", email.split("@")[0]);
+            formData.append("name", trimmedIdentity.name);
+            formData.append("nik", trimmedIdentity.nik);
+            formData.append("phone_number", trimmedIdentity.phone_number);
+            formData.append("address", trimmedIdentity.address);
             formData.append("role", role);
 
             requiredDocuments.forEach((document) => {
@@ -177,7 +264,7 @@ export default function ChooseRolePage() {
                 clearUserSignUpStore()
                 
                 // Success, redirect to login
-                router.push("/login");
+                router.push("/login?registered=1");
             }
         } catch (err) {
             console.error("Register error:", err);
@@ -211,7 +298,7 @@ export default function ChooseRolePage() {
             {/* login container */}
             <div className="flex w-full justify-center items-center">
 
-                <div className={`border border-black/20 bg-white p-6 sm:p-8 w-full rounded-2xl shadow-2xl flex flex-col gap-6 ${step === "documents" ? "max-w-2xl" : "max-w-md"}`}>
+                <div className={`border border-black/20 bg-white p-6 sm:p-8 w-full rounded-2xl shadow-2xl flex flex-col gap-6 ${step === "documents" ? "max-w-2xl" : step === "identity" ? "max-w-xl" : "max-w-md"}`}>
 
                     {/* greeting container */}
                     <div className="grid justify-center items-center gap-y-2 text-center">
@@ -219,6 +306,8 @@ export default function ChooseRolePage() {
                         <div className="text-lg font-bold">
                             {step === "role" ? (
                                 <>Selamat Datang! <span className="text-[#16C5DE]">Pilih Peran Anda</span></>
+                            ) : step === "identity" ? (
+                                <>Lengkapi <span className="text-[#16C5DE]">Identitas Diri</span></>
                             ) : (
                                 <>Lengkapi <span className="text-[#16C5DE]">Dokumen Identitas</span></>
                             )}
@@ -228,6 +317,8 @@ export default function ChooseRolePage() {
                         <div className="text-sm text-gray-500" >
                             {step === "role"
                                 ? "Pilih peran utama Anda untuk menyesuaikan pengalaman dashboard. Anda dapat menambahkan peran lain nanti."
+                                : step === "identity"
+                                    ? "Data ini membantu admin mencocokkan identitas dengan dokumen yang Anda unggah."
                                 : "Akun akan masuk antrean verifikasi admin setelah pendaftaran selesai."}
                         </div>
 
@@ -238,8 +329,12 @@ export default function ChooseRolePage() {
                             1. Role
                         </span>
                         <span className="h-px w-8 bg-gray-200" />
+                        <span className={`rounded-full px-3 py-1 ${step === "identity" ? "bg-[#F0FBFD] text-[#07B0C8]" : step === "documents" ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-400"}`}>
+                            2. Identitas
+                        </span>
+                        <span className="h-px w-8 bg-gray-200" />
                         <span className={`rounded-full px-3 py-1 ${step === "documents" ? "bg-[#F0FBFD] text-[#07B0C8]" : "bg-gray-100 text-gray-400"}`}>
-                            2. Dokumen
+                            3. Dokumen
                         </span>
                     </div>
 
@@ -312,12 +407,72 @@ export default function ChooseRolePage() {
 
                             <button
                                 type="button"
-                                onClick={handleContinueToDocuments}
+                                onClick={handleContinueToIdentity}
                                 className="bg-[#16C5DE] h-12 flex justify-center items-center rounded-xl text-white font-bold hover:bg-[#13A6BB] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                                Lanjut Upload Dokumen
+                                Lanjut Isi Identitas
                             </button>
                         </>
+                    )}
+
+                    {step === "identity" && (
+                        <div className="rounded-2xl border border-gray-200 bg-[#F8FAFC] p-4">
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <IdentityField label="Nama Lengkap" icon={<UserRound size={16} />}>
+                                    <input
+                                        value={identity.name}
+                                        onChange={(event) => {
+                                            setIdentity((current) => ({ ...current, name: event.target.value }));
+                                            setError(null);
+                                        }}
+                                        className="h-11 rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none transition focus:border-[#07B0C8] focus:ring-3 focus:ring-cyan-100"
+                                        placeholder="Masukkan nama lengkap"
+                                        disabled={loading}
+                                    />
+                                </IdentityField>
+
+                                <IdentityField label="NIK" icon={<IdCard size={16} />}>
+                                    <input
+                                        inputMode="numeric"
+                                        value={identity.nik}
+                                        onChange={(event) => {
+                                            const nextNik = event.target.value.replace(/\D/g, "").slice(0, 16);
+                                            setIdentity((current) => ({ ...current, nik: nextNik }));
+                                            setError(null);
+                                        }}
+                                        className="h-11 rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none transition focus:border-[#07B0C8] focus:ring-3 focus:ring-cyan-100"
+                                        placeholder="16 digit NIK"
+                                        disabled={loading}
+                                    />
+                                </IdentityField>
+
+                                <IdentityField label="No. Telepon" icon={<Phone size={16} />}>
+                                    <input
+                                        value={identity.phone_number}
+                                        onChange={(event) => {
+                                            setIdentity((current) => ({ ...current, phone_number: event.target.value }));
+                                            setError(null);
+                                        }}
+                                        className="h-11 rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none transition focus:border-[#07B0C8] focus:ring-3 focus:ring-cyan-100"
+                                        placeholder="Contoh: 081234567890"
+                                        disabled={loading}
+                                    />
+                                </IdentityField>
+
+                                <IdentityField label="Alamat" icon={<MapPin size={16} />}>
+                                    <textarea
+                                        value={identity.address}
+                                        onChange={(event) => {
+                                            setIdentity((current) => ({ ...current, address: event.target.value }));
+                                            setError(null);
+                                        }}
+                                        className="min-h-24 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-[#07B0C8] focus:ring-3 focus:ring-cyan-100"
+                                        placeholder="Masukkan alamat domisili"
+                                        disabled={loading}
+                                    />
+                                </IdentityField>
+                            </div>
+                        </div>
                     )}
 
                     {step === "documents" && (
@@ -360,6 +515,31 @@ export default function ChooseRolePage() {
                         </div>
                     )}
 
+                    {step === "identity" && (
+                        <div className="flex flex-col-reverse items-stretch justify-center w-full gap-2 mt-2 sm:flex-row sm:items-center">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setError(null);
+                                    setStep("role");
+                                }}
+                                disabled={loading}
+                                className="flex h-12 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 font-bold text-slate-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-70"
+                            >
+                                <ArrowLeft size={18} />
+                                Kembali
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleContinueToDocuments}
+                                disabled={loading}
+                                className="bg-[#16C5DE] flex-1 h-12 flex justify-center items-center rounded-xl text-white font-bold hover:bg-[#13A6BB] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                                Lanjut Upload Dokumen
+                            </button>
+                        </div>
+                    )}
+
                     {step === "documents" && (
                         /* submit buttons container */
                         <div className="flex flex-col-reverse items-stretch justify-center w-full gap-2 mt-2 sm:flex-row sm:items-center">
@@ -368,7 +548,7 @@ export default function ChooseRolePage() {
                                 type="button"
                                 onClick={() => {
                                     setError(null);
-                                    setStep("role");
+                                    setStep("identity");
                                 }}
                                 disabled={loading}
                                 className="flex h-12 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 font-bold text-slate-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-70"

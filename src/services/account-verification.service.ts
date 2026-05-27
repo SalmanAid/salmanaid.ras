@@ -19,12 +19,21 @@ export const ROLE_DOCUMENT_REQUIREMENTS: Record<VerifiableRole, UserDocumentType
   [ROLES.BORROWER]: ["identityCard", "institutionCard", "familyCard"],
 };
 
+const IDENTITY_FIELD_LABELS = {
+  nik: "NIK",
+  phone_number: "No. telepon",
+  address: "Alamat",
+} as const;
+
 const ROLE_LABELS: Record<VerifiableRole, string> = {
   [ROLES.DONOR]: "Donatur",
   [ROLES.BORROWER]: "Peminjam",
 };
 
 type UserWithDocuments = {
+  nik: string | null;
+  phone_number: string | null;
+  address: string | null;
   identityCard: string | null;
   identityCardUploadedAt: Date | null;
   institutionCard: string | null;
@@ -96,6 +105,11 @@ export const AccountVerificationService = {
     return this.getRequiredDocuments(role).filter((documentType) => !user[documentType]);
   },
 
+  getMissingIdentityFields(user: Pick<UserWithDocuments, "nik" | "phone_number" | "address">) {
+    return (Object.keys(IDENTITY_FIELD_LABELS) as (keyof typeof IDENTITY_FIELD_LABELS)[])
+      .filter((field) => !user[field]?.trim());
+  },
+
   async getUserAccountOverview(userId: string) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -103,6 +117,7 @@ export const AccountVerificationService = {
         id: true,
         name: true,
         email: true,
+        nik: true,
         phone_number: true,
         address: true,
         identityCard: true,
@@ -139,6 +154,7 @@ export const AccountVerificationService = {
 
     const roles = Array.from(dedupedRoles.entries()).map(([normalizedRole, userRole]) => {
       const missingDocuments = this.getMissingDocuments(user, normalizedRole);
+      const missingIdentityFields = this.getMissingIdentityFields(user);
 
       return {
         role: normalizedRole,
@@ -151,6 +167,8 @@ export const AccountVerificationService = {
         reviewedBy: userRole.reviewedBy,
         missingDocuments,
         missingDocumentLabels: missingDocuments.map((documentType) => DOCUMENT_LABELS[documentType]),
+        missingIdentityFields,
+        missingIdentityLabels: missingIdentityFields.map((field) => IDENTITY_FIELD_LABELS[field]),
         isVerified: userRole.verificationStatus === AccountVerificationStatus.VERIFIED,
       };
     });
@@ -160,6 +178,7 @@ export const AccountVerificationService = {
         id: user.id,
         name: user.name,
         email: user.email,
+        nik: user.nik,
         phone_number: user.phone_number,
         address: user.address,
       },
@@ -193,6 +212,9 @@ export const AccountVerificationService = {
       where: { id: userId },
       select: {
         identityCard: true,
+        nik: true,
+        phone_number: true,
+        address: true,
         identityCardUploadedAt: true,
         institutionCard: true,
         institutionCardUploadedAt: true,
@@ -221,6 +243,11 @@ export const AccountVerificationService = {
       throw new Error(`MISSING_DOCUMENTS:${missingDocuments.join(",")}`);
     }
 
+    const missingIdentityFields = this.getMissingIdentityFields(user);
+    if (missingIdentityFields.length > 0) {
+      throw new Error(`MISSING_IDENTITY:${missingIdentityFields.join(",")}`);
+    }
+
     if (userRole.verificationStatus !== AccountVerificationStatus.VERIFIED) {
       throw new Error(`ACCOUNT_NOT_VERIFIED:${userRole.verificationStatus}`);
     }
@@ -236,6 +263,9 @@ export const AccountVerificationService = {
       where: { id: input.userId },
       select: {
         identityCard: true,
+        nik: true,
+        phone_number: true,
+        address: true,
         identityCardUploadedAt: true,
         institutionCard: true,
         institutionCardUploadedAt: true,
@@ -251,6 +281,11 @@ export const AccountVerificationService = {
     const missingDocuments = this.getMissingDocuments(user, input.role);
     if (missingDocuments.length > 0) {
       throw new Error(`MISSING_DOCUMENTS:${missingDocuments.join(",")}`);
+    }
+
+    const missingIdentityFields = this.getMissingIdentityFields(user);
+    if (missingIdentityFields.length > 0) {
+      throw new Error(`MISSING_IDENTITY:${missingIdentityFields.join(",")}`);
     }
 
     const role = await prisma.role.upsert({
@@ -327,6 +362,36 @@ export const AccountVerificationService = {
     });
   },
 
+  async markRolesPendingAfterIdentityUpdate(userId: string, tx: Prisma.TransactionClient | typeof prisma = prisma) {
+    await tx.userRole.updateMany({
+      where: {
+        userId,
+        role: {
+          name: {
+            in: [ROLES.DONOR, ROLES.BORROWER],
+          },
+        },
+      },
+      data: {
+        verificationStatus: AccountVerificationStatus.PENDING,
+        verificationMessage: null,
+        verificationRequestedAt: new Date(),
+        documentsUpdatedAt: new Date(),
+        reviewedAt: null,
+        reviewedBy: null,
+      },
+    });
+
+    await tx.user.update({
+      where: { id: userId },
+      data: {
+        isVerified: false,
+        verificationDate: null,
+        verifiedBy: null,
+      },
+    });
+  },
+
   async listVerificationRequests(status?: AccountVerificationStatus) {
     const requests = await prisma.userRole.findMany({
       where: {
@@ -344,6 +409,7 @@ export const AccountVerificationService = {
             id: true,
             name: true,
             email: true,
+            nik: true,
             phone_number: true,
             address: true,
             identityCard: true,
@@ -365,6 +431,7 @@ export const AccountVerificationService = {
       requests.map(async (request) => {
         const documents = await buildDocumentSummaries(request.user, request.role.name);
         const missingDocuments = this.getMissingDocuments(request.user, request.role.name);
+        const missingIdentityFields = this.getMissingIdentityFields(request.user);
         const hasDocumentUpdate = Boolean(
           request.documentsUpdatedAt &&
           (!request.reviewedAt || request.documentsUpdatedAt > request.reviewedAt)
@@ -384,10 +451,13 @@ export const AccountVerificationService = {
           hasDocumentUpdate,
           missingDocuments,
           missingDocumentLabels: missingDocuments.map((documentType) => DOCUMENT_LABELS[documentType]),
+          missingIdentityFields,
+          missingIdentityLabels: missingIdentityFields.map((field) => IDENTITY_FIELD_LABELS[field]),
           user: {
             id: request.user.id,
             name: request.user.name,
             email: request.user.email,
+            nik: request.user.nik,
             phone_number: request.user.phone_number,
             address: request.user.address,
           },
@@ -424,6 +494,11 @@ export const AccountVerificationService = {
     const missingDocuments = this.getMissingDocuments(existingRole.user, input.role);
     if (input.status === AccountVerificationStatus.VERIFIED && missingDocuments.length > 0) {
       throw new Error(`MISSING_DOCUMENTS:${missingDocuments.join(",")}`);
+    }
+
+    const missingIdentityFields = this.getMissingIdentityFields(existingRole.user);
+    if (input.status === AccountVerificationStatus.VERIFIED && missingIdentityFields.length > 0) {
+      throw new Error(`MISSING_IDENTITY:${missingIdentityFields.join(",")}`);
     }
 
     const updatedRole = await prisma.userRole.update({
