@@ -24,7 +24,9 @@ type LoanApplication = {
     description: string;
     createdAt: string;
     dueDate?: string | null;
-    installmentFrequency : number;
+    // Harmonized naming support for both typing variations just in case
+    installmentFreq?: number; 
+    installmentFrequency?: number; 
     loanDetails?: {
         loanId: string;
         approvedAmount: number;
@@ -47,11 +49,10 @@ type RepaymentHistoryItem = {
 };
 
 export default function ApplicantDashboardPage() {
-
     const [isRepaymentModalOpen, setIsRepaymentModalOpen] = useState<boolean>(false)
     const [activeTab, setActiveTab] = useState<"detail" | "riwayat">("detail");
 
-    const [installmentFreq, setInstallmentFreq] = useState<number>(4);
+    // REMOVED: const [installmentFreq, setInstallmentFreq] = useState<number>(4);
     const [applications, setApplications] = useState<LoanApplication[]>([]);
     const [selectedLoanId, setSelectedLoanId] = useState<string>("");
     const [isLoading, setIsLoading] = useState(true);
@@ -138,7 +139,6 @@ export default function ApplicantDashboardPage() {
 
                 setApplications(apps);
 
-                // Set initial selection to the first loan
                 if (apps.length > 0) {
                     setSelectedLoanId(apps[0].id);
                 } else {
@@ -150,7 +150,7 @@ export default function ApplicantDashboardPage() {
             } finally {
                 setIsLoading(false);
             }
-        }
+        };
         fetchAllLoans();
     }, [userId, status]);
 
@@ -182,7 +182,6 @@ export default function ApplicantDashboardPage() {
         fetchRepaymentHistory();
     }, [status]);
 
-    // 1. Logic for choosing the nearest due date across ALL loans
     const nearestDueDate = useMemo(() => {
         const activeDates = applications
             .filter(app => app.status === "APPROVED")
@@ -193,7 +192,6 @@ export default function ApplicantDashboardPage() {
         return activeDates.length > 0 ? new Date(Math.min(...activeDates)) : null;
     }, [applications]);
 
-    // 2. Logic for the currently selected loan's installments
     const selectedLoan = useMemo(() => {
         return applications.find(app => app.id === selectedLoanId);
     }, [selectedLoanId, applications]);
@@ -206,11 +204,17 @@ export default function ApplicantDashboardPage() {
         (selectedLoan.loanDetails.status === "ACTIVE" || selectedLoan.loanDetails.status === "PAID")
     );
 
+    // 1. DYNAMIC CALCULATION: Extracted freq from specific active loan application payload item context directly
+    const currentLoanFreq = useMemo(() => {
+        if (!selectedLoan) return 4;
+        return selectedLoan.installmentFreq ?? selectedLoan.installmentFrequency ?? 4;
+    }, [selectedLoan]);
+
     const installmentValue = useMemo(() => {
         if (!selectedLoan) return 0;
         const amount = selectedLoan.loanDetails?.approvedAmount ?? selectedLoan.requestedAmount;
-        return Number(amount) / installmentFreq;
-    }, [selectedLoan]);
+        return Number(amount) / currentLoanFreq;
+    }, [selectedLoan, currentLoanFreq]);
 
     useEffect(() => {
         const fetchRepayments = async () => {
@@ -232,7 +236,6 @@ export default function ApplicantDashboardPage() {
             } catch (error) {
                 console.error("Repayment fetch error:", error);
                 setRepaymentTotalPaid(0);
-            } finally {
             }
         };
 
@@ -301,17 +304,20 @@ export default function ApplicantDashboardPage() {
         return totalPaid;
     }, [repaymentTotalPaid, selectedLoanId]);
 
+    // 2. DYNAMIC CALCULATION: Adjusted map parameters length loops to read each loan's context properties
     const generateInstallments = (loan: LoanApplication) => {
         if (!loan || !selectedLoanDueDate) return [];
         const baseDate = new Date(selectedLoanDueDate);
         const approvedAmount = Number(loan.loanDetails?.approvedAmount || 0);
         const totalPaid = getLoanTotalPaid(loan);
-        const installmentAmount = installmentFreq > 0 ? approvedAmount / installmentFreq : 0;
+        
+        // Pick individual application specific configuration value directly
+        const loanSpecificFreq = loan.installmentFreq ?? loan.installmentFrequency ?? 4;
+        const installmentAmount = loanSpecificFreq > 0 ? approvedAmount / loanSpecificFreq : 0;
 
-        return Array.from({ length: installmentFreq }).map((_, i) => {
-            // Subtract months based on index to show progress backwards from due date
+        return Array.from({ length: loanSpecificFreq }).map((_, i) => {
             const date = new Date(baseDate);
-            date.setMonth(date.getMonth() - (installmentFreq - 1 - i));
+            date.setMonth(date.getMonth() - (loanSpecificFreq - 1 - i));
             const installmentPaidAmount = Math.min(
                 Math.max(totalPaid - (installmentAmount * i), 0),
                 installmentAmount
@@ -405,12 +411,9 @@ export default function ApplicantDashboardPage() {
 
     return (
         <div className="min-h-screen bg-[#F3F5F7] text-[#111827]">
-
             {isRepaymentModalOpen && (
                 <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 px-4">
-                    {/* Background Click to Close */}
                     <div className="absolute inset-0" onClick={() => setIsRepaymentModalOpen(false)}></div>
-
                     <Suspense fallback={<div className="p-10">Loading Payment Details...</div>}>
                         <div className="relative z-101 rounded-xl bg-white p-6 shadow-2xl">
                             <ApplicantDashboard_PaymentApplicantComponent 
@@ -419,12 +422,10 @@ export default function ApplicantDashboardPage() {
                                     referenceId: selectedLoanId 
                                 })} 
                             />
-
-                            {/* Tombol Close manual karena signature komponen tidak menerima prop onClose */}
                             <button 
                                 onClick={() => setIsRepaymentModalOpen(false)}
                                 className="absolute top-2 right-2 text-gray-500 hover:text-black text-lg p-1 font-bold"
-                                >
+                            >
                                 ✕
                             </button>
                         </div>
@@ -495,157 +496,153 @@ export default function ApplicantDashboardPage() {
                 </section>
 
                 <section className="mt-6 grid gap-2 sm:grid-cols-2">
-                <button
-                    type="button"
-                    onClick={() => setActiveTab("detail")}
-                    className={`h-11 rounded-xl border px-4 text-sm font-semibold transition-colors ${
-                        activeTab === "detail"
-                            ? "bg-[#07B0C8] text-white border-transparent"
-                            : "bg-white text-[#07B0C8] border-[#D8E4EA] hover:bg-[#F0FBFD]"
-                    }`}
-                >
-                    Detail Pinjaman
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setActiveTab("riwayat")}
-                    className={`h-11 rounded-xl border px-4 text-sm font-semibold transition-colors ${
-                        activeTab === "riwayat"
-                            ? "bg-[#07B0C8] text-white border-transparent"
-                            : "bg-white text-[#07B0C8] border-[#D8E4EA] hover:bg-[#F0FBFD]"
-                    }`}
-                >
-                    Riwayat Pembayaran
-                </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab("detail")}
+                        className={`h-11 rounded-xl border px-4 text-sm font-semibold transition-colors ${
+                            activeTab === "detail"
+                                ? "bg-[#07B0C8] text-white border-transparent"
+                                : "bg-white text-[#07B0C8] border-[#D8E4EA] hover:bg-[#F0FBFD]"
+                        }`}
+                    >
+                        Detail Pinjaman
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab("riwayat")}
+                        className={`h-11 rounded-xl border px-4 text-sm font-semibold transition-colors ${
+                            activeTab === "riwayat"
+                                ? "bg-[#07B0C8] text-white border-transparent"
+                                : "bg-white text-[#07B0C8] border-[#D8E4EA] hover:bg-[#F0FBFD]"
+                        }`}
+                    >
+                        Riwayat Pembayaran
+                    </button>
                 </section>
 
-            {activeTab === "detail" && (
-                <>
-                    {/* Selection Dropdown */}
-                    <section className="mt-6 flex flex-col gap-2">
-                        <label className="text-sm font-bold text-[#111827]">Pilih Pinjaman</label>
-                        <select
-                            value={selectedLoanId}
-                            onChange={(e) => setSelectedLoanId(e.target.value)}
-                            className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-[13px] text-[#111827] shadow-[0_3px_10px_-8px_rgba(17,24,39,0.18)] outline-none focus:ring-2 focus:ring-[#07B0C8]/30"
-                        >
-                            {applications.length === 0 && (
-                                <option value="">Belum ada pinjaman</option>
-                            )}
-                            {applications.map((app) => (
-                                <option key={app.id} value={app.id}>
-                                    {app.description} - {formatIdr(Number(app.loanDetails?.approvedAmount ?? app.requestedAmount))} ({app.loanDetails?.status ?? app.status})
-                                </option>
-                            ))}
-                        </select>
-                    </section>
-
-                    {selectedLoan?.loanDetails && (selectedLoan.loanDetails.status === "ACTIVE" || selectedLoan.loanDetails.status === "PAID") && (
-                        <section className="mt-4 rounded-xl border border-gray-200 bg-white p-4 shadow-[0_3px_10px_-8px_rgba(17,24,39,0.18)] md:p-5">
-                            <div className="text-xs font-medium text-[#6B7280]">Sisa Pinjaman Belum Lunas</div>
-                            <div className="mt-1 text-xl font-bold text-[#111827]">
-                                {formatIdr(selectedRemainingUnpaid)}
-                            </div>
-                        </section>
-                    )}
-
-                    {/* Details Section */}
-                    <section className="mt-6 grid gap-4 pb-10 lg:grid-cols-[minmax(0,1fr)_420px] xl:grid-cols-[minmax(0,1fr)_460px]">
-                        {/* Installments */}
-                        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-[0_3px_10px_-8px_rgba(17,24,39,0.18)] md:p-5">
-                            <h2 className="mb-3 text-lg font-bold text-[#111827]">Jadwal Pembayaran</h2>
-                            <div className="min-h-80">
-                                {!selectedLoan && (
-                                    <p className="py-16 text-center text-[13px] text-[#9CA3AF]">Pilih pinjaman untuk melihat jadwal.</p>
+                {activeTab === "detail" && (
+                    <>
+                        <section className="mt-6 flex flex-col gap-2">
+                            <label className="text-sm font-bold text-[#111827]">Pilih Pinjaman</label>
+                            <select
+                                value={selectedLoanId}
+                                onChange={(e) => setSelectedLoanId(e.target.value)}
+                                className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-[13px] text-[#111827] shadow-[0_3px_10px_-8px_rgba(17,24,39,0.18)] outline-none focus:ring-2 focus:ring-[#07B0C8]/30"
+                            >
+                                {applications.length === 0 && (
+                                    <option value="">Belum ada pinjaman</option>
                                 )}
-                                {selectedLoan && !scheduleAvailable && (
-                                    <p className="py-16 text-center text-[13px] text-[#9CA3AF]">
-                                        Jadwal pembayaran belum tersedia untuk status {formatStatus(selectedApplicationStatus)}.
-                                    </p>
-                                )}
-                                {selectedLoan && scheduleAvailable && generateInstallments(selectedLoan).map((inst) => (
-                                    <ApplicantDashboard_PaymentScheduleRow
-                                        key={inst.order}
-                                        installment_value={inst.amount || installmentValue}
-                                        installment_paid_value={inst.paidAmount}
-                                        installment_date={inst.date}
-                                        installment_order={inst.order}
-                                        installment_status={inst.status}
-                                    />
+                                {applications.map((app) => (
+                                    <option key={app.id} value={app.id}>
+                                        {app.description} - {formatIdr(Number(app.loanDetails?.approvedAmount ?? app.requestedAmount))} ({app.loanDetails?.status ?? app.status})
+                                    </option>
                                 ))}
-                            </div>
-                        </div>
+                            </select>
+                        </section>
 
-                        {/* Progress */}
-                        <ApplicantDashboard_ApplicationProgressComponent
-                            submitTime={selectedLoan?.createdAt ? new Date(selectedLoan.createdAt) : null}
-                            verifiedTime={selectedLoan?.loanDetails?.approvedAt ? new Date(selectedLoan.loanDetails.approvedAt) : null}
-                            disbursedTime={selectedLoan?.loanDetails?.approvedAt ? new Date(selectedLoan.loanDetails.approvedAt) : null}
-                            applicationStatus={selectedLoan?.status || null}
-                            loanStatus={selectedLoan?.loanDetails?.status || null}
-                        />
-                    </section>
-                </>
-            )}
-
-            {activeTab === "riwayat" && (
-                <section className="mt-6 pb-10">
-                    <h2 className="mb-4 text-lg font-bold text-[#111827]">Riwayat Pembayaran</h2>
-                    {historyError && (
-                        <p className="text-sm text-red-600 mb-4">{historyError}</p>
-                    )}
-                    {historyLoading && (
-                        <p className="text-gray-500">Memuat riwayat pembayaran...</p>
-                    )}
-                    {!historyLoading && repaymentHistory.length === 0 && (
-                        <p className="text-gray-400 text-center py-10">Belum ada riwayat pembayaran.</p>
-                    )}
-                    <div className="flex flex-col gap-4">
-                        {repaymentHistory.map((item) => {
-                            const statusStyle = repaymentStatusStyle(item.status);
-
-                            return (
-                                <div key={item.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-[0_3px_10px_-8px_rgba(17,24,39,0.18)]">
-                                    <div className="flex flex-col gap-2">
-                                        <div className="flex flex-wrap items-center justify-between gap-2">
-                                            <div className="font-semibold">
-                                                {item.loanName || "Pinjaman"}
-                                            </div>
-                                            <div className="text-sm text-gray-600">
-                                                Jumlah pembayaran: <span className="font-bold text-[#07B0C8]">{formatIdr(item.amount)}</span>
-                                            </div>
-                                        </div>
-                                        <div className="text-sm text-gray-600 font-semibold">
-                                            Tanggal pembayaran: {new Date(item.paidAt).toLocaleDateString("id-ID", {
-                                                day: "2-digit",
-                                                month: "long",
-                                                year: "numeric",
-                                            })}
-                                        </div>
-                                        <div
-                                            className="text-xs font-semibold w-fit rounded-full px-3 py-1"
-                                            style={{ background: statusStyle.bg, color: statusStyle.text }}
-                                        >
-                                            {formatStatus(item.status)}
-                                        </div>
-                                        <div className="pt-2 text-xs text-gray-400">
-                                            ID Repayment: {item.id}
-                                        </div>
-                                        <div className="text-xs text-gray-400">
-                                            ID Loan: {item.loanId}
-                                        </div>
-                                        {item.paymentTransactionId && (
-                                            <div className="text-xs text-gray-400">
-                                                ID Transaksi: {item.paymentTransactionId}
-                                            </div>
-                                        )}
-                                    </div>
+                        {selectedLoan?.loanDetails && (selectedLoan.loanDetails.status === "ACTIVE" || selectedLoan.loanDetails.status === "PAID") && (
+                            <section className="mt-4 rounded-xl border border-gray-200 bg-white p-4 shadow-[0_3px_10px_-8px_rgba(17,24,39,0.18)] md:p-5">
+                                <div className="text-xs font-medium text-[#6B7280]">Sisa Pinjaman Belum Lunas</div>
+                                <div className="mt-1 text-xl font-bold text-[#111827]">
+                                    {formatIdr(selectedRemainingUnpaid)}
                                 </div>
-                            );
-                        })}
-                    </div>
-                </section>
-            )}
+                            </section>
+                        )}
+
+                        <section className="mt-6 grid gap-4 pb-10 lg:grid-cols-[minmax(0,1fr)_420px] xl:grid-cols-[minmax(0,1fr)_460px]">
+                            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-[0_3px_10px_-8px_rgba(17,24,39,0.18)] md:p-5">
+                                <h2 className="mb-3 text-lg font-bold text-[#111827]">Jadwal Pembayaran</h2>
+                                <div className="min-h-80">
+                                    {!selectedLoan && (
+                                        <p className="py-16 text-center text-[13px] text-[#9CA3AF]">Pilih pinjaman untuk melihat jadwal.</p>
+                                    )}
+                                    {selectedLoan && !scheduleAvailable && (
+                                        <p className="py-16 text-center text-[13px] text-[#9CA3AF]">
+                                            Jadwal pembayaran belum tersedia untuk status {formatStatus(selectedApplicationStatus)}.
+                                        </p>
+                                    )}
+                                    {selectedLoan && scheduleAvailable && generateInstallments(selectedLoan).map((inst) => (
+                                        <ApplicantDashboard_PaymentScheduleRow
+                                            key={inst.order}
+                                            installment_value={inst.amount || installmentValue}
+                                            installment_paid_value={inst.paidAmount}
+                                            installment_date={inst.date}
+                                            installment_order={inst.order}
+                                            installment_status={inst.status}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
+                            <ApplicantDashboard_ApplicationProgressComponent
+                                submitTime={selectedLoan?.createdAt ? new Date(selectedLoan.createdAt) : null}
+                                verifiedTime={selectedLoan?.loanDetails?.approvedAt ? new Date(selectedLoan.loanDetails.approvedAt) : null}
+                                disbursedTime={selectedLoan?.loanDetails?.approvedAt ? new Date(selectedLoan.loanDetails.approvedAt) : null}
+                                applicationStatus={selectedLoan?.status || null}
+                                loanStatus={selectedLoan?.loanDetails?.status || null}
+                            />
+                        </section>
+                    </>
+                )}
+
+                {activeTab === "riwayat" && (
+                    <section className="mt-6 pb-10">
+                        <h2 className="mb-4 text-lg font-bold text-[#111827]">Riwayat Pembayaran</h2>
+                        {historyError && (
+                            <p className="text-sm text-red-600 mb-4">{historyError}</p>
+                        )}
+                        {historyLoading && (
+                            <p className="text-gray-500">Memuat riwayat pembayaran...</p>
+                        )}
+                        {!historyLoading && repaymentHistory.length === 0 && (
+                            <p className="text-gray-400 text-center py-10">Belum ada riwayat pembayaran.</p>
+                        )}
+                        <div className="flex flex-col gap-4">
+                            {repaymentHistory.map((item) => {
+                                const statusStyle = repaymentStatusStyle(item.status);
+
+                                return (
+                                    <div key={item.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-[0_3px_10px_-8px_rgba(17,24,39,0.18)]">
+                                        <div className="flex flex-col gap-2">
+                                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                                <div className="font-semibold">
+                                                    {item.loanName || "Pinjaman"}
+                                                </div>
+                                                <div className="text-sm text-gray-600">
+                                                    Jumlah pembayaran: <span className="font-bold text-[#07B0C8]">{formatIdr(item.amount)}</span>
+                                                </div>
+                                            </div>
+                                            <div className="text-sm text-gray-600 font-semibold">
+                                                Tanggal pembayaran: {new Date(item.paidAt).toLocaleDateString("id-ID", {
+                                                    day: "2-digit",
+                                                    month: "long",
+                                                    year: "numeric",
+                                                })}
+                                            </div>
+                                            <div
+                                                className="text-xs font-semibold w-fit rounded-full px-3 py-1"
+                                                style={{ background: statusStyle.bg, color: statusStyle.text }}
+                                            >
+                                                {formatStatus(item.status)}
+                                            </div>
+                                            <div className="pt-2 text-xs text-gray-400">
+                                                ID Repayment: {item.id}
+                                            </div>
+                                            <div className="text-xs text-gray-400">
+                                                ID Loan: {item.loanId}
+                                            </div>
+                                            {item.paymentTransactionId && (
+                                                <div className="text-xs text-gray-400">
+                                                    ID Transaksi: {item.paymentTransactionId}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
+                )}
             </main>
         </div>
     );
