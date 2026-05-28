@@ -89,7 +89,7 @@ function IdentityItem({
         </div>
         <div className="min-w-0">
           <div className="text-xs font-bold text-gray-500">{label}</div>
-          <div className={`mt-1 break-words text-sm font-bold ${hasValue ? "text-slate-800" : "text-red-600"}`}>
+          <div className={`mt-1 wrap-break-word text-sm font-bold ${hasValue ? "text-slate-800" : "text-red-600"}`}>
             {hasValue ? value : "Belum diisi"}
           </div>
         </div>
@@ -142,6 +142,8 @@ export default function AdminAccountVerificationsPage() {
   const [messages, setMessages] = useState<Record<string, string>>({});
   const [messageErrors, setMessageErrors] = useState<Record<string, string>>({});
   const [submittingKey, setSubmittingKey] = useState("");
+  const [sortBy, setSortBy] = useState<"submissionTime" | "updateTime" | "type" | undefined>();
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const fetchRequests = async (status?: VerificationStatus) => {
     setIsLoading(true);
@@ -167,6 +169,32 @@ export default function AdminAccountVerificationsPage() {
   }, [statusFilter]);
 
   const requestKey = (request: VerificationRequest) => `${request.userId}:${request.role}`;
+
+  const getSortedRequests = (): VerificationRequest[] => {
+    const sorted = [...requests];
+    
+    if (!sortBy) return sorted;
+
+    sorted.sort((a, b) => {
+      let compareResult = 0;
+
+      if (sortBy === "submissionTime") {
+        const dateA = new Date(a.verificationRequestedAt).getTime();
+        const dateB = new Date(b.verificationRequestedAt).getTime();
+        compareResult = dateA - dateB;
+      } else if (sortBy === "updateTime") {
+        const dateA = new Date(a.documentsUpdatedAt || 0).getTime();
+        const dateB = new Date(b.documentsUpdatedAt || 0).getTime();
+        compareResult = dateA - dateB;
+      } else if (sortBy === "type") {
+        compareResult = a.role.localeCompare(b.role);
+      }
+
+      return sortDirection === "asc" ? compareResult : -compareResult;
+    });
+
+    return sorted;
+  };
 
   const handleDecision = async (request: VerificationRequest, status: VerificationStatus) => {
     if (request.verificationStatus === "VERIFIED") return;
@@ -278,6 +306,74 @@ export default function AdminAccountVerificationsPage() {
           </div>
         </div>
 
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (sortBy === "submissionTime") {
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                } else {
+                  setSortBy("submissionTime");
+                  setSortDirection("desc");
+                }
+              }}
+              className={`inline-flex h-9 items-center justify-center gap-2 rounded-lg border px-3 text-xs font-bold transition ${
+                sortBy === "submissionTime"
+                  ? "border-[#07B0C8] bg-[#F0FBFD] text-[#07B0C8]"
+                  : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              Waktu Pengajuan {sortBy === "submissionTime" && (sortDirection === "asc" ? "↑" : "↓")}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (sortBy === "updateTime") {
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                } else {
+                  setSortBy("updateTime");
+                  setSortDirection("desc");
+                }
+              }}
+              className={`inline-flex h-9 items-center justify-center gap-2 rounded-lg border px-3 text-xs font-bold transition ${
+                sortBy === "updateTime"
+                  ? "border-[#07B0C8] bg-[#F0FBFD] text-[#07B0C8]"
+                  : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              Waktu Update {sortBy === "updateTime" && (sortDirection === "asc" ? "↑" : "↓")}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (sortBy === "type") {
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                } else {
+                  setSortBy("type");
+                  setSortDirection("asc");
+                }
+              }}
+              className={`inline-flex h-9 items-center justify-center gap-2 rounded-lg border px-3 text-xs font-bold transition ${
+                sortBy === "type"
+                  ? "border-[#07B0C8] bg-[#F0FBFD] text-[#07B0C8]"
+                  : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              Tipe Akun {sortBy === "type" && (sortDirection === "asc" ? "↑" : "↓")}
+            </button>
+          </div>
+          {sortBy && (
+            <button
+              type="button"
+              onClick={() => setSortBy(undefined)}
+              className="text-xs font-semibold text-gray-500 hover:text-gray-700 transition"
+            >
+              Hapus Sorting
+            </button>
+          )}
+        </div>
+
         {error && (
           <div className="mt-5 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
             {error}
@@ -297,7 +393,7 @@ export default function AdminAccountVerificationsPage() {
         )}
 
         <div className="mt-6 grid gap-5">
-          {requests.map((request) => {
+          {getSortedRequests().map((request) => {
             const key = requestKey(request);
             const isVerified = request.verificationStatus === "VERIFIED";
             return (

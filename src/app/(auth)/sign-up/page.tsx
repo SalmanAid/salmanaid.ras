@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserSignUpStore } from "@/hooks/userSignupStore";
+import { validatePassword, isPasswordValid, SPECIAL_CHARACTERS } from "@/lib/password-validation";
+import { CheckCircle2, Circle, AlertCircle } from "lucide-react";
 
 export default function SignUpPage() {
     const router = useRouter();
@@ -25,6 +27,11 @@ export default function SignUpPage() {
 
         if (!email || !password || !confirmedPassword) {
             setError("Semua field harus diisi.");
+            return;
+        }
+
+        if (!isPasswordValid(password)) {
+            setError("Password tidak memenuhi semua persyaratan keamanan.");
             return;
         }
 
@@ -128,6 +135,28 @@ export default function SignUpPage() {
                                 )}
                             </button>
                         </div>
+                        
+                        {/* Password requirements checklist */}
+                        {password && (
+                            <div className="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-2">
+                                <div className="text-xs font-bold text-gray-700 flex items-center gap-2">
+                                    <AlertCircle size={14} />
+                                    Persyaratan Password:
+                                </div>
+                                {validatePassword(password).map((requirement, idx) => (
+                                    <div key={idx} className="flex items-center gap-2 text-xs">
+                                        {requirement.met ? (
+                                            <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                                        ) : (
+                                            <Circle size={14} className="text-gray-400 shrink-0" />
+                                        )}
+                                        <span className={requirement.met ? "text-emerald-700 font-medium" : "text-gray-600"}>
+                                            {requirement.label}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* confirmed password container */}
@@ -177,7 +206,7 @@ export default function SignUpPage() {
                         {/* sign up container */}
                         <button
                             onClick={handleRegister}
-                            disabled={loading}
+                            disabled={loading || !email || !password || !confirmedPassword || !isPasswordValid(password)}
                             className="bg-[#16C5DE] flex-1 h-12 flex justify-center items-center rounded-xl text-white font-bold hover:bg-[#13A6BB] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             {loading ? "Loading..." : "Sign Up"}
