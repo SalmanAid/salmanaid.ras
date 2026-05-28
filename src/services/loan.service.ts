@@ -77,10 +77,13 @@ export const LoanService = {
       // Add verification check
       await AccountVerificationService.assertRoleVerified(userId, ROLES.BORROWER);
 
+      console.log(data.installmentFreq)
+
       const loanApp = await prisma.loanApplication.create({
         data: {
           borrowerId: userId,
           requestedAmount: data.requestedAmount,
+          installmentFreq: data.installmentFreq,
           description: data.description,
           collateralUrl : "",
           collateralDescription : "",

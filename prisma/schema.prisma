@@ -139,6 +139,7 @@ model LoanApplication {
   description           String
   collateralUrl         String?
   collateralDescription String?
+  installmentFreq       Int                   @default(4)
   status                LoanApplicationStatus @default(PENDING)
   createdAt             DateTime              @default(now())
   loan                  Loan?
@@ -158,6 +159,7 @@ model Loan {
   status         LoanStatus
   approvedAt     DateTime
   dueDate        DateTime
+  installmentFreq Int           @default(4)
   application    LoanApplication @relation(fields: [applicationId], references: [id])
   fundings       LoanFunding[]
   repayments     Repayment[]

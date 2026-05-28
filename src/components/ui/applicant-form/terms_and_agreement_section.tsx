@@ -29,6 +29,7 @@ export default function ApplicantForm_TermsAndAgreementSection() {
             loan_title,
             requested_amount,
             loan_purpose,
+            installment_freq,
             comply_to_terms_and_agreement
         } = state
 
@@ -39,6 +40,7 @@ export default function ApplicantForm_TermsAndAgreementSection() {
             !loan_title ||
             !requested_amount ||
             !loan_purpose ||
+            !installment_freq ||
             !comply_to_terms_and_agreement
         ) {
             setSubmitError("Please complete all data and accept the agreement before submitting.")
@@ -56,6 +58,7 @@ export default function ApplicantForm_TermsAndAgreementSection() {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
+                    installmentFreq : installment_freq,
                     requestedAmount: requested_amount,
                     description: `${loan_title}\n\n${loan_purpose}`,
                     collateralUrl: "",
