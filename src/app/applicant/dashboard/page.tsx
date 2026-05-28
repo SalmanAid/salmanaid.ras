@@ -24,6 +24,7 @@ type LoanApplication = {
     description: string;
     createdAt: string;
     dueDate?: string | null;
+    installmentFrequency : number;
     loanDetails?: {
         loanId: string;
         approvedAmount: number;
@@ -50,7 +51,7 @@ export default function ApplicantDashboardPage() {
     const [isRepaymentModalOpen, setIsRepaymentModalOpen] = useState<boolean>(false)
     const [activeTab, setActiveTab] = useState<"detail" | "riwayat">("detail");
 
-    const installmentFreq = 4;
+    const [installmentFreq, setInstallmentFreq] = useState<number>(4);
     const [applications, setApplications] = useState<LoanApplication[]>([]);
     const [selectedLoanId, setSelectedLoanId] = useState<string>("");
     const [isLoading, setIsLoading] = useState(true);

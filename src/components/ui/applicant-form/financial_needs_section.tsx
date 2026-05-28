@@ -7,16 +7,24 @@ export default function ApplicantForm_FinancialNeedsSection() {
     const loan_title = useApplicationProgressStore((state) => (state.loan_title))
     const requested_amount = useApplicationProgressStore((state) => (state.requested_amount))
     const loan_purpose = useApplicationProgressStore((state) => (state.loan_purpose))
+    const installment_freq = useApplicationProgressStore((state) => (state.installment_freq))
 
     const setLoanTitle = useApplicationProgressStore((state) => (state.setLoanTitle))
     const setLoanPurpose = useApplicationProgressStore((state) => (state.setLoanPurpose))
     const setRequestedAmount = useApplicationProgressStore((state) => (state.setRequestedAmount))
+    const setInstallmentFreq = useApplicationProgressStore((state) => (state.setInstallmentFreq))
 
     const incrementStep = useApplicationProgressStore((state) => state.incrementStep)
     const decrementStep = useApplicationProgressStore((state) => state.decrementStep)
     const [requestedAmountInput, setRequestedAmountInput] = useState(
         Number.isFinite(requested_amount ?? NaN) && requested_amount !== 0
             ? String(requested_amount)
+            : ""
+    )
+
+    const [installmentFreqInput, setInstallmentFreqInput] = useState(
+        Number.isFinite(installment_freq ?? NaN) && installment_freq !== 0
+            ? String(installment_freq)
             : ""
     )
 
@@ -35,9 +43,42 @@ export default function ApplicantForm_FinancialNeedsSection() {
         setRequestedAmount(normalizedValue === "" ? 0 : Number(normalizedValue))
     }
 
+    const handleInstallmentFreqChange = (value: string) => {
+        const normalizedValue = value.replace(/[^\d]/g, "")
+        setInstallmentFreqInput(normalizedValue)
+
+        if (normalizedValue === "") {
+            setInstallmentFreq(0)
+            return
+        }
+
+        const numValue = Number(normalizedValue)
+        // Keep the global state within the 3-6 range bounds
+        if (numValue >= 3 && numValue <= 6) {
+            setInstallmentFreq(numValue)
+        } else {
+            setInstallmentFreq(0) // Invalidates step completeness if outside bounds
+        }
+    }
+
+    const handleInstallmentBlur = () => {
+        if (installmentFreqInput === "") return
+        
+        const numValue = Number(installmentFreqInput)
+        if (numValue < 3) {
+            setInstallmentFreqInput("3")
+            setInstallmentFreq(3)
+        } else if (numValue > 6) {
+            setInstallmentFreqInput("6")
+            setInstallmentFreq(6)
+        }
+    }
+
     const isStepComplete = Boolean(
         loan_title?.trim() &&
         Number(requested_amount) > 0 &&
+        Number(installment_freq) >= 3 && 
+        Number(installment_freq) <= 6 &&
         loan_purpose?.trim()
     )
     const inputClassName = "h-8 w-full rounded-md border border-[#D8DEE8] bg-[#F3F4F6] px-3 text-[13px] text-[#111827] shadow-inner outline-none transition placeholder:text-[#7B8190] focus:border-[#FCB82E] focus:bg-white focus:ring-2 focus:ring-[#FCB82E]/20"
@@ -75,6 +116,28 @@ export default function ApplicantForm_FinancialNeedsSection() {
                         inputMode="numeric"
                         className={`${inputClassName} mt-2`}
                         placeholder="e.g., 5000000"
+                    />
+                </label>
+
+                {/* Fixed Installment Frequency */}
+                <label className="block">
+                    <span className={labelClassName}>
+                        Set Installment Frequency (in Months) * <span className="text-slate-400 font-normal"> (Min 3 months, Max 6 months)</span>
+                    </span>
+                    <input
+                        value={installment_freq}
+                        onChange={(e) => handleInstallmentFreqChange(e.target.value)}
+                        onBlur={handleInstallmentBlur} // Auto-corrects value when user clicks away
+                        type="number"
+                        min={3}
+                        max={6}
+                        inputMode="numeric"
+                        className={`${inputClassName} mt-2 ${
+                            installmentFreqInput !== "" && (Number(installmentFreqInput) < 3 || Number(installmentFreqInput) > 6)
+                                ? "border-red-400 focus:border-red-500 focus:ring-red-500/20"
+                                : ""
+                        }`}
+                        placeholder="e.g., 4"
                     />
                 </label>
 
