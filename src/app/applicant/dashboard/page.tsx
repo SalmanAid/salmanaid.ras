@@ -26,7 +26,6 @@ type LoanApplication = {
     dueDate?: string | null;
     // Harmonized naming support for both typing variations just in case
     installmentFreq?: number; 
-    installmentFrequency?: number; 
     loanDetails?: {
         loanId: string;
         approvedAmount: number;
@@ -135,6 +134,7 @@ export default function ApplicantDashboardPage() {
                 if (!response.ok) throw new Error("Gagal memuat data pinjaman");
 
                 const result = await response.json();
+                console.log(result)
                 const apps = (result.data?.applications || []) as LoanApplication[];
 
                 setApplications(apps);
@@ -206,8 +206,10 @@ export default function ApplicantDashboardPage() {
 
     // 1. DYNAMIC CALCULATION: Extracted freq from specific active loan application payload item context directly
     const currentLoanFreq = useMemo(() => {
-        if (!selectedLoan) return 4;
-        return selectedLoan.installmentFreq ?? selectedLoan.installmentFrequency ?? 4;
+        if (!selectedLoan) {
+            return 4
+        };
+        return selectedLoan.installmentFreq ?? 4;
     }, [selectedLoan]);
 
     const installmentValue = useMemo(() => {
@@ -312,7 +314,7 @@ export default function ApplicantDashboardPage() {
         const totalPaid = getLoanTotalPaid(loan);
         
         // Pick individual application specific configuration value directly
-        const loanSpecificFreq = loan.installmentFreq ?? loan.installmentFrequency ?? 4;
+        const loanSpecificFreq = loan.installmentFreq ?? 4;
         const installmentAmount = loanSpecificFreq > 0 ? approvedAmount / loanSpecificFreq : 0;
 
         return Array.from({ length: loanSpecificFreq }).map((_, i) => {
