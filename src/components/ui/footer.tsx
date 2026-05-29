@@ -11,9 +11,9 @@ export default function Footer() {
                         <Image
                             src="/rumah-amal-horizontal-logo.svg"
                             alt="Rumah Amal Salman Horizontal Logo"
-                            width={140}
-                            height={36}
-                            className="h-8 w-auto"
+                            width={138}
+                            height={48}
+                            className="h-12 w-auto"
                         />
                         <p className="mt-4 text-[13px] leading-relaxed text-gray-400 max-w-[28ch]">
                             An ethical, interest-free student loan management system by Rumah Amal
