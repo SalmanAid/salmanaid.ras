@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { validatePassword, isPasswordValid, SPECIAL_CHARACTERS } from "@/lib/password-validation";
+import { CheckCircle2, Circle, AlertCircle } from "lucide-react";
 
 function ResetPasswordForm() {
     const router = useRouter();
@@ -44,6 +46,11 @@ function ResetPasswordForm() {
 
         if (!password || !confirmPassword) {
             setError("Semua field wajib diisi.");
+            return;
+        }
+
+        if (!isPasswordValid(password)) {
+            setError("Password tidak memenuhi semua persyaratan keamanan.");
             return;
         }
 
@@ -174,6 +181,28 @@ function ResetPasswordForm() {
                                         {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                                     </button>
                                 </div>
+                                
+                                {/* Password requirements checklist */}
+                                {password && (
+                                    <div className="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-2">
+                                        <div className="text-xs font-bold text-gray-700 flex items-center gap-2">
+                                            <AlertCircle size={14} />
+                                            Persyaratan Password:
+                                        </div>
+                                        {validatePassword(password).map((requirement, idx) => (
+                                            <div key={idx} className="flex items-center gap-2 text-xs">
+                                                {requirement.met ? (
+                                                    <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                                                ) : (
+                                                    <Circle size={14} className="text-gray-400 shrink-0" />
+                                                )}
+                                                <span className={requirement.met ? "text-emerald-700 font-medium" : "text-gray-600"}>
+                                                    {requirement.label}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* confirm password */}
@@ -210,7 +239,7 @@ function ResetPasswordForm() {
 
                             <button
                                 onClick={handleReset}
-                                disabled={loading}
+                                disabled={loading || !password || !confirmPassword || !isPasswordValid(password)}
                                 className="border border-[#16C5DE] h-12 w-full flex justify-center items-center rounded-full text-[#16C5DE] font-semibold hover:bg-[#16C5DE]/5 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                             >
                                 {loading ? "Mereset..." : "Reset"}
