@@ -12,12 +12,12 @@ export default function NotFound() {
         
         {/* Responsive Heading */}
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-gray-950">
-          404 - Page Not Found
+          404 - Halaman Tidak Ditemukan
         </h1>
         
         {/* Responsive Paragraph Description */}
         <p className="mt-3 text-[13.5px] sm:text-sm md:text-base text-gray-500 leading-relaxed">
-          The page you are looking for does not exist, has been moved, or is undergoing temporary maintenance.
+          Halaman yang Anda tuju tidak ditemukan, sudah dipindahkan, atau sedang dalam perawatan.
         </p>
         
         {/* Adaptive Button Layout */}
@@ -26,7 +26,7 @@ export default function NotFound() {
             href="/" 
             className="inline-flex h-10 w-full sm:w-auto items-center justify-center rounded-full bg-[#07B0C8] px-6 text-[13px] font-medium text-white transition hover:bg-[#0699AE] shadow-sm"
           >
-            Return to Home
+            Kembali ke Halaman Landing
           </Link>
         </div>
 
