@@ -41,7 +41,7 @@ export default function ApplicantForm_DocumentFilePreview({ file, onClick, onFil
                 </span>
                 <span className="mt-4 text-xs font-semibold text-[#111827]">{label}</span>
                 <span className="mt-2 text-[11px] font-medium text-[#667085]">
-                    Drag and drop or <span className="text-[#F59E0B]">browse</span>
+                    Seret dan Lepas atau <span className="text-[#F59E0B]">Cari</span>
                 </span>
             </button>
         )

@@ -13,20 +13,20 @@ const stats: Stat[] = [
   {
     icon: <DollarSign className="w-8 h-8" />,
     value: 'Rp 2.5B+',
-    label: 'Total Donated',
-    description: 'Funds raised from generous donors across Indonesia',
+    label: 'Total yang telah Didonasikan',
+    description: 'Dana terkumpul dari para donatur dermawan di seluruh Indonesia.',
   },
   {
     icon: <Users className="w-8 h-8" />,
     value: '500+',
-    label: 'Students Helped',
-    description: 'Lives transformed through accessible education funding',
+    label: 'Mahasiswa Terbantu',
+    description: 'Kehidupan berubah melalui pendanaan pendidikan yang mudah diakses',
   },
   {
     icon: <Percent className="w-8 h-8" />,
     value: '0%',
-    label: 'Zero Interest Charged',
-    description: 'Fully Sharia-compliant, ethical financial assistance',
+    label: 'Bebas Bunga',
+    description: 'Bantuan keuangan yang sepenuhnya sesuai dengan syariah dan beretika',
   },
 ];
 
@@ -36,10 +36,10 @@ export const ImpactStats = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Impact in Numbers</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Dampak Kami</h2>
           <div className="mx-auto mb-4 h-1 w-24 rounded-full bg-[#FCB82E]" />
           <p className="text-cyan-100 text-sm md:text-[15px] max-w-2xl mx-auto">
-            Every number represents real lives changed through the power of educational giving.
+            Setiap angka mewakili kehidupan nyata yang diubah melalui kekuatan pemberian di bidang pendidikan.
           </p>
         </div>
 

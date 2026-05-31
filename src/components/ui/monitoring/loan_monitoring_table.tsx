@@ -155,7 +155,7 @@ export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { 
 
                             {/* Description Block */}
                             <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Description</p>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Deskripsi</p>
                                 <p className="text-[#475569] text-xs font-medium line-clamp-2">
                                     {loan.application?.description || "No description provided"}
                                 </p>
@@ -164,13 +164,13 @@ export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { 
                             {/* Financial Details Metrics Group */}
                             <div className="grid grid-cols-2 gap-3 border-y border-gray-50 py-3">
                                 <div>
-                                    <p className="text-[10px] text-slate-400 font-medium uppercase mb-0.5">Approved Amount</p>
+                                    <p className="text-[10px] text-slate-400 font-medium uppercase mb-0.5">Jumlah Disetujui</p>
                                     <p className="font-bold text-[#1E293B] text-sm">
                                         {formatCurrency(Number(loan.approvedAmount))}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] text-slate-400 font-medium uppercase mb-0.5">Remaining Payments</p>
+                                    <p className="text-[10px] text-slate-400 font-medium uppercase mb-0.5">Pembayaran tersisa</p>
                                     <p className="font-bold text-[#1E293B] text-sm">
                                         {formatCurrency(Number(loan.approvedAmount - loan.totalPaid))}
                                     </p>
@@ -180,7 +180,7 @@ export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { 
                             {/* Footer: Date & Bottom Full-width Action Button */}
                             <div className="flex justify-between items-center gap-4 pt-1">
                                 <div className="flex flex-col">
-                                    <span className="text-[9px] text-slate-400 font-medium uppercase">Approval Date</span>
+                                    <span className="text-[9px] text-slate-400 font-medium uppercase">Tanggal Disetujui</span>
                                     <span className="text-[#64748B] text-xs font-medium">{formatDate(loan.approvedAt)}</span>
                                 </div>
 
@@ -203,13 +203,13 @@ export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { 
                 <Table>
                     <TableHeader className="bg-[#F9FAFB]">
                         <TableRow>
-                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase px-6">Applicant Details</TableHead>
-                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Description</TableHead>
-                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Approved Amount</TableHead>
-                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Remaining Loan Payments</TableHead>
-                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Approval Date</TableHead>
+                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase px-6">Detail Pengaju Pinjaman</TableHead>
+                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Deskripsi</TableHead>
+                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Jumlah yang Diajukan</TableHead>
+                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Pembayaran Pinjaman Tersisa</TableHead>
+                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Tanggal Disetujui</TableHead>
                             <TableHead className="text-[#64748B] font-semibold text-xs uppercase text-center">Status</TableHead>
-                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase text-center">Action</TableHead>
+                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase text-center">Aksi</TableHead>
                         </TableRow>
                     </TableHeader>
 

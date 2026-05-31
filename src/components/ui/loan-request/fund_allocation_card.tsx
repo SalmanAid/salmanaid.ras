@@ -217,10 +217,10 @@ export default function MapFundsModal() {
       {/* Header */}
       <div className="flex flex-col justify-between py-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Map Funds to Borrower</h2>
+          <h2 className="text-2xl font-bold">Alokasi Dana untuk Peminjam</h2>
           <button className="text-gray-400 hover:text-slate-700" onClick={() => closeModal()}>✕</button>
         </div>
-        <p className="text-gray-500 text-sm mt-1">Specify how much to allocate from the donor pool</p>
+        <p className="text-gray-500 text-sm mt-1">Tentukan berapa banyak yang akan dialokasikan dari dana donatur</p>
       </div>
 
       {/* scrollable section */}
@@ -228,11 +228,11 @@ export default function MapFundsModal() {
 
         {/* Target Borrower Section */}
         <div className="flex flex-col gap-2">
-          <label className="font-bold text-sm text-slate-600">To Borrower</label>
+          <label className="font-bold text-sm text-slate-600">Pada Peminjam</label>
           <div className="bg-[#F8FAFC] p-4 rounded-2xl border border-slate-50">
             <p className="font-bold">{borrowerName}</p>
             <div className="flex justify-between items-end mt-1">
-              <p className="text-xs text-slate-400">{selectedLoan.institution || "Institution not provided"}</p>
+              <p className="text-xs text-slate-400">{selectedLoan.institution || "Institusi tidak tersedia"}</p>
               <p className="text-slate-600 font-medium">{formatCurrency(targetAmount)}</p>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
@@ -252,7 +252,7 @@ export default function MapFundsModal() {
 
         {/* Dynamic Donor List */}
         <div className="flex flex-col gap-4">
-          <label className="font-bold text-sm text-slate-600">Allocation Source</label>
+          <label className="font-bold text-sm text-slate-600">Sumber Alokasi</label>
 
           {allocations.map((item, index) => (
             <div key={item.donor.id} className="flex flex-col gap-3 p-4 rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -264,7 +264,7 @@ export default function MapFundsModal() {
                   </span>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] text-slate-400">Available</p>
+                  <p className="text-[10px] text-slate-400">Tersedia</p>
                   <p className="text-sm font-bold text-[#10B981]">{formatCurrency(item.donor.available)}</p>
                 </div>
               </div>
@@ -295,7 +295,7 @@ export default function MapFundsModal() {
               <button
                 onClick={() => setIsDropdownOpen(true)}
                 className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 text-sm font-medium hover:bg-slate-50 transition-all"            >
-                + Add {allocations.length > 0 ? "another" : "a"} donor
+                + Tambah {allocations.length > 0 ? "another" : "a"} donatur
               </button>
             ) : (
               <div className="absolute z-10 w-full bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden -m-2.5">
@@ -324,14 +324,14 @@ export default function MapFundsModal() {
                       </div>
                     ))
                   ) : (
-                    <p className="p-4 text-xs text-slate-400 text-center">No donors available</p>
+                    <p className="p-4 text-xs text-slate-400 text-center">Tidak ada donatur tersedia</p>
                   )}
                 </div>
                 <button
                   onClick={() => setIsDropdownOpen(false)}
                   className="w-full p-2 text-xs text-red-400 bg-slate-50 hover:bg-red-50"
                 >
-                  Cancel
+                  Batal
                 </button>
               </div>
             )}
@@ -343,7 +343,7 @@ export default function MapFundsModal() {
       {/* Action Buttons */}
       <div className="p-8 pt-4 bg-white border-t border-slate-50">
         <div className="flex justify-between text-sm text-slate-500 mb-3">
-          <span>Total allocation</span>
+          <span>Total Alokasi</span>
           <span className="font-bold text-slate-700">{formatCurrency(totalAllocation)}</span>
         </div>
         {errorMessage && (
@@ -358,7 +358,7 @@ export default function MapFundsModal() {
             disabled={isSubmitting}
             className="flex-1 py-3 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
           >
-            Cancel
+            Batal
           </button>
           <button
             type="button"
@@ -366,7 +366,7 @@ export default function MapFundsModal() {
             disabled={allocations.length === 0 || isSubmitting}
             className="flex-1 py-3 bg-[#87DCE9] rounded-xl font-bold text-white hover:bg-[#76cad7] disabled:opacity-50"
           >
-            {isSubmitting ? "Allocating..." : "Confirm Allocation"}
+            {isSubmitting ? "Mengalokasikan..." : "Konfirmasi Alokasi"}
           </button>
         </div>
       </div>

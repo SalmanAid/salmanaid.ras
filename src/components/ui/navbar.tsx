@@ -57,13 +57,13 @@ export const Navbar = () => {
               href="/login"
               className="text-[12.5px] font-medium text-gray-700 transition-colors hover:text-[#07B0C8]"
             >
-              Login
+              Masuk
             </Link>
             <Link
               href="/sign-up"
               className="rounded-full bg-cyan-500 px-4.5 py-1.5 text-[12.5px] font-medium text-white transition-colors hover:bg-cyan-600"
             >
-              Register
+              Daftar
             </Link>
           </div>
 
@@ -100,14 +100,14 @@ export const Navbar = () => {
                 onClick={() => setIsOpen(false)}
                 className="flex-1 text-center text-[13px] text-gray-700 font-medium py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                Login
+                Masuk
               </Link>
               <Link
                 href="/sign-up"
                 onClick={() => setIsOpen(false)}
                 className="flex-1 text-center text-[13px] bg-cyan-500 hover:bg-cyan-600 text-white font-medium py-2 rounded-lg transition-colors"
               >
-                Register
+                Daftar
               </Link>
             </div>
           </div>
