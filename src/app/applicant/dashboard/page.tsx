@@ -416,7 +416,7 @@ export default function ApplicantDashboardPage() {
             {isRepaymentModalOpen && (
                 <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 px-4">
                     <div className="absolute inset-0" onClick={() => setIsRepaymentModalOpen(false)}></div>
-                    <Suspense fallback={<div className="p-10">Loading Payment Details...</div>}>
+                    <Suspense fallback={<div className="p-10">Memuat detail pembayaran...</div>}>
                         <div className="relative z-101 rounded-xl bg-white p-6 shadow-2xl">
                             <ApplicantDashboard_PaymentApplicantComponent 
                                 searchParams={Promise.resolve({ 
@@ -440,7 +440,7 @@ export default function ApplicantDashboardPage() {
             <main className="mx-auto w-full max-w-350 px-6 pb-10 pt-8">
                 <section>
                     <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
-                        Welcome back, <span className="text-[#07B0C8]">{username}</span>
+                        Selamat Datang Kembali, <span className="text-[#07B0C8]">{username}</span>
                     </h1>
                     <p className="mt-1.5 text-sm text-[#6B7280]">
                         Pantau status pinjaman dan pembayaran Anda di sini.

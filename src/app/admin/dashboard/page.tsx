@@ -271,8 +271,8 @@ export default function AdminDashboardPage() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h2 className="text-lg font-bold text-gray-800">Financial Overview</h2>
-              <p className="text-sm text-gray-400 mt-0.5">Monthly donations vs disbursements</p>
+              <h2 className="text-lg font-bold text-gray-800">Ringkasan Finansial</h2>
+              <p className="text-sm text-gray-400 mt-0.5">Donasi bulanan vs pengeluaran</p>
             </div>
 
             <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
@@ -306,8 +306,8 @@ export default function AdminDashboardPage() {
         {/* ── Recent Activity ── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
           <div className="mb-4">
-            <h2 className="text-lg font-bold text-gray-800">Recent Activity</h2>
-            <p className="text-sm text-gray-400 mt-0.5">Last 5 system activities</p>
+            <h2 className="text-lg font-bold text-gray-800">Aktivitas Terkini</h2>
+            <p className="text-sm text-gray-400 mt-0.5">5 Aktivitas Terakhir</p>
           </div>
           <AdminDashboard_RecentActivityTable />
         </div>

@@ -105,7 +105,7 @@ export default function DonateFormPage({
     setError('');
 
     if (!paymentMethod) {
-      setError('Please select a payment method');
+      setError('Pilih metode pembayaran.');
       return;
     }
 
@@ -115,17 +115,17 @@ export default function DonateFormPage({
     }
 
     if (!amount || parseFloat(String(amount)) <= 0) {
-      setError('Please enter a valid amount');
+      setError('Masukkan jumlah yang valid.');
       return;
     }
 
     if (paymentMethod === 'qris' && parseFloat(String(amount)) < 1500) {
-      setError('Minimum QRIS amount is IDR 1,500');
+      setError('Minimum nilai transaksi QRIS adalah IDR 1,500');
       return;
     }
 
     if (!referenceId) {
-      setError('Reference ID is missing');
+      setError('Reference ID tidak ditemukan');
       return;
     }
 
@@ -188,10 +188,10 @@ export default function DonateFormPage({
       <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 lg:py-10">
         <div className="text-center">
           <h1 className="text-[2.1rem] font-semibold leading-none tracking-tight text-[#111827] md:text-[2.5rem]">
-            Make a <span className="text-[#07B0C8]">Donation</span>
+            Buat <span className="text-[#07B0C8]">Donasi</span>
           </h1>
           <p className="mt-2 text-[13.5px] text-[#6B7280] md:text-[15px]">
-            Your generosity empowers students with interest-free loans and scholarships.
+            Kedermawanan Anda mendukung siswa dengan pinjaman bebas bunga dan beasiswa.
           </p>
         </div>
 
@@ -230,12 +230,12 @@ export default function DonateFormPage({
               <p className="text-sm text-yellow-900">
                 <span className="font-medium">
                   {transactionType === 'donation'
-                    ? 'Unable to determine the donor account.'
-                    : 'No reference ID found.'}
+                    ? 'Tidak dapat menentukan akun donatur.'
+                    : 'Reference ID tidak ditemukan.'}
                 </span>
                 {transactionType === 'donation'
-                  ? ' Please sign in again before continuing.'
-                  : ' This payment still needs a repayment reference ID.'}
+                  ? ' Harap sign in kembali sebelum melanjutkan.'
+                  : ' Pembayaran ini masih membutuhkan reference ID ke suatu pembayaran kembali.'}
               </p>
             </div>
           )}
@@ -313,7 +313,7 @@ export default function DonateFormPage({
           {/* manual input section */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Amount (IDR)
+              Jumlah (IDR)
             </label>
             <input
               type="number"
@@ -340,7 +340,7 @@ export default function DonateFormPage({
           {/* Payment Method Selection */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-3">
-              Select Payment Method
+              Pilih Metode Pembayaran
             </label>
 
             {/* QRIS Option */}
@@ -361,7 +361,7 @@ export default function DonateFormPage({
                 {paymentMethod === 'qris' && <div className="w-2 h-2 bg-white rounded-full" />}
               </div>
               <div>
-                <p className="font-medium text-gray-900">QRIS (Any E-Wallet)</p>
+                <p className="font-medium text-gray-900">QRIS (E-Wallet apapun)</p>
                 <p className="text-xs text-gray-500">GoPay, OVO, Dana, LinkAja, etc.</p>
               </div>
             </div>
@@ -390,7 +390,7 @@ export default function DonateFormPage({
               </div>
               <div>
                 <p className="font-medium text-gray-900">Virtual Account (VA)</p>
-                <p className="text-xs text-gray-500">Pay to bank VA number from Midtrans</p>
+                <p className="text-xs text-gray-500">Transfer bank via Midtrans</p>
               </div>
             </div>
           </div>
@@ -430,7 +430,7 @@ export default function DonateFormPage({
           {/* Back Link */}
           <div className="mt-4 text-center">
             <Link href="/donor/dashboard" className="text-sm text-[#07B0C8] hover:underline">
-              Back to Dashboard
+              Kembali ke Dashboard
             </Link>
           </div>
         </div>

@@ -123,9 +123,9 @@ export default function AdminMonitoringPage() {
 					"No data to show"
 					) : (
 					<>
-						Showing <span className="text-slate-900 font-bold">{((currentPageNumber - 1) * maxItemsInPage) + 1}</span> to{" "}
-						<span className="text-slate-900 font-bold">{Math.min(currentPageNumber * maxItemsInPage, totalItems)}</span> of{" "}
-						<span className="text-slate-900 font-bold">{totalItems}</span> items
+						Menampilkan <span className="text-slate-900 font-bold">{((currentPageNumber - 1) * maxItemsInPage) + 1}</span> hingga{" "}
+						<span className="text-slate-900 font-bold">{Math.min(currentPageNumber * maxItemsInPage, totalItems)}</span> dari{" "}
+						<span className="text-slate-900 font-bold">{totalItems}</span> item
 					</>
 					)}
 				</div>
@@ -136,7 +136,7 @@ export default function AdminMonitoringPage() {
 					onClick={() => setCurrentPageNumber((prev) => prev - 1)}
 					className="px-4 py-2 text-sm font-bold text-gray-600 bg-gray-50 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-100 transition-colors"
 					>
-					Previous
+					Sebelumnya
 					</button>
 
 					<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-900 text-white text-sm font-bold">
@@ -148,7 +148,7 @@ export default function AdminMonitoringPage() {
 					onClick={() => setCurrentPageNumber((prev) => prev + 1)}
 					className="px-4 py-2 text-sm font-bold text-gray-600 bg-gray-50 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-100 transition-colors"
 					>
-					Next
+					Selanjutnya
 					</button>
 				</div>
 

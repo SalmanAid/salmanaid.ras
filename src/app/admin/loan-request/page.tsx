@@ -134,7 +134,7 @@ export default function AdminLoanRequestPage() {
               onClick={() => setCurrentPageNumber((prev) => prev - 1)}
               className="px-3.5 py-2 text-xs sm:text-sm font-bold text-gray-600 bg-gray-50 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-100 transition-colors active:scale-95"
             >
-              Previous
+              Sebelumnya
             </button>
 
             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-900 text-white text-xs sm:text-sm font-bold shadow-sm">
@@ -146,7 +146,7 @@ export default function AdminLoanRequestPage() {
               onClick={() => setCurrentPageNumber((prev) => prev - 1)}
               className="px-3.5 py-2 text-xs sm:text-sm font-bold text-gray-600 bg-gray-50 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-100 transition-colors active:scale-95"
             >
-              Next
+              Selanjutnya
             </button>
           </div>
 

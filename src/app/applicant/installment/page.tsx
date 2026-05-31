@@ -19,10 +19,10 @@ type UserRoleOverview = {
 };
 
 const REPAYMENT_STEPS = [
-	{ id: 1, label: "Select Loan" },
-	{ id: 2, label: "Select Amount" },
-	{ id: 3, label: "Payment" },
-	{ id: 4, label: "Confirmation" },
+	{ id: 1, label: "Pilih Pinjaman" },
+	{ id: 2, label: "Pilih Jumlah" },
+	{ id: 3, label: "Pembayaran" },
+	{ id: 4, label: "Konfirmasi" },
 ] as const;
 
 const formatIdr = (value: number) =>
@@ -190,22 +190,22 @@ export default function InstallmentPage({ searchParams }: InstallmentPageProps) 
 		setError("");
 
 		if (!paymentMethod) {
-			setError("Please select a payment method");
+			setError("Pilih metode pembayaran!");
 			return;
 		}
 
 		if (!amountInput || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
-			setError("Please enter a valid amount");
+			setError("Masukkan jumlah yang valid!");
 			return;
 		}
 
 		if (paymentMethod === "qris" && parsedAmount < 1500) {
-			setError("Minimum QRIS amount is IDR 1,500");
+			setError("Minimum nilai transaksi QRIS adalah IDR 1,500");
 			return;
 		}
 
 		if (!effectiveReferenceId) {
-			setError("Reference ID is missing");
+			setError("Reference ID tidak ditemukan.");
 			return;
 		}
 
@@ -231,7 +231,7 @@ export default function InstallmentPage({ searchParams }: InstallmentPageProps) 
 
 			if (!response.ok) {
 				const errorData = await response.json();
-				throw new Error(errorData.error || "Failed to create payment");
+				throw new Error(errorData.error || "Gagal melakukan transaksi.");
 			}
 
 			const data = await response.json();
@@ -301,7 +301,7 @@ export default function InstallmentPage({ searchParams }: InstallmentPageProps) 
 				<div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
 					<div className="text-center">
 						<h1 className="text-2xl font-bold leading-tight text-[#111827] md:text-3xl">
-							Make a <span className="text-[#07B0C8]">Repayment</span>
+							Buat suatu <span className="text-[#07B0C8]">Pembayaran Kembali</span>
 						</h1>
 						<p className="mx-auto mt-1 max-w-md text-[12px] leading-relaxed text-[#6B7280] md:text-[13px]">
 							Tanggung jawab Anda meringankan beban kami dalam membantu orang lain yang juga membutuhkan.
@@ -358,15 +358,15 @@ export default function InstallmentPage({ searchParams }: InstallmentPageProps) 
 						<div className="space-y-4">
 							{activeStep === 1 && (
 								<div>
-									<label className="mb-2 block text-[12px] font-semibold text-gray-700">Select Loan</label>
+									<label className="mb-2 block text-[12px] font-semibold text-gray-700">Pilih pinjaman</label>
 									{loansLoading && (
-										<p className="text-[11px] text-gray-500">Getting loan data...</p>
+										<p className="text-[11px] text-gray-500">Mengambil data pinjaman...</p>
 									)}
 									{!loansLoading && loansError && (
 										<p className="text-[11px] text-red-600">{loansError}</p>
 									)}
 									{!loansLoading && !loansError && loans.length === 0 && (
-										<p className="text-[11px] text-gray-500">No active loans available.</p>
+										<p className="text-[11px] text-gray-500">Tidak ada pinjaman aktif yang tersedia.</p>
 									)}
 									{loans.length > 0 && (
 										<select
@@ -403,7 +403,7 @@ export default function InstallmentPage({ searchParams }: InstallmentPageProps) 
 												: "bg-[#07B0C8] hover:bg-[#059BB0]"
 										}`}
 									>
-										Next
+										Selanjutnya
 									</button>
 								</div>
 							)}
@@ -441,7 +441,7 @@ export default function InstallmentPage({ searchParams }: InstallmentPageProps) 
 									</div>
 
 									<div className="mb-4">
-										<label className="mb-1.5 block text-[12px] font-semibold text-gray-700">Custom Amount</label>
+										<label className="mb-1.5 block text-[12px] font-semibold text-gray-700">Jumlah Custom</label>
 										<div className="relative">
 											<input
 												type="number"
@@ -470,7 +470,7 @@ export default function InstallmentPage({ searchParams }: InstallmentPageProps) 
 
 						{activeStep === 2 && (
 							<div className="mb-5">
-								<label className="mb-2 block text-[12px] font-semibold text-gray-700">Payment Method</label>
+								<label className="mb-2 block text-[12px] font-semibold text-gray-700">Metode Pembayaran</label>
 
 								<div
 									onClick={() => handlePaymentMethodSelect("qris")}
@@ -489,7 +489,7 @@ export default function InstallmentPage({ searchParams }: InstallmentPageProps) 
 											{paymentMethod === "qris" && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
 										</div>
 										<div>
-											<p className="text-[13px] font-semibold text-gray-900">QRIS (Any E-Wallet)</p>
+											<p className="text-[13px] font-semibold text-gray-900">QRIS (E-Wallet apapun)</p>
 											<p className="text-[10px] text-gray-500">GoPay, OVO, Dana, LinkAja</p>
 										</div>
 									</div>
@@ -521,7 +521,7 @@ export default function InstallmentPage({ searchParams }: InstallmentPageProps) 
 						)}
 						{activeStep === 2 && paymentMethod === "va" && (
 							<div className="mb-5">
-								<label className="mb-1.5 block text-[12px] font-semibold text-gray-700">Select Bank</label>
+								<label className="mb-1.5 block text-[12px] font-semibold text-gray-700">Pilih Bank</label>
 								<select
 									value={vaBank}
 									onChange={(e) => setVaBank(e.target.value as VABank)}
@@ -544,7 +544,7 @@ export default function InstallmentPage({ searchParams }: InstallmentPageProps) 
 									onClick={() => setActiveStep(1)}
 									className="rounded-xl border border-gray-200 px-4 py-2 text-[12px] font-semibold text-gray-600 hover:bg-gray-50"
 								>
-									Back
+									Kembali
 								</button>
 								<button
 									onClick={handleSubmit}
