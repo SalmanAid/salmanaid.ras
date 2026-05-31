@@ -94,11 +94,11 @@ export default function AdminDashboard_FinancialOverviewChart() {
   // ---- CONFIG ----
   const chartConfig = {
     donations: {
-      label: "Monthly Donations",
+      label: "Donasi Bulanan",
       color: "#07B0C8",
     },
     disbursement: {
-      label: "Monthly Disbursements",
+      label: "Pengeluaran Bulanan",
       color: "#FCB82E",
     },
   } satisfies ChartConfig
@@ -149,7 +149,7 @@ export default function AdminDashboard_FinancialOverviewChart() {
               <ChartTooltipContent
                 formatter={(value, name) => [
                   formatTooltipValue(value as number),
-                  name === "donations" ? "Monthly Donations" : "Monthly Disbursements",
+                  name === "donations" ? "Donasi Bulanan" : "Pengeluaran Bulanan",
                 ]}
               />
             }

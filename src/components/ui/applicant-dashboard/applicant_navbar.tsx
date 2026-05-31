@@ -31,8 +31,8 @@ type NotificationsResponse = {
 
 const menuItems = [
     { href: "/applicant/dashboard", label: "Dashboard" },
-    { href: "/applicant/apply", label: "Apply Loan" },
-    { href: "/applicant/installment", label: "Installment" },
+    { href: "/applicant/apply", label: "Pengajuan Pinjaman" },
+    { href: "/applicant/installment", label: "Cicilan" },
 ];
 
 // init fonts
@@ -238,15 +238,15 @@ function NotificationBellButton() {
                         <div className="flex items-center justify-between gap-4">
                             <div>
                                 <div className={`${plusJakartaSansFont.className} text-base font-bold text-[#111827]`}>
-                                    Notifications
+                                    Notifikasi
                                 </div>
                                 <div className="mt-1 text-xs text-[#6B7280]">
-                                    Latest loan and funding updates
+                                    Pembaruan pinjaman dan donasi terkini
                                 </div>
                             </div>
                             {pendingCount > 0 && (
                                 <div className="rounded-full bg-[#FEF2F2] px-3 py-1 text-xs font-semibold text-[#DC2626]">
-                                    {pendingCount} new
+                                    {pendingCount} terbaru
                                 </div>
                             )}
                         </div>
@@ -255,7 +255,7 @@ function NotificationBellButton() {
                     <div className="max-h-112 space-y-3 overflow-y-auto bg-white p-4">
                         {isLoading && (
                             <div className="rounded-lg border border-[#E5E7EB] px-4 py-6 text-sm text-[#6B7280]">
-                                Loading notifications...
+                                Memuat Notifikasi...
                             </div>
                         )}
 
@@ -267,7 +267,7 @@ function NotificationBellButton() {
 
                         {!isLoading && !error && notifications.length === 0 && (
                             <div className="rounded-lg border border-dashed border-[#D1D5DB] px-4 py-8 text-center text-sm text-[#6B7280]">
-                                No notifications yet.
+                                Belum ada notifikasi.
                             </div>
                         )}
 
@@ -299,7 +299,7 @@ function NotificationBellButton() {
                                             </div>
                                             {notification.isPending && (
                                                 <div className="mt-2 inline-flex rounded-full bg-[#FFF7E6] px-2.5 py-1 text-xs font-medium text-[#B45309]">
-                                                    Newly delivered
+                                                    Baru saja diterima
                                                 </div>
                                             )}
                                         </div>
@@ -311,8 +311,8 @@ function NotificationBellButton() {
 
                     <div className="border-t border-[#E5E7EB] bg-[#F9FAFB] px-5 py-3 text-xs text-[#6B7280]">
                         {desktopPermission === "granted"
-                            ? "Desktop notifications enabled"
-                            : "Click the bell to allow desktop notifications"}
+                            ? "Notifikasi Desktop diaktifkan"
+                            : "Tekan ikon bel untuk mengaktifkan notifikasi desktop"}
                     </div>
                 </div>
             )}

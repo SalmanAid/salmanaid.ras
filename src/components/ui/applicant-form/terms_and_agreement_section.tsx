@@ -43,7 +43,7 @@ export default function ApplicantForm_TermsAndAgreementSection() {
             !installment_freq ||
             !comply_to_terms_and_agreement
         ) {
-            setSubmitError("Please complete all data and accept the agreement before submitting.")
+            setSubmitError("Mohon lengkapi seluruh data dan terima kesepakatan sebelum mengirim pengajuan pinjaman.")
             return
         }
 
@@ -77,7 +77,7 @@ export default function ApplicantForm_TermsAndAgreementSection() {
 
             await createApplicationResponse.json() as CreatedLoanApplicationResponse
 
-            setSubmitSuccess("Application submitted successfully.")
+            setSubmitSuccess("Pengajuan berhasil dikirimkan.")
             router.push("/applicant/dashboard")
         } catch (error) {
             setSubmitError(error instanceof Error ? error.message : "Something went wrong while submitting the application.")
@@ -109,40 +109,40 @@ export default function ApplicantForm_TermsAndAgreementSection() {
         <div className="rounded-lg border border-[#E2E8F0] bg-white px-7 py-8 shadow-[0_1px_3px_rgba(15,23,42,0.08)] sm:px-8">
             <div>
                 <h2 className="text-[22px] font-extrabold leading-tight text-[#111827]">
-                    Terms & Agreement
+                    Syarat dan Ketentuan
                 </h2>
                 <p className="mt-2 text-xs font-medium text-[#667085]">
-                    Please review and accept the loan agreement terms
+                    Mohon review and terima kesepakatan pinjaman
                 </p>
             </div>
 
             <div className="mt-6 max-h-86 overflow-y-auto rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-5 py-5 text-xs leading-6 text-[#334155]">
                 <h3 className="text-sm font-bold text-[#111827]">
-                    Interest-Free Loan Agreement
+                    Kesepakatan Pinjaman Bebas Bunga
                 </h3>
 
                 <p className="mt-4">
-                    By submitting this application, you acknowledge and agree to the following terms and conditions of the Rumah Amal Salman interest-free student loan program:
+                    Dengan mengirimkan aplikasi ini, Anda mengakui dan menyetujui syarat dan ketentuan berikut dari program pinjaman pelajar tanpa bunga Rumah Amal Salman:
                 </p>
 
                 <p className="mt-4">
-                    This is an interest-free loan (Qardhul Hasan) provided to support your education through Islamic philanthropy principles.
+                    Ini adalah pinjaman tanpa bunga (Qardhul Hasan) yang diberikan untuk mendukung pendidikan Anda melalui prinsip-prinsip filantropi Islami.
                 </p>
 
                 <ul className="mt-3 space-y-2 pl-4">
-                    <li>You agree to repay the loan amount in monthly installments as agreed upon after loan approval.</li>
-                    <li>No interest or additional fees will be charged on this loan. The repayment amount equals the borrowed amount.</li>
-                    <li>All information provided in this application is accurate and truthful to the best of your knowledge.</li>
-                    <li>You authorize Rumah Amal Salman to verify the information and documents provided.</li>
-                    <li>You commit to using the loan funds solely for educational purposes as stated in your application.</li>
+                    <li>Anda setuju untuk membayar kembali jumlah pinjaman dalam cicilan bulanan sesuai kesepakatan setelah persetujuan pinjaman.</li>
+                    <li>Tidak ada bunga atau biaya tambahan yang akan dikenakan pada pinjaman ini. Jumlah pembayaran kembali sama dengan jumlah pinjaman.</li>
+                    <li>Semua informasi yang diberikan dalam aplikasi ini akurat dan benar sejauh pengetahuan Anda.</li>
+                    <li>Anda memberi wewenang kepada Rumah Amal Salman untuk memverifikasi informasi dan dokumen yang diberikan.</li>
+                    <li>Anda berkomitmen untuk menggunakan dana pinjaman semata-mata untuk tujuan pendidikan sebagaimana dinyatakan dalam permohonan Anda.</li>
                 </ul>
 
                 <p className="mt-4">
-                    In case of financial hardship, you agree to communicate promptly with Rumah Amal Salman to discuss alternative repayment arrangements.
+                   Dalam hal mengalami kesulitan keuangan, Anda setuju untuk segera berkomunikasi dengan Rumah Amal Salman untuk membahas pengaturan pembayaran alternatif.
                 </p>
 
                 <p className="mt-3">
-                    You understand that this loan is a trust (amanah) and you are morally and ethically obligated to repay it responsibly.
+                    Anda memahami bahwa pinjaman ini adalah amanah dan Anda secara moral dan etis berkewajiban untuk mengembalikannya secara bertanggung jawab.
                 </p>
             </div>
 
@@ -154,7 +154,7 @@ export default function ApplicantForm_TermsAndAgreementSection() {
                     className="mt-0.5 h-4 w-4 rounded border-[#111827] accent-[#111827]"
                 />
                 <span className="text-xs font-semibold leading-6 text-[#111827]">
-                    I have read and agree to the interest-free loan agreement terms and conditions. I confirm that all information provided is accurate and I commit to fulfilling my repayment obligations.
+                    Saya telah membaca dan menyetujui syarat dan ketentuan perjanjian pinjaman tanpa bunga. Saya menegaskan bahwa semua informasi yang diberikan akurat dan saya berkomitmen untuk memenuhi kewajiban pembayaran kembali saya.
                 </span>
             </label>
 
@@ -170,7 +170,7 @@ export default function ApplicantForm_TermsAndAgreementSection() {
                     onClick={decrementStep}
                     className="h-8 rounded-md border border-[#E5E7EB] bg-white px-4 text-xs font-semibold text-[#111827] transition hover:bg-[#F8FAFC]"
                 >
-                    Back
+                    Kembali
                 </button>
 
                 <button
@@ -179,7 +179,7 @@ export default function ApplicantForm_TermsAndAgreementSection() {
                     disabled={isSubmitting || !isApplicationComplete}
                     className="h-8 rounded-md px-6 text-xs font-bold text-white transition disabled:cursor-not-allowed disabled:bg-[#B7D9CF] disabled:text-white/80 enabled:bg-[#009966] enabled:hover:bg-[#007A52]"
                 >
-                    {isSubmitting ? "Submitting..." : "Submit Application"}
+                    {isSubmitting ? "Mengirim..." : "Kirim Pengajuan"}
                 </button>
             </div>
         </div>

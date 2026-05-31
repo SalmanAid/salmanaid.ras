@@ -19,9 +19,9 @@ interface PaymentModalProps {
 }
 
 const REPAYMENT_STEPS = [
-  { id: 1, label: 'Select Amount' },
-  { id: 2, label: 'Payment' },
-  { id: 3, label: 'Confirmation' },
+  { id: 1, label: 'Pilih jumlah' },
+  { id: 2, label: 'Pembayaran' },
+  { id: 3, label: 'Konfirmasi' },
 ] as const;
 
 const formatIdr = (value: number) =>
@@ -74,22 +74,22 @@ export default function ApplicantDashboard_PaymentApplicantComponent({
         setError('');
     
         if (!paymentMethod) {
-        setError('Please select a payment method');
+        setError('Pilih metode pembayaran.');
         return;
         }
     
         if (!amount || parseFloat(String(amount)) <= 0) {
-        setError('Please enter a valid amount');
+        setError('Masukkan jumlah yang valid.');
         return;
         }
     
         if (paymentMethod === 'qris' && parseFloat(String(amount)) < 1500) {
-        setError('Minimum QRIS amount is IDR 1,500');
+        setError('Minimum jumlah transaksi QRIS adalah IDR 1,500');
         return;
         }
     
         if (!referenceId) {
-        setError('Reference ID is missing');
+        setError('Reference ID tidak ditemukan.');
         return;
         }
     
@@ -107,7 +107,7 @@ export default function ApplicantDashboard_PaymentApplicantComponent({
             referenceId,
             paymentMethod,
             vaBank: paymentMethod === 'va' ? vaBank : undefined,
-            description: `${transactionType === 'donation' ? 'Donation via' : 'Loan Repayment via'} ${
+            description: `${transactionType === 'donation' ? 'Donasi via' : 'Pembayaran Pinjaman via'} ${
                 paymentMethod === 'qris' ? 'QRIS' : 'Virtual Account'
             }`,
             }),
@@ -115,7 +115,7 @@ export default function ApplicantDashboard_PaymentApplicantComponent({
     
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to create payment');
+            throw new Error(errorData.error || 'Gagal melakukan pembayaran');
         }
     
         const data = await response.json();
@@ -152,7 +152,7 @@ export default function ApplicantDashboard_PaymentApplicantComponent({
         <main className="mx-auto w-full px-4 py-6 sm:px-6">
             <div className="text-center">
             <h1 className="text-2xl font-bold leading-tight text-[#111827] md:text-3xl">
-                Make a <span className="text-[#07B0C8]">Repayment</span>
+                Buat suatu<span className="text-[#07B0C8]">pembayaran kembali</span>
             </h1>
             <p className="mx-auto mt-1 max-w-md text-[12px] leading-relaxed text-[#6B7280] md:text-[13px]">
                 Tanggung jawab Anda meringankan beban kami dalam membantu orang lain yang juga membutuhkan.
@@ -200,12 +200,12 @@ export default function ApplicantDashboard_PaymentApplicantComponent({
                 <p className="text-[12px] leading-snug text-yellow-900">
                     <span className="font-semibold">
                     {transactionType === 'repayment'
-                        ? 'Unable to determine the donor account.'
-                        : 'No reference ID found.'}
+                        ? 'Tidak dapat menentukan akun donatur.'
+                        : 'Reference ID tidak dapat ditemukan.'}
                     </span>
                     {transactionType === 'repayment'
-                    ? ' Please sign in again before continuing.'
-                    : ' This payment still needs a repayment reference ID.'}
+                    ? ' Mohon sign in kembali sebelum melanjutkan.'
+                    : ' Transaksi ini masih membutuhkan reference ID ke suatu pembayaran kembali.'}
                 </p>
                 </div>
             )}
@@ -246,7 +246,7 @@ export default function ApplicantDashboard_PaymentApplicantComponent({
                 {/* manual input section */}
                 <div className="mb-4">
                 <label className="block text-[12px] font-semibold text-gray-700 mb-1.5">
-                    Custom Amount
+                    Jumlah Custom
                 </label>
                 <div className="relative">
                     <input
@@ -276,7 +276,7 @@ export default function ApplicantDashboard_PaymentApplicantComponent({
             {/* Payment Method Selection */}
             <div className="mb-5">
                 <label className="block text-[12px] font-semibold text-gray-700 mb-2">
-                Payment Method
+                Metode Pembayaran
                 </label>
 
                 {/* QRIS Option */}
@@ -297,7 +297,7 @@ export default function ApplicantDashboard_PaymentApplicantComponent({
                     {paymentMethod === 'qris' && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
                     </div>
                     <div>
-                    <p className="text-[13px] font-semibold text-gray-900">QRIS (Any E-Wallet)</p>
+                    <p className="text-[13px] font-semibold text-gray-900">QRIS (E-Wallet apapun)</p>
                     <p className="text-[10px] text-gray-500">GoPay, OVO, Dana, LinkAja</p>
                     </div>
                 </div>
@@ -330,7 +330,7 @@ export default function ApplicantDashboard_PaymentApplicantComponent({
 
             {paymentMethod === 'va' && (
                 <div className="mb-5">
-                <label className="block text-[12px] font-semibold text-gray-700 mb-1.5">Select Bank</label>
+                <label className="block text-[12px] font-semibold text-gray-700 mb-1.5">Pilih Bank</label>
                 <select
                     value={vaBank}
                     onChange={(e) => setVaBank(e.target.value as VABank)}
@@ -356,7 +356,7 @@ export default function ApplicantDashboard_PaymentApplicantComponent({
                     : 'bg-[#07B0C8] hover:bg-[#059BB0]'
                 }`}
             >
-                {loading ? 'Processing...' : 'Continue to Payment'}
+                {loading ? 'Memproses...' : 'Lanjut ke pembayaran'}
             </button>
 
             </div>

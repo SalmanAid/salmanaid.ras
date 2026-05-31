@@ -37,7 +37,7 @@ export default function ApplicantForm_FamilyCardUploadBlock() {
 
         <ApplicantForm_DocumentFilePreview
             file={familyCard}
-            label="Upload your Family Card scan"
+            label="Unggah pindaian kartu keluarga Anda"
             onClick={handleClick}
             onFileDrop={setFamilyCard}
         />

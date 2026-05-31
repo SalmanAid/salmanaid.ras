@@ -25,17 +25,17 @@ export default function ApplicantForm_DocumentUploadSection() {
         <div className="rounded-lg border border-[#E2E8F0] bg-white px-7 py-8 shadow-[0_1px_3px_rgba(15,23,42,0.08)] sm:px-8">
             <div>
                 <h2 className="text-[22px] font-extrabold leading-tight text-[#111827]">
-                    Document Upload
+                    Unggah Dokumen
                 </h2>
                 <p className="mt-2 text-xs font-medium text-[#667085]">
-                    Please upload the required documents to verify your identity
+                    Mohon unggah dokumen yang diperlukan untuk memverifikasi identitas Anda
                 </p>
             </div>
 
             <div className="mt-6 space-y-6">
                 <div>
                     <div className="text-xs font-semibold text-[#111827]">
-                        Student ID Card (KTM) *
+                        Nomor Induk Mahasiswa (KTM) *
                     </div>
                     <div className="mt-2">
                         <ApplicantForm_StudentIdCardUploadBlock />
@@ -44,7 +44,7 @@ export default function ApplicantForm_DocumentUploadSection() {
 
                 <div>
                     <div className="text-xs font-semibold text-[#111827]">
-                        Family Card (KK) *
+                        Kartu Keluarga (KK) *
                     </div>
                     <div className="mt-2">
                         <ApplicantForm_FamilyCardUploadBlock />
@@ -55,11 +55,11 @@ export default function ApplicantForm_DocumentUploadSection() {
                     <div className="flex gap-3">
                         <FileText className="mt-0.5 h-4 w-4 shrink-0 text-[#F59E0B]" strokeWidth={2.2} />
                         <div>
-                            <div className="text-xs font-bold">Document Requirements</div>
+                            <div className="text-xs font-bold">Kelengkapan Dokumen</div>
                             <ul className="mt-2 list-disc space-y-1 pl-4 text-[11px] font-medium">
-                                <li>Files must be in JPG, PNG, or PDF format</li>
-                                <li>Maximum file size: 5MB per document</li>
-                                <li>Documents should be clear and readable</li>
+                                <li>Dokumen harus dalam format JPG, PNG, atau PDF format</li>
+                                <li>Maximum ukuran dokumen: 5MB per dokumen</li>
+                                <li>Dokumen harus jelas dan dapat dibaca</li>
                             </ul>
                         </div>
                     </div>
@@ -72,7 +72,7 @@ export default function ApplicantForm_DocumentUploadSection() {
                     onClick={handleBack}
                     className="h-8 rounded-md border border-[#E5E7EB] bg-white px-4 text-xs font-semibold text-[#111827] transition hover:bg-[#F8FAFC]"
                 >
-                    Back
+                    Kembali
                 </button>
 
                 <button
@@ -81,7 +81,7 @@ export default function ApplicantForm_DocumentUploadSection() {
                     disabled={!isStepComplete}
                     className="h-8 rounded-md px-4 text-xs font-bold text-white transition disabled:cursor-not-allowed disabled:bg-[#B7D9CF] disabled:text-white/80 enabled:bg-[#009966] enabled:hover:bg-[#007A52]"
                 >
-                    Continue
+                    Lanjutkan
                 </button>
             </div>
         </div>
