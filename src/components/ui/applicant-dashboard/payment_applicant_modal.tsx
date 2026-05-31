@@ -147,7 +147,7 @@ export default function ApplicantDashboard_PaymentApplicantComponent({
 
     return (
 
-    <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-[#F3F5F7] shadow-2xl [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+    <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-[#F3F5F7] shadow-2xl [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none">
 
         <main className="mx-auto w-full px-4 py-6 sm:px-6">
             <div className="text-center">

@@ -11,12 +11,10 @@ export const CallToAction = () => {
           <div className="pointer-events-none absolute -left-10 -bottom-14 h-44 w-44 rounded-full bg-white/8" />
           <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-white/8" />
 
-          <h2 className="text-xl md:text-[52px] font-bold mb-4">Ready to Make a Difference?</h2>
+          <h2 className="text-xl md:text-[52px] font-bold mb-4">Siap Untuk Menjadi Agen Perubahan?</h2>
 
           <p className="text-cyan-50 text-sm md:text-[15px] mb-9 max-w-4xl mx-auto leading-relaxed">
-            Whether you want to support a student&apos;s future or need financial help for your
-            education, Rumah Amal Salman is here for you. Join our growing community of
-            changemakers.
+            Baik Anda ingin mendukung masa depan seorang siswa atau membutuhkan bantuan keuangan untuk pendidikan Anda, Rumah Amal Salman siap membantu Anda. Bergabunglah dengan komunitas penggerak perubahan kami yang terus berkembang.
           </p>
 
           <div className="relative z-10 flex flex-col sm:flex-row gap-4 justify-center">
@@ -25,7 +23,7 @@ export const CallToAction = () => {
               className="bg-[#FCB82E] hover:bg-[#e8a91f] text-[#111827] font-semibold px-7 py-3 rounded-full transition-all inline-flex items-center justify-center gap-2"
             >
               <Heart className="w-4 h-4" />
-              Become a Donor
+              Lakukan Donasi
               <ArrowRight className="w-4 h-4" />
             </Link>
 
@@ -34,7 +32,7 @@ export const CallToAction = () => {
               className="border border-white hover:bg-white hover:text-[#07B0C8] text-white font-semibold px-7 py-3 rounded-full transition-all inline-flex items-center justify-center gap-2"
             >
               <GraduationCap className="w-4 h-4" />
-              Apply for a Loan
+              Ajukan Pinjaman
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

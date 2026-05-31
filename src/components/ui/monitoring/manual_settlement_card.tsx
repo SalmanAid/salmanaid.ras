@@ -127,7 +127,7 @@ export default function Monitoring_ManualSettlementCard() {
                 {/* Calculation Summary */}
                 <div className="p-4 rounded-2xl bg-slate-50 border border-dashed border-slate-200">
                 <div className="flex justify-between items-center text-sm">
-                    <span className="text-slate-500">New Outstanding Balance</span>
+                    <span className="text-slate-500">Nilai Akhir</span>
                     <span className="font-bold text-slate-800">
                         {formatCurrency(Math.max(0, remainingUnpaid - (reductionAmount || 0)))}
                     </span>
@@ -151,7 +151,7 @@ export default function Monitoring_ManualSettlementCard() {
                         disabled={isSubmitting}
                         className="flex-1 py-3 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
                     >
-                        Cancel
+                        Batal
                     </button>
                     <button
                         type="button"
@@ -159,7 +159,7 @@ export default function Monitoring_ManualSettlementCard() {
                         disabled={!reductionAmount || reductionAmount <= 0 || reductionAmount > remainingUnpaid || isSubmitting}
                         className="flex-2 py-3 bg-[#87DCE9] rounded-xl font-bold text-white shadow-lg shadow-[#87DCE9]/20 hover:bg-[#76cad7] disabled:bg-slate-200 disabled:shadow-none disabled:text-slate-400 transition-all"
                     >
-                        {isSubmitting ? "Adjusting..." : "Confirm Adjustment"}
+                        {isSubmitting ? "Menyesuaikan..." : "Konfirmasi Penyesuaian"}
                     </button>
                 </div>
             </div>

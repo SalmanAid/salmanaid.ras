@@ -9,8 +9,8 @@ type ErrorStateProps = {
 }
 
 export default function ErrorComponent({
-  title = "Something went wrong",
-  message = "We couldn’t load the data. Please try again.",
+  title = "Sesuatu Salah",
+  message = "Kami tidak bisa memuat data. Mohon coba lagi.",
   onRetry,
 }: ErrorStateProps) {
   return (
@@ -39,7 +39,7 @@ export default function ErrorComponent({
             className="px-4 py-2 rounded-xl text-white text-sm font-medium shadow-md transition hover:opacity-90"
             style={{ backgroundColor: "#07B0C8" }} // your primary color
           >
-            Try Again
+            Coba Lagi
           </button>
         )}
       </div>
