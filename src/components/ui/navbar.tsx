@@ -26,9 +26,9 @@ export const Navbar = () => {
               <Image
                 src="/rumah-amal-horizontal-logo.svg"
                 alt="Rumah Amal Salman"
-                width={122}
-                height={30}
-                className="h-7 w-auto"
+                width={115}
+                height={40}
+                className="h-10 w-auto"
                 priority
               />
             </Link>
