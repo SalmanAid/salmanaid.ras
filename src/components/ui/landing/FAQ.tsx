@@ -5,7 +5,7 @@ import Drawer from "./Drawer";
 export default function FAQComponent() {
 
     return (
-        <section className="md:py-8 bg-[#F3F4F6]">
+        <section id="faq" className="scroll-mt-16 bg-[#F3F4F6] py-16 md:py-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Title */}
