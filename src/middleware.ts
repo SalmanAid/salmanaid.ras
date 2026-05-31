@@ -40,7 +40,13 @@ export default auth((req) => {
     if ((isProfileRoute || isAccountRoute) && roles.includes("ADMIN")) {
         return NextResponse.redirect(new URL("/admin/dashboard", req.nextUrl));
     }
-    if (isDonorRoute && !roles.includes("DONOR") && !roles.includes("ADMIN")) {
+    if (roles.includes("ADMIN") && (isDonorRoute || isApplicantRoute)) {
+        return NextResponse.redirect(new URL("/admin/dashboard", req.nextUrl));
+    }
+    if (isDonorRoute && !roles.includes("DONOR")) {
+        return NextResponse.redirect(new URL(getRoleDashboardPath(), req.nextUrl));
+    }
+    if (isApplicantRoute && !roles.includes("BORROWER")) {
         return NextResponse.redirect(new URL(getRoleDashboardPath(), req.nextUrl));
     }
 
