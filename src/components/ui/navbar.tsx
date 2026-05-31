@@ -3,18 +3,47 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 
 const navItems = [
-  { href: '/', label: 'Home' },
-  { href: '/#how-it-works', label: 'Programs' },
-  { href: '/#faq', label: 'FAQ' },
+  { href: '/#home', label: 'Home', sectionId: 'home' },
+  { href: '/#programs', label: 'Programs', sectionId: 'programs' },
+  { href: '/#faq', label: 'FAQ', sectionId: 'faq' },
 ];
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('home');
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (pathname !== '/') return;
+
+    const updateActiveSection = () => {
+      const scrollPosition = window.scrollY + 96;
+      let currentSection = 'home';
+
+      navItems.forEach((item) => {
+        const section = document.getElementById(item.sectionId);
+
+        if (section && section.offsetTop <= scrollPosition) {
+          currentSection = item.sectionId;
+        }
+      });
+
+      setActiveSection(currentSection);
+    };
+
+    updateActiveSection();
+    window.addEventListener('scroll', updateActiveSection, { passive: true });
+    window.addEventListener('resize', updateActiveSection);
+
+    return () => {
+      window.removeEventListener('scroll', updateActiveSection);
+      window.removeEventListener('resize', updateActiveSection);
+    };
+  }, [pathname]);
 
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
@@ -41,7 +70,7 @@ export const Navbar = () => {
                 key={item.href}
                 href={item.href}
                 className={`text-[12.5px] font-medium transition-colors ${
-                  item.label === 'Home' && pathname === '/'
+                  pathname === '/' && activeSection === item.sectionId
                     ? 'text-[#07B0C8] underline underline-offset-8 decoration-2 decoration-[#07B0C8]'
                     : 'text-gray-700 hover:text-[#07B0C8]'
                 }`}
@@ -89,7 +118,11 @@ export const Navbar = () => {
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className="block py-2 text-[13px] text-gray-700 hover:text-cyan-600 font-medium"
+                className={`block py-2 text-[13px] font-medium hover:text-cyan-600 ${
+                  pathname === '/' && activeSection === item.sectionId
+                    ? 'text-[#07B0C8]'
+                    : 'text-gray-700'
+                }`}
               >
                 {item.label}
               </Link>
