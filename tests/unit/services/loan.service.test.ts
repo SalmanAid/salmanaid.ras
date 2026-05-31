@@ -11,6 +11,7 @@ describe('LoanService', () => {
 
       const result = await LoanService.createLoanApplication('user-1', {
         requestedAmount: 500000,
+        installmentFreq: 3,
         description: 'Tuition fee',
         collateralUrl: '',
         collateralDescription: '',
