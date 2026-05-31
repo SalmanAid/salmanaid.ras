@@ -75,7 +75,7 @@ export default function SignUpPage() {
                     <div className="grid justify-center items-center gap-y-2 text-center">
                         {/* greeting caption container */}
                         <div className="text-lg font-bold">
-                            Selamat Datang di <span className="text-[#16C5DE]">Rumah Amal Salman!</span>
+                            Selamat Datang di <span className="text-[#16C5DE]">SalmanAid!</span>
                         </div>
 
                         {/* sub greeting container */}
