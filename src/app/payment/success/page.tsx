@@ -28,11 +28,11 @@ export default function PaymentSuccessPage() {
           </div>
 
           {/* Title */}
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Payment Successful</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Pembayaran Berhasil</h1>
 
           {/* Message */}
           <p className="text-gray-600 mb-6">
-            Thank you for your payment. Your transaction has been completed successfully.
+            Terimakasih atas pembayaran Anda. Transaksi Anda berhasil!
           </p>
 
           {/* CTA Buttons */}
@@ -41,19 +41,19 @@ export default function PaymentSuccessPage() {
               href="/"
               className="block w-full px-4 py-2 bg-[#07B0C8] text-white rounded-md hover:bg-[#059BB0] font-medium transition"
             >
-              Back to Home
+              Kembali ke Halaman Landing
             </Link>
             <Link
               href="/dashboard"
               className="block w-full px-4 py-2 bg-[#F9FAFB] text-[#07B0C8] border border-[#07B0C8] rounded-md hover:bg-[#07B0C8]/5 font-medium transition"
             >
-              View Dashboard
+              Lihat Dashboard
             </Link>
           </div>
 
           {/* Footer Note */}
           <p className="text-xs text-gray-500 mt-6">
-            If you have any questions, please contact our support team.
+            Jika Anda memiliki pertanyaan, harap hubungi tim pendukung kami di bawah.
           </p>
         </div>
       </div>

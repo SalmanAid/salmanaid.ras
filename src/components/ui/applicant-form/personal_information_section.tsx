@@ -36,44 +36,44 @@ export default function ApplicantForm_PersonalInformationSection() {
         <div className="rounded-lg border border-[#E2E8F0] bg-white px-7 py-8 shadow-[0_1px_3px_rgba(15,23,42,0.08)] sm:px-8">
             <div>
                 <h2 className="text-[22px] font-extrabold leading-tight text-[#111827]">
-                    Personal Information
+                    Informasi Pribadi
                 </h2>
                 <p className="mt-2 text-xs font-medium text-[#667085]">
-                    Please provide your basic information as a student
+                    Mohon sediakan informasi dasar Anda sebagai mahasiswa
                 </p>
             </div>
 
             <div className="mt-6 space-y-4">
                 <label className="block">
-                    <span className={labelClassName}>Full Name *</span>
+                    <span className={labelClassName}>Nama Lengkap *</span>
                     <input
                         value={String(full_name)}
                         onChange={(e) => setFullName(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter"}
                         className={`${inputClassName} mt-2`}
-                        placeholder="Enter your full name"
+                        placeholder="Masukkan nama lengkap Anda"
                     />
                 </label>
 
                 <label className="block">
-                    <span className={labelClassName}>University *</span>
+                    <span className={labelClassName}>Universitas *</span>
                     <input
                         value={String(university_name)}
                         onChange={(e) => setUniversityName(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter"}
                         className={`${inputClassName} mt-2`}
-                        placeholder="Enter your university name"
+                        placeholder="Masukkan universitas Anda"
                     />
                 </label>
 
                 <label className="block">
-                    <span className={labelClassName}>Student ID Number *</span>
+                    <span className={labelClassName}>Nomor Induk Mahasiswa *</span>
                     <input
                         value={String(student_id_number)}
                         onChange={(e) => setStudentIdNumber(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter"}
                         className={`${inputClassName} mt-2`}
-                        placeholder="Enter your student ID"
+                        placeholder="Masukkan NIM Anda"
                     />
                 </label>
             </div>
@@ -85,7 +85,7 @@ export default function ApplicantForm_PersonalInformationSection() {
                     disabled={Number(applicationProgress?.step ?? 1) <= 1}
                     className="h-8 rounded-md border border-[#E5E7EB] bg-white px-4 text-xs font-semibold text-[#8A8F98] transition hover:bg-[#F8FAFC] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                    Back
+                    Kembali
                 </button>
 
                 <button
@@ -94,7 +94,7 @@ export default function ApplicantForm_PersonalInformationSection() {
                     disabled={!isStepComplete}
                     className="h-8 rounded-md px-4 text-xs font-bold text-white transition disabled:cursor-not-allowed disabled:bg-[#B7D9CF] disabled:text-white/80 enabled:bg-[#009966] enabled:hover:bg-[#007A52]"
                 >
-                    Continue
+                    Lanjutkan
                 </button>
             </div>
         </div>

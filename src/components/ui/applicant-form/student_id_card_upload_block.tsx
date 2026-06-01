@@ -37,7 +37,7 @@ export default function ApplicantForm_StudentIdCardUploadBlock() {
 
             <ApplicantForm_DocumentFilePreview
                 file={studentIdCard}
-                label="Upload your Student ID Card scan"
+                label="Unggah pindaian Kartu Tanda Mahasiswa Anda"
                 onClick={handleClick}
                 onFileDrop={setStudentIdCard}
             />

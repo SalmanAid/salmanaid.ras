@@ -211,19 +211,19 @@ export default function LoanRequest_LoanRequestsTable({ isLoading = false }: { i
                             {/* Core Request Information Details Block */}
                             <div className="grid grid-cols-2 gap-y-2 gap-x-4 pt-1.5 border-t border-gray-50 text-[12.5px]">
                                 <div className="flex flex-col">
-                                    <span className="text-gray-400 font-medium text-[11px] uppercase tracking-wider">Institution</span>
+                                    <span className="text-gray-400 font-medium text-[11px] uppercase tracking-wider">Institusi</span>
                                     <span className="text-gray-700 font-medium truncate mt-0.5">
                                         {loan.institution || "Institut Teknologi Bandung (ITB)"}
                                     </span>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-gray-400 font-medium text-[11px] uppercase tracking-wider">Requested Amount</span>
+                                    <span className="text-gray-400 font-medium text-[11px] uppercase tracking-wider">Jumlah yang Diajukan</span>
                                     <span className="text-[#1E293B] font-bold mt-0.5">
                                         {formatCurrency(Number(loan.requestedAmount))}
                                     </span>
                                 </div>
                                 <div className="flex flex-col col-span-2 mt-1">
-                                    <span className="text-gray-400 font-medium text-[11px] uppercase tracking-wider">Date Submitted</span>
+                                    <span className="text-gray-400 font-medium text-[11px] uppercase tracking-wider">Tanggal Diterima</span>
                                     <span className="text-gray-600 mt-0.5">
                                         {formatDate(loan.createdAt)}
                                     </span>
@@ -248,12 +248,12 @@ export default function LoanRequest_LoanRequestsTable({ isLoading = false }: { i
                 <Table>
                     <TableHeader className="bg-[#F9FAFB]">
                         <TableRow>
-                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase px-6">Applicant Details</TableHead>
+                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase px-6">Detail Pengaju Pinjaman</TableHead>
                             <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Institution</TableHead>
-                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Requested Amount</TableHead>
-                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Date Submitted</TableHead>
+                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Jumlah yang Diajukan</TableHead>
+                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Tanggal Diterima</TableHead>
                             <TableHead className="text-[#64748B] font-semibold text-xs uppercase text-center">Status</TableHead>
-                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase text-center">Action</TableHead>
+                            <TableHead className="text-[#64748B] font-semibold text-xs uppercase text-center">Aksi</TableHead>
                         </TableRow>
                     </TableHeader>
 

@@ -26,14 +26,14 @@ export default function DonorDashboard_StartNewDonation({ quickSelectAmounts }: 
     return (
         <aside className="h-auto lg:h-full rounded-xl bg-[#07B0C8] p-4 shadow-[0_8px_16px_rgba(2,132,199,0.22)] md:p-5 flex flex-col justify-between">
             <div>
-                <h2 className="text-lg font-bold leading-tight text-white">Start New Donation</h2>
+                <h2 className="text-lg font-bold leading-tight text-white">Buat Donasi Baru</h2>
 
                 <p className="mt-3 max-w-[38ch] text-[13px] leading-relaxed text-[#DDF6FB]">
-                    Your contribution helps students achieve their educational dreams without the burden of interest.
+                    Kontribusi Anda membantu siswa mewujudkan impian pendidikan mereka tanpa beban bunga.
                 </p>
 
                 <div className="mt-4">
-                    <p className="text-[12.5px] font-medium text-white">Donation Amount</p>
+                    <p className="text-[12.5px] font-medium text-white">Jumlah Donasi</p>
 
                     <input
                         value={donationAmount || ""}
@@ -44,7 +44,7 @@ export default function DonorDashboard_StartNewDonation({ quickSelectAmounts }: 
                         placeholder="Rp 0"
                     />
 
-                    <p className="mt-3 text-[12px] text-[#DDF6FB]">Quick select:</p>
+                    <p className="mt-3 text-[12px] text-[#DDF6FB]">Pilihan Cepat:</p>
                     <div className="mt-2 flex flex-wrap gap-2">
                         {quickSelectAmounts.map((amount) => (
                             <button
@@ -65,7 +65,7 @@ export default function DonorDashboard_StartNewDonation({ quickSelectAmounts }: 
                     href="/donor/donate-form"
                     className="inline-flex h-10 w-full items-center justify-center rounded-full bg-white text-[13px] font-medium text-[#0E8FA3] transition hover:bg-[#ECFEFF]"
                 >
-                    Make Donation
+                    Buat Donasi
                 </Link>
             </div>
         </aside>

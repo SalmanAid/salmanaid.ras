@@ -18,10 +18,6 @@ export default function Home() {
       <TrustTransparency />
       <FAQComponent/>
       <CallToAction />
-
-      <section id="faq" className="sr-only" aria-hidden="true">
-        FAQ Anchor
-      </section>
     </main>
   );
 }

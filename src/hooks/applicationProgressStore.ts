@@ -16,6 +16,7 @@ type ApplicationProgressStore = {
     loan_title : string | null
     requested_amount : number | null
     loan_purpose : string | null
+    installment_freq : number
 
     // document
     student_id_card : File | null
@@ -38,6 +39,7 @@ type ApplicationProgressStore = {
     setLoanTitle : (loan_title : string) => void
     setRequestedAmount : (requested_amount : number) => void
     setLoanPurpose : (loan_purpose : string) => void
+    setInstallmentFreq : (installment_freq : number) => void
 
     // document uploads
     setStudentIdCard : (student_id_card : File) => void
@@ -59,6 +61,7 @@ export const useApplicationProgressStore = create<ApplicationProgressStore>((set
     loan_title : "",
     requested_amount : 0,
     loan_purpose : "",
+    installment_freq : 4,
     
     // financial needs
     student_id_card : null,
@@ -148,6 +151,10 @@ export const useApplicationProgressStore = create<ApplicationProgressStore>((set
     
     setLoanPurpose(loan_purpose) {
         set({ loan_purpose : loan_purpose })
+    },
+    
+    setInstallmentFreq(installment_freq) {
+        set({ installment_freq : installment_freq })
     },
     
     // document upload

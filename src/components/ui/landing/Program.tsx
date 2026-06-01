@@ -12,7 +12,7 @@ export default function ProgramComponent () {
     const [flashDonationIsOpen, setFlashDonationIsOpen] = useState<boolean>(false) // Fixed typo from setFlashDonationtIsOpen
 
     return (
-        <section className="pt-16 md:py-20 bg-[#F3F4F6] min-h-screen relative">
+        <section id="programs" className="scroll-mt-16 bg-[#F3F4F6] py-16 md:py-24 relative">
 
             {/* Backdrop & Popup Container for Education Program */}
             {educationSupportIsOpen && (

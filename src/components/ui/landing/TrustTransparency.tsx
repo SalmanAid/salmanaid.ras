@@ -50,11 +50,11 @@ export const TrustTransparency = () => {
         {/* Section Header */}
         <div className="text-center mb-14">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Trust & Transparency
+            Kepercayaan & Transparansi
           </h2>
           <div className="mx-auto mb-4 h-1 w-24 rounded-full bg-[#07B0C8]" />
           <p className="text-gray-500 text-sm md:text-[15px] max-w-2xl mx-auto">
-            Your trust is our foundation. We operate with complete transparency, security, and ethical financial management.
+            Kepercayaan Anda adalah landasan kami. Kami beroperasi dengan transparansi, keamanan, dan manajemen keuangan yang beretika sepenuhnya.
           </p>
         </div>
 

@@ -6,18 +6,18 @@ import { useApplicationProgressStore } from "@/hooks/applicationProgressStore";
 const steps = [
     {
         number: 1,
-        title: "Personal Info",
-        description: "Basic information",
+        title: "Informasi Pribadi",
+        description: "Informasi dasar",
     },
     {
         number: 2,
-        title: "Financial Needs",
-        description: "Loan details",
+        title: "Kebutuhan Finansial",
+        description: "Detail pinjaman",
     },
     {
         number: 3,
-        title: "Agreement",
-        description: "Terms and conditions",
+        title: "Kesepakatan",
+        description: "Syarat dan Ketentuan",
     },
 ];
 
@@ -41,7 +41,7 @@ export default function ApplicantForm_ApplicationProgressSection() {
                     <div key={step.number} className="relative flex min-h-19 gap-3">
                         {index < steps.length - 1 && (
                             <div
-                                className={`absolute left-3.5 top-7 h-[52px] w-px ${
+                                className={`absolute left-3.5 top-7 h-3 w-px ${
                                     isCompleted ? "bg-[#BFF7DD]" : "bg-[#E5E7EB]"
                                 }`}
                             />

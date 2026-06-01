@@ -202,10 +202,10 @@ export default function DonorDashboardPage(){
           <>
           <section>
             <h1 className="text-2xl font-bold text-[#111827] tracking-tight">
-              Welcome back, <span className="text-[#07B0C8]">{username}</span>
+              Selamat Datang Kembali, <span className="text-[#07B0C8]">{username}</span>
             </h1>
             <p className="mt-1.5 text-sm text-[#6B7280]">
-              Your generosity is changing lives - thank you for making a difference
+              Kedermawanan Anda mengubah hidup orang lain - Terima kasih atas kontribusi Anda
             </p>
           </section>
 

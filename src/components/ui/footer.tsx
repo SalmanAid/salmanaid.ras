@@ -11,38 +11,37 @@ export default function Footer() {
                         <Image
                             src="/rumah-amal-horizontal-logo.svg"
                             alt="Rumah Amal Salman Horizontal Logo"
-                            width={140}
-                            height={36}
-                            className="h-8 w-auto"
+                            width={138}
+                            height={48}
+                            className="h-12 w-auto"
                         />
                         <p className="mt-4 text-[13px] leading-relaxed text-gray-400 max-w-[28ch]">
-                            An ethical, interest-free student loan management system by Rumah Amal
-                            Salman. Empowering education through Islamic philanthropy.
+                           Sistem pengelolaan pinjaman mahasiswa yang etis dan bebas bunga oleh Rumah Amal Salman. Memberdayakan pendidikan melalui filantropi Islami.
                         </p>
                     </div>
 
                     <div>
-                        <h3 className="text-[14px] font-semibold text-white">Quick Links</h3>
+                        <h3 className="text-[14px] font-semibold text-white">Tautan</h3>
                         <ul className="mt-4 space-y-2 text-[13px]">
                             <li><Link href="/" className="hover:text-white">Home</Link></li>
                             <li><Link href="/#how-it-works" className="hover:text-white">Programs</Link></li>
                             <li><Link href="/#faq" className="hover:text-white">FAQ</Link></li>
-                            <li><Link href="/" className="hover:text-white">About Us</Link></li>
+                            <li><Link href="/" className="hover:text-white">Tentang Kami</Link></li>
                         </ul>
                     </div>
 
                     <div>
-                        <h3 className="text-[14px] font-semibold text-white">Resources</h3>
+                        <h3 className="text-[14px] font-semibold text-white">Sumber Daya</h3>
                         <ul className="mt-4 space-y-2 text-[13px]">
-                            <li><Link href="/" className="hover:text-white">Transparency Report</Link></li>
-                            <li><Link href="/" className="hover:text-white">Annual Report</Link></li>
-                            <li><Link href="/" className="hover:text-white">Privacy Policy</Link></li>
-                            <li><Link href="/" className="hover:text-white">Terms of Service</Link></li>
+                            <li><Link href="/" className="hover:text-white">Laporan Transparansi</Link></li>
+                            <li><Link href="/" className="hover:text-white">Laporan Tahunan</Link></li>
+                            <li><Link href="/" className="hover:text-white">Kebijakan Privasi</Link></li>
+                            <li><Link href="/" className="hover:text-white">Ketentuan Layanan</Link></li>
                         </ul>
                     </div>
 
                     <div>
-                        <h3 className="text-[14px] font-semibold text-white">Contact Us</h3>
+                        <h3 className="text-[14px] font-semibold text-white">Hubungi Kami</h3>
                         <ul className="mt-4 space-y-3 text-[13px] text-gray-400">
                             <li className="flex items-start gap-2">
                                 <Mail className="w-4 h-4 mt-0.5" />
@@ -62,11 +61,11 @@ export default function Footer() {
 
                 <div className="mt-10 border-t border-gray-700/60 pt-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                     <p className="text-[12px] text-gray-500">
-                        © 2026 RAS1 - Rumah Amal Salman. All rights reserved.
+                        © 2026 RAS1 - Rumah Amal Salman. Hak Cipta dilindungi Undang-Undang.
                     </p>
                     <div className="flex items-center gap-4 text-[12px] text-gray-500">
-                        <Link href="/" className="hover:text-gray-300">Privacy</Link>
-                        <Link href="/" className="hover:text-gray-300">Terms</Link>
+                        <Link href="/" className="hover:text-gray-300">Privasi</Link>
+                        <Link href="/" className="hover:text-gray-300">Ketentuan</Link>
                         <Link href="/" className="hover:text-gray-300">Cookies</Link>
                     </div>
                 </div>

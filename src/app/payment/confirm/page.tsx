@@ -30,7 +30,7 @@ export default function PaymentConfirmPage({
   const [error, setError] = useState('');
   const [simulateMessage, setSimulateMessage] = useState('');
   const [copyMessage, setCopyMessage] = useState('');
-  const [connectionMessage, setConnectionMessage] = useState('Connecting to live payment updates...');
+  const [connectionMessage, setConnectionMessage] = useState('Menyambungkan ke pembaruan pembayaran secara live...');
 
   const [qrCodeUrl, setQrCodeUrl] = useState(params.qrCodeUrl || '');
   const [vaNumber, setVaNumber] = useState(params.vaNumber || '');
@@ -83,11 +83,11 @@ export default function PaymentConfirmPage({
 
         const data = await response.json();
         if (!response.ok) {
-          throw new Error(data.error || 'Failed to check payment status');
+          throw new Error(data.error || 'Gagal mengecek status pembayaran');
         }
 
         applyPaymentDetail(data.data || {});
-        setConnectionMessage('Live payment updates connected.');
+        setConnectionMessage('Pembaruan Pembayaran Live terhubung.');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to check payment status');
       } finally {
@@ -104,7 +104,7 @@ export default function PaymentConfirmPage({
     const eventSource = new EventSource(`/api/payments/midtrans/payments/${orderId}/events`);
 
     eventSource.addEventListener('connected', () => {
-      setConnectionMessage('Live payment updates connected.');
+      setConnectionMessage('Pembaruan Pembayaran Live terhubung.');
       setError('');
     });
 
@@ -129,7 +129,7 @@ export default function PaymentConfirmPage({
         setError('');
 
         if (['SETTLEMENT', 'EXPIRE', 'FAILURE'].includes(payload.data.status || '')) {
-          setConnectionMessage('Live payment updates completed.');
+          setConnectionMessage('Pembaruan Pembayaran Live selesai.');
           eventSource.close();
         }
       }
@@ -138,12 +138,12 @@ export default function PaymentConfirmPage({
     eventSource.addEventListener('payment-error', (event) => {
       const payload = JSON.parse((event as MessageEvent).data) as { error?: string };
       if (payload.error) setError(payload.error);
-      setConnectionMessage('Live payment updates disconnected.');
+      setConnectionMessage('Pembaruan Pembayaran Live terputus.');
       eventSource.close();
     });
 
     eventSource.onerror = () => {
-      setConnectionMessage('Live payment updates disconnected.');
+      setConnectionMessage('Pembaruan Pembayaran Live terputus.');
       eventSource.close();
     };
 
@@ -266,9 +266,9 @@ export default function PaymentConfirmPage({
           '_blank',
           'noopener,noreferrer'
         );
-        setSimulateMessage('Opened Midtrans QRIS simulator.');
+        setSimulateMessage('Midtrans QRIS simulator terbuka.');
       } catch {
-        setError('Failed to open Midtrans QRIS simulator');
+        setError('Gagal memnbuka Midtrans QRIS simulator');
       }
       return;
     }
@@ -276,9 +276,9 @@ export default function PaymentConfirmPage({
     try {
       const simulatorUrl = getVaSimulatorUrl(bankCode);
       window.open(simulatorUrl, '_blank', 'noopener,noreferrer');
-      setSimulateMessage('Opened Midtrans VA simulator.');
+      setSimulateMessage('Midtrans VA simulator terbuka.');
     } catch {
-      setError('Failed to open Midtrans VA simulator');
+      setError('Gagal membuka Midtrans VA simulator');
     }
   };
 
@@ -291,7 +291,7 @@ export default function PaymentConfirmPage({
           </div>
 
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-[#07B0C8] mb-2">Payment Confirmation</h1>
+            <h1 className="text-2xl font-bold text-[#07B0C8] mb-2">Konfirmasi Pembayaran</h1>
             <p className="text-gray-600">
               {transactionType === 'donation' ? 'Donation' : 'Loan Repayment'} - {paymentMethod === 'qris' ? 'QRIS' : 'Virtual Account'}
             </p>
@@ -299,19 +299,19 @@ export default function PaymentConfirmPage({
 
           <div className="mb-6 grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-gray-500 uppercase">Order ID</p>
+              <p className="text-xs text-gray-500 uppercase">ID Pemesanan</p>
               <p className="text-sm font-medium text-gray-900 break-all">{orderId}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase">Transaction ID</p>
+              <p className="text-xs text-gray-500 uppercase">ID Transaksi</p>
               <p className="text-sm font-medium text-gray-900 break-all">{transactionId || '-'}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase">Amount</p>
+              <p className="text-xs text-gray-500 uppercase">Jumlah</p>
               <p className="text-lg font-bold text-[#07B0C8]">{formatCurrency(amount)}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase">Expires At</p>
+              <p className="text-xs text-gray-500 uppercase">Kadaluwarsa pada</p>
               <p className="text-sm font-medium text-gray-900">{formatExpiry(expiryTime)}</p>
             </div>
           </div>
@@ -324,11 +324,11 @@ export default function PaymentConfirmPage({
 
           {paymentMethod === 'qris' && (
             <div className="mb-6 p-4 bg-[#07B0C8]/10 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-900 mb-4">QRIS Payment</h3>
+              <h3 className="text-sm font-medium text-gray-900 mb-4">Pembayaran QRIS</h3>
               <ol className="space-y-2 text-sm text-gray-700 mb-4">
-                <li><span className="font-medium">1. Scan the QRIS image</span> with your banking/e-wallet app</li>
-                <li><span className="font-medium">2. Confirm the exact amount</span> before paying</li>
-                <li><span className="font-medium">3. Wait for status update</span> on this page</li>
+                <li><span className="font-medium">1. Pindai gambar QRIS </span> dengan aplikasi banking/e-wallet Anda</li>
+                <li><span className="font-medium">2. Konfirmasi jumlah pasti </span> sebelum melakukan pembayaran</li>
+                <li><span className="font-medium">3. Harap tunggu untuk pembaruan status </span> pada halaman ini</li>
               </ol>
 
               {qrCodeUrl ? (
@@ -336,23 +336,23 @@ export default function PaymentConfirmPage({
                   <img src={qrCodeUrl} alt="Midtrans QRIS" className="w-60 h-60 object-contain" />
                 </div>
               ) : (
-                <div className="px-4 py-3 bg-gray-200 text-gray-600 text-center rounded-md">QR image is not available yet. Please wait...</div>
+                <div className="px-4 py-3 bg-gray-200 text-gray-600 text-center rounded-md">Gambar QR belum tersedia. Mohon tunggu...</div>
               )}
             </div>
           )}
 
           {paymentMethod === 'va' && (
             <div className="mb-6 p-4 bg-[#07B0C8]/10 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-900 mb-4">Virtual Account Payment</h3>
+              <h3 className="text-sm font-medium text-gray-900 mb-4">Pembayaran Virtual Account</h3>
               <ol className="space-y-2 text-sm text-gray-700 mb-4">
-                <li><span className="font-medium">1. Use bank</span> {bankCode ? bankCode.toUpperCase() : '-'}</li>
+                <li><span className="font-medium">1. Gunakan bank</span> {bankCode ? bankCode.toUpperCase() : '-'}</li>
                 <li>
-                  <span className="font-medium">2. Use payment details</span>{' '}
+                  <span className="font-medium">2. Gunakan detail pembayaran</span>{' '}
                   {bankCode?.toLowerCase() === 'mandiri_bill' || bankCode?.toLowerCase() === 'mandiri' || bankCode?.toLowerCase() === 'echannel'
                     ? 'below (Biller Code + Bill Key)'
                     : 'below (VA Number)'}
                 </li>
-                <li><span className="font-medium">3. Wait for status update</span> on this page</li>
+                <li><span className="font-medium">3. Harap tunggu untuk pembaruan status</span> di halaman ini</li>
               </ol>
 
               <div className="bg-white rounded-md p-4 border border-[#07B0C8]/20">
@@ -360,7 +360,7 @@ export default function PaymentConfirmPage({
                   bankCode?.toLowerCase() === 'mandiri' ||
                   bankCode?.toLowerCase() === 'echannel') ? (
                   <>
-                    <p className="text-xs text-gray-500 uppercase mb-1">Biller Code</p>
+                    <p className="text-xs text-gray-500 uppercase mb-1">Kode Penagih</p>
                     <p className="text-xl font-bold tracking-wider text-gray-900 break-all">{billerCode || '-'}</p>
                     <button
                       type="button"
@@ -373,10 +373,10 @@ export default function PaymentConfirmPage({
                         billerCode ? 'bg-[#07B0C8] text-white hover:bg-[#059BB0]' : 'bg-gray-300 text-gray-600'
                       }`}
                     >
-                      Copy Biller Code
+                      Salin Kode Penagihan
                     </button>
 
-                    <p className="text-xs text-gray-500 uppercase mt-4 mb-1">Bill Key</p>
+                    <p className="text-xs text-gray-500 uppercase mt-4 mb-1">Kunci Tagihan</p>
                     <p className="text-xl font-bold tracking-wider text-gray-900 break-all">{billKey || '-'}</p>
                     <button
                       type="button"
@@ -389,12 +389,12 @@ export default function PaymentConfirmPage({
                         billKey ? 'bg-[#07B0C8] text-white hover:bg-[#059BB0]' : 'bg-gray-300 text-gray-600'
                       }`}
                     >
-                      Copy Bill Key
+                      Salin Kunci Tagihan
                     </button>
                   </>
                 ) : (
                   <>
-                    <p className="text-xs text-gray-500 uppercase mb-1">VA Number</p>
+                    <p className="text-xs text-gray-500 uppercase mb-1">Nomor VA</p>
                     <p className="text-xl font-bold tracking-wider text-gray-900 break-all">{vaNumber || '-'}</p>
                     <button
                       type="button"
@@ -407,7 +407,7 @@ export default function PaymentConfirmPage({
                         vaNumber ? 'bg-[#07B0C8] text-white hover:bg-[#059BB0]' : 'bg-gray-300 text-gray-600'
                       }`}
                     >
-                      Copy VA Number
+                      Salin Nomor VA
                     </button>
                   </>
                 )}
@@ -428,10 +428,10 @@ export default function PaymentConfirmPage({
               }`}
             >
               {simulateLoading
-                ? 'Simulating Payment...'
+                ? 'Mensimulasikan Payment...'
                 : paymentMethod === 'qris'
-                  ? 'Open Midtrans QRIS Simulator'
-                  : 'Open Midtrans VA Simulator'}
+                  ? 'Buka Midtrans QRIS Simulator'
+                  : 'Buka Midtrans VA Simulator'}
             </button>
           )}
 
@@ -439,24 +439,24 @@ export default function PaymentConfirmPage({
 
           {status === 'SETTLEMENT' && (
             <div className="mb-6 p-4 bg-[#07B0C8]/10 border border-[#07B0C8] rounded-lg">
-              <p className="text-[#07B0C8] font-medium">Payment Completed Successfully</p>
+              <p className="text-[#07B0C8] font-medium">Transaksi berhasil!</p>
             </div>
           )}
 
           {status === 'EXPIRE' && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-700 font-medium">Payment Expired</p>
+              <p className="text-red-700 font-medium">Pembayaran Kadaluwarsa</p>
               <Link href="/payment" className="inline-block mt-3 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium">
-                Create New Payment
+                Buat Transaksi Baru
               </Link>
             </div>
           )}
 
           {status === 'FAILURE' && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-700 font-medium">Payment Failed</p>
+              <p className="text-red-700 font-medium">Pembayaran Gagal</p>
               <Link href="/payment" className="inline-block mt-3 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium">
-                Retry Payment
+                Coba Ulang Pembayaran 
               </Link>
             </div>
           )}
@@ -468,7 +468,7 @@ export default function PaymentConfirmPage({
 
         <div className="flex gap-3 justify-center">
           <Link href="/" className="px-4 py-2 bg-gray-200 text-gray-900 rounded-md hover:bg-gray-300 font-medium">
-            Back to Home
+            Kembali ke Halaman Landing
           </Link>
         </div>
       </div>

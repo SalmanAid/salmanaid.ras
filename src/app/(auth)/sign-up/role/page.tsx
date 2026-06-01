@@ -126,6 +126,7 @@ export default function ChooseRolePage() {
 
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [nikValidating, setNikValidating] = useState<boolean>(false);
     const [step, setStep] = useState<SignUpStep>("role");
     const [identity, setIdentity] = useState<IdentityForm>({
         name: "",
@@ -199,11 +200,37 @@ export default function ChooseRolePage() {
         setStep("identity");
     };
 
-    const handleContinueToDocuments = () => {
+    const handleContinueToDocuments = async () => {
         setError(null);
 
         if (!validateIdentity()) {
             return;
+        }
+
+        const trimmedNik = identity.nik.trim();
+        if (trimmedNik) {
+            setNikValidating(true);
+            try {
+                const response = await fetch("/api/auth/validate/nik", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ nik: trimmedNik }),
+                });
+
+                const data = await response.json();
+
+                if (!data.available) {
+                    setError(data.message || "NIK sudah terdaftar. Gunakan NIK yang berbeda.");
+                    setNikValidating(false);
+                    return;
+                }
+            } catch (err) {
+                console.error("NIK validation error:", err);
+                setError("Gagal memvalidasi NIK. Coba lagi.");
+                setNikValidating(false);
+                return;
+            }
+            setNikValidating(false);
         }
 
         setStep("documents");
@@ -523,7 +550,7 @@ export default function ChooseRolePage() {
                                     setError(null);
                                     setStep("role");
                                 }}
-                                disabled={loading}
+                                disabled={loading || nikValidating}
                                 className="flex h-12 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 font-bold text-slate-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-70"
                             >
                                 <ArrowLeft size={18} />
@@ -532,10 +559,10 @@ export default function ChooseRolePage() {
                             <button
                                 type="button"
                                 onClick={handleContinueToDocuments}
-                                disabled={loading}
+                                disabled={loading || nikValidating}
                                 className="bg-[#16C5DE] flex-1 h-12 flex justify-center items-center rounded-xl text-white font-bold hover:bg-[#13A6BB] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                                Lanjut Upload Dokumen
+                                {nikValidating ? "Memvalidasi NIK..." : "Lanjut Upload Dokumen"}
                             </button>
                         </div>
                     )}

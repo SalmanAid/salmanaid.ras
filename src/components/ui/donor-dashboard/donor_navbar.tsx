@@ -28,7 +28,7 @@ export default function DonorDashboard_DonorNavbar() {
 
     const menuItems = [
         { href: "/donor/dashboard", label: "Dashboard" },
-        { href: "/donor/donate-form", label: "Donate" },
+        { href: "/donor/donate-form", label: "Donasi" },
     ];
     
     return (
@@ -43,9 +43,9 @@ export default function DonorDashboard_DonorNavbar() {
                             <Image
                                 src={RumahAmalHorizontalLogo}
                                 alt="Rumah Amal Salman"
-                                width={122}
-                                height={30}
-                                className="h-7 w-auto"
+                                width={115}
+                                height={40}
+                                className="h-10 w-auto"
                                 priority
                             />
                         </Link>

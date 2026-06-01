@@ -10,23 +10,23 @@ interface Step {
 const steps: Step[] = [
   {
     number: 1,
-    title: 'Fund Donation',
+    title: 'Dana Donasi',
     description:
-      'Generous donors contribute to our collective fund, which enables us to provide interest-free loans to students who need it most.',
+      'Para donatur yang murah hati berkontribusi pada dana kolektif kami, yang memungkinkan kami untuk memberikan pinjaman tanpa bunga kepada siswa yang paling membutuhkannya.',
     color: 'bg-amber-500',
   },
   {
     number: 2,
-    title: 'Application & Verification',
+    title: 'Pengajuan & Verifikasi',
     description:
-      'Students submit their applications, which undergo thorough review for verification and transparency to ensure independent approval.',
+      'Para siswa mengirimkan aplikasi mereka, yang kemudian menjalani peninjauan menyeluruh untuk verifikasi dan transparansi guna memastikan persetujuan independen.',
     color: 'bg-cyan-500',
   },
   {
     number: 3,
-    title: 'Impactful Distribution',
+    title: 'Distribusi Berdampak',
     description:
-      'Once approved, loans are distributed directly to students&apos; education accounts without any financial burden or interest charges.',
+      'Setelah disetujui, pinjaman akan langsung disalurkan ke rekening pendidikan mahasiswa tanpa beban keuangan atau biaya bunga.',
     color: 'bg-teal-600',
   },
 ];
@@ -38,11 +38,11 @@ export const HowItWorks = () => {
         {/* Section Header */}
         <div className="text-center mb-14">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            How It Works
+            Cara Kerja
           </h2>
           <div className="mx-auto mb-4 h-1 w-24 rounded-full bg-[#07B0C8]" />
           <p className="text-gray-500 text-sm md:text-[15px] max-w-2xl mx-auto">
-            Our streamlined process ensures every donation makes a real impact and every student gets fair, transparent access.
+            Proses kami yang efisien memastikan setiap donasi memberikan dampak nyata dan setiap siswa mendapatkan akses yang adil dan transparan.
           </p>
         </div>
 

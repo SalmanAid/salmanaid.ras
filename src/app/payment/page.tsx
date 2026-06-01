@@ -47,22 +47,22 @@ export default function PaymentPage({
     setError('');
 
     if (!paymentMethod) {
-      setError('Please select a payment method');
+      setError('Pilih metode pembayaran.');
       return;
     }
 
     if (!amount || parseFloat(amount) <= 0) {
-      setError('Please enter a valid amount');
+      setError('Masukkan jumlah yang valid.');
       return;
     }
 
     if (paymentMethod === 'qris' && parseFloat(amount) < 1500) {
-      setError('Minimum QRIS amount is IDR 1,500');
+      setError('Minimum nilai transaksi QRIS adalah IDR 1,500');
       return;
     }
 
     if (!referenceId) {
-      setError('Reference ID is missing');
+      setError('Reference ID tidak ditemukan');
       return;
     }
 
@@ -80,7 +80,7 @@ export default function PaymentPage({
           referenceId,
           paymentMethod,
           vaBank: paymentMethod === 'va' ? vaBank : undefined,
-          description: `${transactionType === 'donation' ? 'Donation via' : 'Loan Repayment via'} ${
+          description: `${transactionType === 'donation' ? 'Donation via' : 'Pembayaran Kembali Pinjaman via'} ${
             paymentMethod === 'qris' ? 'QRIS' : 'Virtual Account'
           }`,
         }),
@@ -88,7 +88,7 @@ export default function PaymentPage({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create payment');
+        throw new Error(errorData.error || 'Gagal untuk membuat pembayaran');
       }
 
       const data = await response.json();
@@ -121,9 +121,9 @@ export default function PaymentPage({
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[#07B0C8]">Make Payment</h1>
+          <h1 className="text-2xl font-bold text-[#07B0C8]">Buat Pembayaran</h1>
           <p className="text-gray-600 mt-2">
-            {transactionType === 'donation' ? 'Donate to help others' : 'Repay your loan'}
+            {transactionType === 'donation' ? 'Berdonasi untuk membantu sesama' : 'Bayar kembali pinjaman Anda'}
           </p>
         </div>
 
@@ -133,12 +133,12 @@ export default function PaymentPage({
             <p className="text-yellow-900 text-sm">
               <span className="font-medium">
                 {transactionType === 'donation'
-                  ? 'Unable to determine the donor account.'
-                  : 'No reference ID found.'}
+                  ? 'Tidak dapat menentukan akun donatur.'
+                  : 'Reference ID tidak ditemukan.'}
               </span>
               {transactionType === 'donation'
-                ? ' Please sign in again before continuing.'
-                : ' This payment still needs a repayment reference ID.'}
+                ? ' Mohon sign in kembali sebelum melanjutkan.'
+                : ' Transaksi ini masih membutuhkan reference ID menuju suatu pembayaran kembali tertentu.'}
             </p>
           </div>
         )}
@@ -153,7 +153,7 @@ export default function PaymentPage({
         {/* Payment Method Selection */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-3">
-            Select Payment Method
+            Pilih Metode Pembayaran
           </label>
 
           {/* QRIS Option */}
@@ -174,7 +174,7 @@ export default function PaymentPage({
                 {paymentMethod === 'qris' && <div className="w-2 h-2 bg-white rounded-full" />}
               </div>
               <div>
-                <p className="font-medium text-gray-900">QRIS (Any E-Wallet)</p>
+                <p className="font-medium text-gray-900">QRIS (E-Wallet apapun)</p>
                 <p className="text-xs text-gray-500">GoPay, OVO, Dana, LinkAja, etc.</p>
               </div>
             </div>
@@ -203,7 +203,7 @@ export default function PaymentPage({
               </div>
               <div>
                 <p className="font-medium text-gray-900">Virtual Account (VA)</p>
-                <p className="text-xs text-gray-500">Pay to bank VA number from Midtrans</p>
+                <p className="text-xs text-gray-500">Transaksi Bank via Midtrans</p>
               </div>
             </div>
           </div>
@@ -230,7 +230,7 @@ export default function PaymentPage({
         {/* Amount Input */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Amount (IDR)
+            Jumlah (IDR)
           </label>
           <input
             type="number"
@@ -257,13 +257,13 @@ export default function PaymentPage({
               : 'bg-[#07B0C8] hover:bg-[#059BB0]'
           }`}
         >
-          {loading ? 'Processing...' : 'Continue to Payment'}
+          {loading ? 'Memproses...' : 'Lanjut ke pembayaran'}
         </button>
 
         {/* Back Link */}
         <div className="mt-4 text-center">
           <Link href="/" className="text-sm text-[#07B0C8] hover:underline">
-            Back to Home
+            Kembali ke Halaman Landing
           </Link>
         </div>
       </div>

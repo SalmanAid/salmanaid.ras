@@ -70,13 +70,13 @@ export default function ApplyLoanFormPage(){
         <div className="min-h-screen w-full bg-[#F8FAFC] text-[#111827]">
             <ApplicantDashboard_ApplicantNavbar showNotifications={false} />
 
-            <main className="mx-auto w-full max-w-[1100px] px-5 pb-16 pt-11 sm:px-6 lg:px-0">
+            <main className="mx-auto w-full max-w-275 px-5 pb-16 pt-11 sm:px-6 lg:px-0">
                 <header className="mb-7">
                     <h1 className="text-[28px] font-extrabold leading-tight tracking-normal text-[#111827] sm:text-[30px]">
-                        Student Loan Application
+                        Pengajuan Pinjaman
                     </h1>
                     <p className="mt-3 text-sm font-medium text-[#667085]">
-                        Complete all steps to submit your interest-free loan application
+                        Lengkapi seluruh dokumen dan langkah untuk mengajukan pinjaman tanpa bunga Anda. 
                     </p>
                 </header>
 
@@ -84,7 +84,7 @@ export default function ApplyLoanFormPage(){
                     {isBorrowerVerified && (
                         <aside className="rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-[0_1px_3px_rgba(15,23,42,0.08)]">
                             <div className="text-base font-bold text-[#111827]">
-                                Application Progress
+                                Progres Pengajuan
                             </div>
                             <ApplicantForm_ApplicationProgressSection />
                         </aside>

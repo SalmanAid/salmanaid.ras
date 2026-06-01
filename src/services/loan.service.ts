@@ -77,10 +77,13 @@ export const LoanService = {
       // Add verification check
       await AccountVerificationService.assertRoleVerified(userId, ROLES.BORROWER);
 
+      console.log(data.installmentFreq)
+
       const loanApp = await prisma.loanApplication.create({
         data: {
           borrowerId: userId,
           requestedAmount: data.requestedAmount,
+          installmentFreq: data.installmentFreq,
           description: data.description,
           collateralUrl : "",
           collateralDescription : "",
@@ -275,8 +278,6 @@ export const LoanService = {
   async getLoanApplicationsByUserId(userId: string) {
     try {
       // OPTIMIZED: Batch all 3 queries in single transaction
-      // BEFORE: 3 sequential queries + N repayment queries
-      // AFTER: 1 transaction with 3 queries in parallel
       const [applications, repaymentTotals, aggregate] = await prisma.$transaction([
         // Query 1: Get user's loan applications with loan details
         prisma.loanApplication.findMany({
@@ -291,6 +292,7 @@ export const LoanService = {
                 status: true,
                 dueDate: true,
                 approvedAt: true,
+                installmentFreq: true, // Fetching the filled frequency from Loan Application table
               },
             },
           },
@@ -337,25 +339,32 @@ export const LoanService = {
 
       return {
         totalLoanedValue: Number(aggregate._sum.approvedAmount || 0),
-        applications: applications.map((app) => ({
-          id: app.id,
-          requestedAmount: Number(app.requestedAmount),
-          status: app.status,
-          description: app.description,
-          createdAt: app.createdAt,
-          dueDate: app.loan?.dueDate || null,
-          loanDetails: app.loan
-            ? {
-                loanId: app.loan.id,
-                approvedAmount: Number(app.loan.approvedAmount),
-                status: app.loan.status,
-                dueDate: app.loan.dueDate,
-                approvedAt: app.loan.approvedAt,
-                totalPaid: repaymentTotalsMap.get(app.loan.id) || 0,
-              }
-            : null,
-          userid: userId,
-        })),
+        applications: applications.map((app) => {
+          // Fallback safely to application frequency if the loan isn't disbursed/created yet
+          const actualInstallmentFreq = app.loan?.installmentFreq ?? app.installmentFreq;
+
+          return {
+            id: app.id,
+            requestedAmount: Number(app.requestedAmount),
+            status: app.status,
+            description: app.description,
+            createdAt: app.createdAt,
+            installmentFreq: actualInstallmentFreq, 
+            dueDate: app.loan?.dueDate || null,
+            loanDetails: app.loan
+              ? {
+                  loanId: app.loan.id,
+                  approvedAmount: Number(app.loan.approvedAmount),
+                  status: app.loan.status,
+                  dueDate: app.loan.dueDate,
+                  approvedAt: app.loan.approvedAt,
+                  installmentFreq: app.loan.installmentFreq,
+                  totalPaid: repaymentTotalsMap.get(app.loan.id) || 0,
+                }
+              : null,
+            userid: userId,
+          };
+        }),
       };
     } catch (error) {
       console.error("Error in getLoanApplicationsByUserId:", error);
@@ -371,8 +380,6 @@ export const LoanService = {
   }) {
     const approvedAmount = new Prisma.Decimal(input.approvedAmount);
     const approvedAt = new Date();
-    const dueDate = new Date(approvedAt);
-    dueDate.setFullYear(dueDate.getFullYear() + 1);
 
     return prisma.$transaction(async (tx) => {
       const application = await tx.loanApplication.findUnique({
@@ -381,6 +388,7 @@ export const LoanService = {
           id: true,
           borrowerId: true,
           status: true,
+          installmentFreq : true,
           loan: {
             select: {
               id: true,
@@ -412,6 +420,9 @@ export const LoanService = {
         });
       }
 
+      const dueDate = new Date(approvedAt);
+      dueDate.setMonth(dueDate.getMonth() + application.installmentFreq);
+
       const loan = await tx.loan.upsert({
         where: {
           applicationId: input.applicationId,
@@ -426,6 +437,7 @@ export const LoanService = {
           status: LoanStatus.ACTIVE,
           approvedAt,
           dueDate,
+          installmentFreq : application.installmentFreq,
         },
       });
 
