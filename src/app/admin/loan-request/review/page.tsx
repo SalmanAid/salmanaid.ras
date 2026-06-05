@@ -77,12 +77,14 @@ export default function ReviewLoanApplicationPage() {
     const [isRejecting, setIsRejecting] = useState(false);
     
     const setApprovedAmount = useLoanRequestStore((state) => state.setApprovedAmount);
+    const setInstallmentFreq = useLoanRequestStore((state) => state.setInstallmentFreq);
     const setRejectionApprovalNote = useLoanRequestStore((state) => state.setRejectionApprovalNote);
     const setAllocationFundModalOpen = useLoanRequestStore((state) => state.setAllocationFundModalOpen);
     const setSelectedLoan = useLoanRequestStore((state) => state.setSelectedLoan);
 
     const submitTime = selectedLoan?.createdAt ? new Date(selectedLoan.createdAt).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' }) : "Recently";
     const approvedAmount = selectedLoan?.approvedAmount || "";
+    const installmentFreq = selectedLoan?.installmentFreq || 4;
     const rejectionApprovalNote = selectedLoan?.rejectionApprovalNotes || "";
     const status = (selectedLoan?.status || "PENDING").toUpperCase();
     const isPending = status === "PENDING";
@@ -130,6 +132,7 @@ export default function ReviewLoanApplicationPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     approvedAmount: amount,
+                    installmentFreq: installmentFreq,
                     notes: rejectionApprovalNote || undefined,
                 }),
             });
@@ -143,6 +146,7 @@ export default function ReviewLoanApplicationPage() {
                 ...selectedLoan,
                 status: "APPROVED",
                 loanId: result.data.loan.id,
+                installmentFreq: installmentFreq,
                 loan: {
                     ...result.data.loan,
                     fundings: result.data.loan.fundings || [],
@@ -297,11 +301,32 @@ export default function ReviewLoanApplicationPage() {
                         </div>
                     )}
 
+                    {isPending && (
+                        <div className="flex flex-col gap-2">
+                            <label className="text-xs sm:text-sm font-bold text-slate-700">Durasi Pinjaman (Bulan)</label>
+                            <input
+                                type="number"
+                                value={installmentFreq}
+                                onChange={(e) => setInstallmentFreq(Number(e.target.value))}
+                                className="w-full p-2.5 sm:p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#07B0C8] outline-none font-bold text-base sm:text-lg"
+                                placeholder="Masukkan durasi dalam bulan"
+                                min={1}
+                            />
+                            <p className="text-[11px] text-slate-400 leading-tight">
+                                Tentukan durasi pinjaman dalam satuan bulan.
+                            </p>
+                        </div>
+                    )}
+
                     {isApproved && (
                         <div className="flex flex-col gap-3">
                             <div className="bg-emerald-50 p-3.5 sm:p-4 rounded-xl border border-emerald-100">
                                 <p className="text-[10px] sm:text-xs text-emerald-700 font-medium uppercase mb-1">Jumlah Disetujui</p>
                                 <p className="text-xl sm:text-2xl font-black text-emerald-700">{formatCurrency(approvedLoanAmount)}</p>
+                            </div>
+                            <div className="bg-emerald-50 p-3.5 sm:p-4 rounded-xl border border-emerald-100">
+                                <p className="text-[10px] sm:text-xs text-emerald-700 font-medium uppercase mb-1">Durasi Disetujui</p>
+                                <p className="text-xl sm:text-2xl font-black text-emerald-700">{installmentFreq} Bulan</p>
                             </div>
                             <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
                                 <div className="bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200">

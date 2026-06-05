@@ -9,6 +9,7 @@ type LoanRequestStore = {
     setLoans: (loans: LoanApplication[]) => void
     setSelectedLoan: (loan: LoanApplication) => void
     setApprovedAmount: (amount: number) => void
+    setInstallmentFreq: (freq: number) => void
     setRejectionApprovalNote: (note: string) => void
     setAllocationFundModalOpen : (isModalOpen : boolean) => void
 }
@@ -27,6 +28,7 @@ export const useLoanRequestStore = create<LoanRequestStore>((set) => ({
 
         // loan details
         requestedAmount: 0,
+        installmentFreq: 4,
         description: "",
         collateralDescription: "",
         status: "",
@@ -52,6 +54,14 @@ export const useLoanRequestStore = create<LoanRequestStore>((set) => ({
             selected_loan: {
                 ...state.selected_loan, 
                 approvedAmount: amount  
+            }
+        })),
+
+    setInstallmentFreq: (freq) =>
+        set((state) => ({
+            selected_loan: {
+                ...state.selected_loan,
+                installmentFreq: freq
             }
         })),
 

@@ -83,6 +83,7 @@ type LoanRequestRow = {
     intakeYear?: number;
     address?: string;
     requestedAmount: number | string;
+    installmentFreq: number;
     description?: string | null;
     collateralDescription?: string | null;
     status?: string;
@@ -135,6 +136,7 @@ export default function LoanRequest_LoanRequestsTable({ isLoading = false }: { i
             intakeYear: loan.intakeYear || 2022,
             address: loan.address || "",
             requestedAmount: Number(loan.requestedAmount),
+            installmentFreq: loan.installmentFreq || 4,
             description: loan.description || "",
             collateralDescription: loan.collateralDescription || "",
             status,

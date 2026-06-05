@@ -132,6 +132,7 @@ export const LoanService = {
             description: true,
             collateralDescription: true,
             requestedAmount: true,
+            installmentFreq: true,
             createdAt: true,
             status: true,
             loan: {
@@ -202,6 +203,7 @@ export const LoanService = {
             description: true,
             collateralDescription: true,
             requestedAmount: true,
+            installmentFreq: true,
             createdAt: true,
             status: true,
             loan: {
@@ -376,6 +378,7 @@ export const LoanService = {
     applicationId: string;
     adminId: string;
     approvedAmount: number;
+    installmentFreq?: number;
     notes?: string | null;
   }) {
     const approvedAmount = new Prisma.Decimal(input.approvedAmount);
@@ -401,10 +404,13 @@ export const LoanService = {
         throw new Error("APPLICATION_NOT_FOUND");
       }
 
+      const finalInstallmentFreq = input.installmentFreq ?? application.installmentFreq;
+
       const updatedApplication = await tx.loanApplication.update({
         where: { id: input.applicationId },
         data: {
           status: LoanApplicationStatus.APPROVED,
+          installmentFreq: finalInstallmentFreq,
         },
       });
 
@@ -421,7 +427,7 @@ export const LoanService = {
       }
 
       const dueDate = new Date(approvedAt);
-      dueDate.setMonth(dueDate.getMonth() + application.installmentFreq);
+      dueDate.setMonth(dueDate.getMonth() + finalInstallmentFreq);
 
       const loan = await tx.loan.upsert({
         where: {
@@ -430,6 +436,8 @@ export const LoanService = {
         update: {
           approvedAmount,
           status: LoanStatus.ACTIVE,
+          installmentFreq: finalInstallmentFreq,
+          dueDate,
         },
         create: {
           applicationId: input.applicationId,
@@ -437,7 +445,7 @@ export const LoanService = {
           status: LoanStatus.ACTIVE,
           approvedAt,
           dueDate,
-          installmentFreq : application.installmentFreq,
+          installmentFreq : finalInstallmentFreq,
         },
       });
 
