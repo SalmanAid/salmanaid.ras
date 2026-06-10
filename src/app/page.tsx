@@ -1,23 +1,24 @@
-import { Navbar } from "@/components/ui/navbar";
-import { CallToAction } from "@/components/ui/landing/CallToAction";
-import { Hero } from "@/components/ui/landing/Hero";
-import { HowItWorks } from "@/components/ui/landing/HowItWorks";
-import { ImpactStats } from "@/components/ui/landing/ImpactStats";
-import { TrustTransparency } from "@/components/ui/landing/TrustTransparency";
-import ProgramComponent from "@/components/ui/landing/Program";
-import FAQComponent from "@/components/ui/landing/FAQ";
+import type { Metadata } from "next";
+import { LandingPageRenderer } from "@/components/cms/landing-page-renderer";
+import { getPublishedLanding } from "@/services/cms.service";
+import { getLandingMetrics } from "@/services/landing-metrics.service";
 
-export default function Home() {
-  return (
-    <main className="w-full min-h-screen bg-white">
-      <Navbar />
-      <Hero />
-      <HowItWorks />
-      <ImpactStats />
-      <ProgramComponent/>
-      <TrustTransparency />
-      <FAQComponent/>
-      <CallToAction />
-    </main>
-  );
+export const revalidate = false;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const content = await getPublishedLanding();
+  return {
+    title: content.seo.title,
+    description: content.seo.description,
+    openGraph: {
+      title: content.seo.title,
+      description: content.seo.description,
+      images: [content.seo.ogImageUrl],
+    },
+  };
+}
+
+export default async function Home() {
+  const [content, metrics] = await Promise.all([getPublishedLanding(), getLandingMetrics()]);
+  return <LandingPageRenderer content={content} metrics={metrics} />;
 }
