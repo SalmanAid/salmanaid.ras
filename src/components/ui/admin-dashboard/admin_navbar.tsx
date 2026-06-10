@@ -17,7 +17,7 @@ const navItems = [
   { href: '/admin/loan-request', label: 'Pengajuan Pinjaman' },
   { href: '/admin/account-verifications', label: 'Verifikasi Akun' },
   { href: '/admin/monitoring', label: 'Monitoring' },
-  { href: '/admin/content/landing', label: 'Konten Landing' },
+  { href: '/admin/content/landing', label: 'Konten CMS' },
 ];
 
 export default function AdminDashboard_AdminNavbar() {
