@@ -14,9 +14,10 @@ import UserPersonaLogo from "../../../../public/user_persona.svg";
 
 const navItems = [
   { href: '/admin/dashboard', label: 'Dashboard' },
-  { href: '/admin/loan-request', label: 'Pengajuan Pinjaman yang Diterima' },
+  { href: '/admin/loan-request', label: 'Pengajuan Pinjaman' },
   { href: '/admin/account-verifications', label: 'Verifikasi Akun' },
   { href: '/admin/monitoring', label: 'Monitoring' },
+  { href: '/admin/content/landing', label: 'Konten Landing' },
 ];
 
 export default function AdminDashboard_AdminNavbar() {
