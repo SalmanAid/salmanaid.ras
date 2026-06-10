@@ -28,6 +28,21 @@ Runs automatically on every push or pull request to `main`, `master`, and `dev` 
 - **Type Check** — Runs `tsc --noEmit` to catch type errors without emitting output files.
 - **Build Check** — Runs `next build` to verify the production build compiles successfully.
 
+## Landing CMS
+
+Admin dapat mengelola landing publik serta branding shell peminjam dan donor melalui `/admin/content/landing`.
+
+Pastikan `.env` memiliki koneksi database dan konfigurasi Supabase, lalu terapkan schema dan bootstrap dokumen awal:
+
+```bash
+npx prisma migrate deploy
+npm run cms:bootstrap
+```
+
+Gunakan Supabase transaction pooler port `6543` untuk `DATABASE_URL` pada runtime Vercel dan direct/session connection untuk `DIRECT_URL`. Media CMS diunggah langsung ke Supabase Storage melalui signed upload; bucket dapat diatur dengan `SUPABASE_CMS_BUCKET_NAME`.
+
+Perubahan disimpan sebagai draft sampai admin melakukan publish. Publish membuat revision baru dan merevalidasi landing publik serta konfigurasi role shell. Verifikasi terfokus tersedia melalui `npm run test:cms`.
+
 ## Midtrans Payment Setup (QRIS + VA)
 
 The project now uses **Midtrans Core API** for two payment methods only:
