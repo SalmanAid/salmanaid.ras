@@ -1,59 +1,51 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
+import type { PublicLandingContent } from "@/schemas/cms.schema";
 
-export default function Footer() {
+export default function Footer({ config }: { config: PublicLandingContent["footer"] }) {
     return (
         <footer className="w-full bg-[#222429] text-gray-300 pt-12 md:pt-14 pb-6 px-4">
             <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
                     <div>
                         <Image
-                            src="/rumah-amal-horizontal-logo.svg"
-                            alt="Rumah Amal Salman Horizontal Logo"
+                            src={config.logoUrl}
+                            alt={config.logoAlt}
                             width={138}
                             height={48}
                             className="h-12 w-auto"
                         />
                         <p className="mt-4 text-[13px] leading-relaxed text-gray-400 max-w-[28ch]">
-                           Sistem pengelolaan pinjaman mahasiswa yang etis dan bebas bunga oleh Rumah Amal Salman. Memberdayakan pendidikan melalui filantropi Islami.
+                           {config.description}
                         </p>
                     </div>
 
-                    <div>
-                        <h3 className="text-[14px] font-semibold text-white">Tautan</h3>
-                        <ul className="mt-4 space-y-2 text-[13px]">
-                            <li><Link href="/" className="hover:text-white">Home</Link></li>
-                            <li><Link href="/#how-it-works" className="hover:text-white">Programs</Link></li>
-                            <li><Link href="/#faq" className="hover:text-white">FAQ</Link></li>
-                            <li><Link href="/" className="hover:text-white">Tentang Kami</Link></li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h3 className="text-[14px] font-semibold text-white">Sumber Daya</h3>
-                        <ul className="mt-4 space-y-2 text-[13px]">
-                            <li><Link href="/" className="hover:text-white">Laporan Transparansi</Link></li>
-                            <li><Link href="/" className="hover:text-white">Laporan Tahunan</Link></li>
-                            <li><Link href="/" className="hover:text-white">Kebijakan Privasi</Link></li>
-                            <li><Link href="/" className="hover:text-white">Ketentuan Layanan</Link></li>
-                        </ul>
-                    </div>
+                    {config.groups.map((group) => (
+                        <div key={group.id}>
+                            <h3 className="text-[14px] font-semibold text-white">{group.title}</h3>
+                            <ul className="mt-4 space-y-2 text-[13px]">
+                                {group.links.map((link) => (
+                                    <li key={link.id}><Link href={link.href} className="hover:text-white">{link.label}</Link></li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
 
                     <div>
                         <h3 className="text-[14px] font-semibold text-white">Hubungi Kami</h3>
                         <ul className="mt-4 space-y-3 text-[13px] text-gray-400">
                             <li className="flex items-start gap-2">
                                 <Mail className="w-4 h-4 mt-0.5" />
-                                <span>info@rumahamal.org</span>
+                                <span>{config.contact.email}</span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <Phone className="w-4 h-4 mt-0.5" />
-                                <span>+62 812 3456 7890</span>
+                                <span>{config.contact.phone}</span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <MapPin className="w-4 h-4 mt-0.5" />
-                                <span>Bandung, West Java, Indonesia</span>
+                                <span>{config.contact.address}</span>
                             </li>
                         </ul>
                     </div>
@@ -61,12 +53,12 @@ export default function Footer() {
 
                 <div className="mt-10 border-t border-gray-700/60 pt-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                     <p className="text-[12px] text-gray-500">
-                        © 2026 RAS1 - Rumah Amal Salman. Hak Cipta dilindungi Undang-Undang.
+                        {config.copyright}
                     </p>
                     <div className="flex items-center gap-4 text-[12px] text-gray-500">
-                        <Link href="/" className="hover:text-gray-300">Privasi</Link>
-                        <Link href="/" className="hover:text-gray-300">Ketentuan</Link>
-                        <Link href="/" className="hover:text-gray-300">Cookies</Link>
+                        {config.legalLinks.map((link) => (
+                            <Link key={link.id} href={link.href} className="hover:text-gray-300">{link.label}</Link>
+                        ))}
                     </div>
                 </div>
             </div>
