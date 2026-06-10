@@ -1,6 +1,11 @@
 import { PrismaClient } from "../src/generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
+import {
+  defaultBorrowerShell,
+  defaultDonorShell,
+  defaultLandingContent,
+} from "../src/cms/defaults.js";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 
@@ -131,6 +136,24 @@ async function main() {
   });
 
   console.log("Seed completed");
+
+  const cmsDocuments = [
+    { key: "PUBLIC_LANDING" as const, content: defaultLandingContent },
+    { key: "BORROWER_SHELL" as const, content: defaultBorrowerShell },
+    { key: "DONOR_SHELL" as const, content: defaultDonorShell },
+  ];
+
+  for (const item of cmsDocuments) {
+    await prisma.cmsDocument.upsert({
+      where: { key: item.key },
+      create: {
+        key: item.key,
+        draftContent: item.content,
+        publishedContent: item.content,
+      },
+      update: {},
+    });
+  }
 }
 
 main()
