@@ -306,29 +306,29 @@ export default function AdminAccountVerificationsPage() {
           </button>
         </header>
 
-        <AdminSearch
-          value={search}
-          onChange={setSearch}
-          placeholder="Cari nama, email, NIK, telepon, alamat, role, status, atau catatan..."
-          className="mt-6 max-w-2xl"
-        />
-
-        <div className="mt-6 overflow-x-auto border-b border-gray-200">
-          <div className="flex min-w-max gap-2">
-            {STATUS_FILTERS.map((filter) => {
-              const isActive = statusFilter === filter.value;
-              return (
-                <button
-                  key={filter.label}
-                  type="button"
-                  onClick={() => setStatusFilter(filter.value)}
-                  className={`border-b-2 px-4 pb-3 text-sm font-bold transition ${isActive ? "border-[#07B0C8] text-[#07B0C8]" : "border-transparent text-gray-500 hover:text-slate-800"}`}
-                >
-                  {filter.label}
-                </button>
-              );
-            })}
+        <div className="mt-6 flex flex-col gap-4 border-b border-gray-200 md:flex-row md:items-end md:justify-between">
+          <div className="flex min-w-0 gap-2 overflow-x-auto no-scrollbar -mb-px">
+              {STATUS_FILTERS.map((filter) => {
+                const isActive = statusFilter === filter.value;
+                return (
+                  <button
+                    key={filter.label}
+                    type="button"
+                    onClick={() => setStatusFilter(filter.value)}
+                    className={`whitespace-nowrap border-b-2 px-4 pb-3 text-sm font-bold transition ${isActive ? "border-[#07B0C8] text-[#07B0C8]" : "border-transparent text-gray-500 hover:text-slate-800"}`}
+                  >
+                    {filter.label}
+                  </button>
+                );
+              })}
           </div>
+
+          <AdminSearch
+            value={search}
+            onChange={setSearch}
+            placeholder="Cari nama, email, NIK, telepon, alamat, role, status, atau catatan..."
+            className="mb-3 w-full md:max-w-md"
+          />
         </div>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

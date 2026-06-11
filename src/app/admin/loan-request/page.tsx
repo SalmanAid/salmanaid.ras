@@ -95,36 +95,36 @@ export default function AdminLoanRequestPage() {
 
       {/* Main Content Area Container */}
       <div className="flex flex-col w-full max-w-350 px-4 sm:px-6 py-2 sm:py-4">
-        <AdminSearch
-          value={search}
-          onChange={(value) => {
-            setSearch(value);
-            setCurrentPageNumber(1);
-          }}
-          placeholder="Cari nama, email, ID, deskripsi, donor, atau nominal..."
-          className="mb-5 max-w-2xl"
-        />
-        
         {/* ── FILTER TABS (Refactored for horizontal scroll touch behavior on mobile) ── */}
-        <div className="w-full border-b border-gray-200 mb-6">
-          <div className="flex gap-1 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth -mb-px">
-            {[
-              { label: "All", value: undefined },
-              { label: "Pending", value: "PENDING" },
-              { label: "Approved", value: "APPROVED" },
-              { label: "Rejected", value: "REJECTED" },
-            ].map((tab) => (
-              <button
-                key={tab.label}
-                onClick={() => handleFilterChange(tab.value)}
-                className={`pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold transition-all border-b-2 whitespace-nowrap ${getTabColor(tab.value)} ${
-                  statusFilter !== tab.value ? "border-transparent text-gray-500 hover:text-gray-700" : ""
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+        <div className="mb-6 flex w-full flex-col gap-4 border-b border-gray-200 md:flex-row md:items-end md:justify-between">
+          <div className="flex gap-1 overflow-x-auto no-scrollbar scroll-smooth -mb-px sm:gap-4">
+              {[
+                { label: "All", value: undefined },
+                { label: "Pending", value: "PENDING" },
+                { label: "Approved", value: "APPROVED" },
+                { label: "Rejected", value: "REJECTED" },
+              ].map((tab) => (
+                <button
+                  key={tab.label}
+                  onClick={() => handleFilterChange(tab.value)}
+                  className={`pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold transition-all border-b-2 whitespace-nowrap ${getTabColor(tab.value)} ${
+                    statusFilter !== tab.value ? "border-transparent text-gray-500 hover:text-gray-700" : ""
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
           </div>
+
+          <AdminSearch
+            value={search}
+            onChange={(value) => {
+              setSearch(value);
+              setCurrentPageNumber(1);
+            }}
+            placeholder="Cari nama, email, ID, deskripsi, donor, atau nominal..."
+            className="mb-3 w-full md:max-w-md"
+          />
         </div>
 
         {/* Dynamic Inner Table Rendering Element Frame */}

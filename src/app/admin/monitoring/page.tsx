@@ -101,18 +101,9 @@ export default function AdminMonitoringPage() {
 		</div>
 
 		<div className="flex flex-col w-[90%] py-4">
-      <AdminSearch
-        value={search}
-        onChange={(value) => {
-          setSearch(value);
-          setCurrentPageNumber(1);
-        }}
-        placeholder="Cari peminjam, email, ID, deskripsi, donor, pembayaran, atau nominal..."
-        className="mb-5 max-w-2xl"
-      />
 			{/* Filter Tabs with Hardcoded Dictionary Colors */}
-			<div className="w-full border-b border-gray-200 mb-6">
-				<div className="flex gap-1 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth -mb-px">
+			<div className="mb-6 flex w-full flex-col gap-4 border-b border-gray-200 md:flex-row md:items-end md:justify-between">
+				<div className="flex gap-1 overflow-x-auto no-scrollbar scroll-smooth -mb-px sm:gap-4">
 					{[
 						{ label: "All", value: undefined },
 						{ label: "Forgiven", value: "FORGIVEN" },
@@ -130,6 +121,16 @@ export default function AdminMonitoringPage() {
 					</button>
 					))}
 				</div>
+
+        <AdminSearch
+          value={search}
+          onChange={(value) => {
+            setSearch(value);
+            setCurrentPageNumber(1);
+          }}
+          placeholder="Cari peminjam, email, ID, deskripsi, donor, pembayaran, atau nominal..."
+          className="mb-3 w-full md:max-w-md"
+        />
 			</div>	
 
 				<div className="w-full mb-6">
