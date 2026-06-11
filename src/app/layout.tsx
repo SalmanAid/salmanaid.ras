@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
-import Footer from "@/components/ui/footer";
 import "./globals.css";
 
 import QueryClientProvider from "@/providers/QueryClientProvider";
@@ -21,6 +20,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+    metadataBase: new URL(process.env.NEXTAUTH_URL || "http://localhost:3000"),
     title: "SalmanAid : Your Funding Solution",
     description: "A charity-based funding program established by Rumah Amal Salman",
 };
@@ -38,11 +38,8 @@ export default function RootLayout({
                 <AuthSessionProvider>
                     <QueryClientProvider>
                         <ToastProvider>
-                            <div className="flex flex-col min-h-screen">
-                                <main className="flex-1">
-                                    {children}
-                                </main>
-                                <Footer />
+                            <div className="flex min-h-screen flex-col">
+                                <main className="flex-1">{children}</main>
                             </div>
                         </ToastProvider>
                     </QueryClientProvider>

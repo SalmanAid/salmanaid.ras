@@ -1,110 +1,84 @@
-"use client"
+"use client";
 
-import Image from "next/image";
-import HeartGoldIcon from "../../../../public/heart-gold.svg";
-import GraduationHatGoldIcon from "../../../../public/graduation-hat-gold.svg";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { X } from "lucide-react";
+import type { LandingSection } from "@/schemas/cms.schema";
+import { CmsIcon } from "@/components/cms/cms-icon";
+import { RichTextRenderer } from "@/components/cms/rich-text";
 
-import ProgramDetailComponent from "./ProgramDetail";
-import { useState } from "react";
+type Data = Extract<LandingSection, { type: "programs" }>;
 
-export default function ProgramComponent () {
-    const [educationSupportIsOpen, setEducationSupportIsOpen] = useState<boolean>(false)
-    const [flashDonationIsOpen, setFlashDonationIsOpen] = useState<boolean>(false) // Fixed typo from setFlashDonationtIsOpen
+export default function ProgramComponent({ data }: { data: Data }) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selected = data.programs.find((program) => program.id === selectedId);
 
-    return (
-        <section id="programs" className="scroll-mt-16 bg-[#F3F4F6] py-16 md:py-24 relative">
+  useEffect(() => {
+    if (!selected) return;
+    const close = (event: KeyboardEvent) => event.key === "Escape" && setSelectedId(null);
+    document.addEventListener("keydown", close);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", close);
+      document.body.style.overflow = "";
+    };
+  }, [selected]);
 
-            {/* Backdrop & Popup Container for Education Program */}
-            {educationSupportIsOpen && (
-                <div 
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4 animate-in fade-in duration-200"
-                    onClick={() => setEducationSupportIsOpen(false)} // Clicking the black backdrop closes it
-                >
-                    <ProgramDetailComponent 
-                        title="Bantuan Dana Pendidikan" 
-                        caption="Program Pendidikan Madani dirancang khusus untuk mendukung mahasiswa berprestasi yang membutuhkan bantuan finansial dalam menyelesaikan pendidikan mereka. Melalui program ini, kami berkomitmen untuk memastikan bahwa setiap mahasiswa memiliki kesempatan yang sama untuk meraih cita-cita mereka tanpa terbebani oleh kendala ekonomi.
-                        Beasiswa ini mencakup bantuan biaya kuliah, uang saku bulanan, dan akses ke program pengembangan diri. Kami percaya bahwa investasi dalam pendidikan adalah investasi terbaik untuk masa depan bangsa, dan setiap mahasiswa yang berdedikasi layak mendapatkan kesempatan untuk berkembang." 
-                        terms={[
-                            "Mahasiswa aktif Institut Teknologi Bandung (ITB)", 
-                            "IPK minimal 3.0 pada semester terakhir", 
-                            "Sedang tidak menerima beasiswa dari sumber lain", 
-                            "Mampu menunjukkan kebutuhan finansial dengan dokumen pendukung", 
-                            "Aktif dalam kegiatan kemahasiswaan atau organisasi kampus"
-                        ]}
-                        url="/applicant/apply"
-                    />
-                </div>
+  return (
+    <section id={data.id} className="relative scroll-mt-16 bg-[#F3F4F6] py-16 md:py-24">
+      {selected && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" onMouseDown={() => setSelectedId(null)}>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="program-dialog-title"
+            className="relative max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-3xl border border-slate-100 bg-white p-6 text-slate-800 shadow-2xl"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <button type="button" onClick={() => setSelectedId(null)} aria-label="Tutup detail program" className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-[#07B0C8]">
+              <X className="h-5 w-5" />
+            </button>
+            <h2 id="program-dialog-title" className="pr-12 text-xl font-bold text-[#C87900]">Detail Program: {selected.title}</h2>
+            <RichTextRenderer value={selected.detail} className="mt-4 text-sm leading-relaxed text-slate-600" />
+            {selected.terms.length > 0 && (
+              <div className="mt-6 border-t border-slate-100 pt-5">
+                <h3 className="mb-3 text-sm font-bold text-slate-700">Syarat dan Ketentuan</h3>
+                <ul className="space-y-2.5">
+                  {selected.terms.map((term, index) => (
+                    <li key={`${selected.id}-${index}`} className="flex items-start gap-2.5 text-sm text-slate-600">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600"><CmsIcon name="check" className="h-3 w-3" /></span>
+                      <span>{term}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
+            <Link href={selected.href} className="mt-6 flex min-h-11 w-full items-center justify-center rounded-xl bg-[#FCB82E] px-4 text-sm font-bold text-white transition hover:bg-[#E7A722] focus-visible:ring-2 focus-visible:ring-[#C87900]">
+              {selected.buttonLabel}
+            </Link>
+          </div>
+        </div>
+      )}
 
-            {/* Backdrop & Popup Container for Flash Donation Program */}
-            {flashDonationIsOpen && (
-                <div 
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4 animate-in fade-in duration-200"
-                    onClick={() => setFlashDonationIsOpen(false)} // Clicking the black backdrop closes it
-                >
-                    <ProgramDetailComponent 
-                        title="Donasi Kilat Emergency" 
-                        caption="Program Donasi Kilat adalah  adalah penggalangan dana darurat (rapid emergency crowdfunding) yang dibuat untuk merespons krisis atau bencana secara instan.
-                        Tujuannya adalah mengumpulkan dana secara cepat agar bantuan langsung (seperti tenda, makanan, dan obat-obatan) dapat disalurkan segera kepada korban di masa tanggap darurat. " 
-                        terms={[
-                            "Mahasiswa aktif Institut Teknologi Bandung (ITB)", 
-                            "IPK minimal 3.0 pada semester terakhir", 
-                            "Sedang tidak menerima beasiswa dari sumber lain", 
-                            "Mampu menunjukkan kebutuhan finansial dengan dokumen pendukung", 
-                            "Aktif dalam kegiatan kemahasiswaan atau organisasi kampus"
-                        ]}
-                        url="/donate/apply"
-                    />
-                </div>
-            )}
-
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Section Header */}
-                <div className="text-center mb-14">
-                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Program Kami</h2>
-                    <div className="mx-auto mb-4 h-1 w-24 rounded-full bg-[#FCB82E]" />
-                    <p className="text-gray-500 text-sm md:text-[15px] max-w-2xl mx-auto">
-                       Berbagai program bantuan yang dirancang khusus untuk mendukung perjalanan pendidikan Anda
-                    </p>
-                </div>
-
-                {/* Main Content Container */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                    {/* Bantuan Dana Pendidikan Card */}
-                    <div className="flex flex-col p-8 bg-white rounded-2xl shadow-sm border border-slate-100">
-                        <div className="p-3 rounded-2xl bg-[#FFF5DF] w-fit mb-4">
-                            <Image src={GraduationHatGoldIcon} alt="Bantuan dana Pendidikan Icon" />
-                        </div>
-                        <h3 className="font-bold text-xl text-slate-800 mb-2">Bantuan Dana Pendidikan</h3>
-                        <p className="text-slate-500 font-light text-sm leading-relaxed flex-1 mb-4">
-                            Pinjaman bebas riba untuk biaya kuliah, buku, dan kebutuhan akademik lainnya dengan tenor fleksibel.
-                        </p>
-                        <button 
-                            onClick={() => setEducationSupportIsOpen(true)}
-                            className="w-fit font-bold text-[#FCB82E] text-sm hover:underline cursor-pointer text-left"
-                        >
-                            Pelajari Selengkapnya &rarr;
-                        </button>
-                    </div>
-
-                    {/* Donasi Kilat Emergency Card */}
-                    <div className="flex flex-col p-8 bg-white rounded-2xl shadow-sm border border-slate-100">
-                        <div className="p-3 rounded-2xl bg-[#FFF5DF] w-fit mb-4">
-                            <Image src={HeartGoldIcon} alt="Donasi Kilat Icon" />
-                        </div>
-                        <h3 className="font-bold text-xl text-slate-800 mb-2">Donasi Kilat Emergency</h3>
-                        <p className="text-slate-500 font-light text-sm leading-relaxed flex-1 mb-4">
-                            Bantuan cepat untuk mahasiswa yang menghadapi situasi darurat finansial dengan proses persetujuan 24 jam.
-                        </p>
-                        <button 
-                            onClick={() => setFlashDonationIsOpen(true)}
-                            className="w-fit font-bold text-[#FCB82E] text-sm hover:underline cursor-pointer text-left"
-                        >
-                            Pelajari Selengkapnya &rarr;
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-    );
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-14 text-center">
+          <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">{data.title}</h2>
+          <div className="mx-auto mb-4 h-1 w-24 rounded-full bg-[#FCB82E]" />
+          <p className="mx-auto max-w-2xl text-sm text-gray-500 md:text-[15px]">{data.description}</p>
+        </div>
+        <div className={`mx-auto grid max-w-5xl grid-cols-1 gap-6 ${data.programs.length >= 2 ? "md:grid-cols-2" : ""}`}>
+          {data.programs.map((program) => (
+            <article key={program.id} className="flex flex-col rounded-2xl border border-slate-100 bg-white p-8 shadow-sm">
+              <div className="mb-4 w-fit rounded-2xl bg-[#FFF5DF] p-3 text-[#C87900]"><CmsIcon name={program.icon} className="h-6 w-6" /></div>
+              <h3 className="mb-2 text-xl font-bold text-slate-800">{program.title}</h3>
+              <p className="mb-4 flex-1 text-sm font-light leading-relaxed text-slate-500">{program.summary}</p>
+              <button type="button" onClick={() => setSelectedId(program.id)} className="min-h-11 w-fit rounded-lg px-1 text-left text-sm font-bold text-[#C87900] hover:underline focus-visible:ring-2 focus-visible:ring-[#FCB82E]">
+                Pelajari Selengkapnya →
+              </button>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }

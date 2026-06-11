@@ -250,8 +250,70 @@ model ApplicationAttachment {
 }
 
 // ==========================================
+// CONTENT MANAGEMENT
+// ==========================================
+
+model CmsDocument {
+  id               String         @id @default(uuid()) @db.Uuid
+  key              CmsDocumentKey @unique
+  schemaVersion    Int            @default(1)
+  draftVersion     Int            @default(1)
+  publishedVersion Int            @default(1)
+  draftContent     Json
+  publishedContent Json
+  editedBy         String?        @db.Uuid
+  publishedBy      String?        @db.Uuid
+  publishedAt      DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  revisions        CmsRevision[]
+
+  @@index([updatedAt])
+}
+
+model CmsRevision {
+  id          String      @id @default(uuid()) @db.Uuid
+  documentId  String      @db.Uuid
+  version     Int
+  content     Json
+  changeNote  String?
+  createdBy   String?     @db.Uuid
+  createdAt   DateTime    @default(now())
+  document    CmsDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, version])
+  @@index([documentId, createdAt])
+}
+
+model CmsAsset {
+  id           String   @id @default(uuid()) @db.Uuid
+  storagePath  String   @unique
+  publicUrl    String
+  fileName     String
+  mimeType     String
+  sizeBytes    Int
+  width        Int?
+  height       Int?
+  defaultAlt   String?
+  focalX       Int      @default(50)
+  focalY       Int      @default(50)
+  isArchived   Boolean  @default(false)
+  uploadedBy   String?  @db.Uuid
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isArchived, createdAt])
+}
+
+// ==========================================
 // ENUMS
 // ==========================================
+
+enum CmsDocumentKey {
+  PUBLIC_LANDING
+  BORROWER_SHELL
+  DONOR_SHELL
+}
 
 enum LoanApplicationStatus {
   PENDING

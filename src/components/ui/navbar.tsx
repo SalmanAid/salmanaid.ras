@@ -5,14 +5,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
+import type { PublicLandingContent } from '@/schemas/cms.schema';
 
-const navItems = [
-  { href: '/#home', label: 'Home', sectionId: 'home' },
-  { href: '/#programs', label: 'Programs', sectionId: 'programs' },
-  { href: '/#faq', label: 'FAQ', sectionId: 'faq' },
-];
-
-export const Navbar = () => {
+export const Navbar = ({ config }: { config: PublicLandingContent["navbar"] }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
   const pathname = usePathname();
@@ -24,7 +19,7 @@ export const Navbar = () => {
       const scrollPosition = window.scrollY + 96;
       let currentSection = 'home';
 
-      navItems.forEach((item) => {
+      config.items.forEach((item) => {
         const section = document.getElementById(item.sectionId);
 
         if (section && section.offsetTop <= scrollPosition) {
@@ -43,7 +38,7 @@ export const Navbar = () => {
       window.removeEventListener('scroll', updateActiveSection);
       window.removeEventListener('resize', updateActiveSection);
     };
-  }, [pathname]);
+  }, [config.items, pathname]);
 
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
@@ -53,8 +48,8 @@ export const Navbar = () => {
           <div className="shrink-0">
             <Link href="/" className="flex items-center">
               <Image
-                src="/rumah-amal-horizontal-logo.svg"
-                alt="Rumah Amal Salman"
+                src={config.logoUrl}
+                alt={config.logoAlt}
                 width={115}
                 height={40}
                 className="h-10 w-auto"
@@ -65,10 +60,10 @@ export const Navbar = () => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-10">
-            {navItems.map((item) => (
+            {config.items.map((item) => (
               <Link
-                key={item.href}
-                href={item.href}
+                key={item.id}
+                href={`/#${item.sectionId}`}
                 className={`text-[12.5px] font-medium transition-colors ${
                   pathname === '/' && activeSection === item.sectionId
                     ? 'text-[#07B0C8] underline underline-offset-8 decoration-2 decoration-[#07B0C8]'
@@ -86,13 +81,13 @@ export const Navbar = () => {
               href="/login"
               className="text-[12.5px] font-medium text-gray-700 transition-colors hover:text-[#07B0C8]"
             >
-              Masuk
+              {config.loginLabel}
             </Link>
             <Link
               href="/sign-up"
               className="rounded-full bg-cyan-500 px-4.5 py-1.5 text-[12.5px] font-medium text-white transition-colors hover:bg-cyan-600"
             >
-              Daftar
+              {config.registerLabel}
             </Link>
           </div>
 
@@ -113,10 +108,10 @@ export const Navbar = () => {
         {/* Mobile Menu */}
         {isOpen && (
           <div className="md:hidden pb-4 border-t border-gray-200">
-            {navItems.map((item) => (
+            {config.items.map((item) => (
               <Link
-                key={item.href}
-                href={item.href}
+                key={item.id}
+                href={`/#${item.sectionId}`}
                 onClick={() => setIsOpen(false)}
                 className={`block py-2 text-[13px] font-medium hover:text-cyan-600 ${
                   pathname === '/' && activeSection === item.sectionId
@@ -133,14 +128,14 @@ export const Navbar = () => {
                 onClick={() => setIsOpen(false)}
                 className="flex-1 text-center text-[13px] text-gray-700 font-medium py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                Masuk
+                {config.loginLabel}
               </Link>
               <Link
                 href="/sign-up"
                 onClick={() => setIsOpen(false)}
                 className="flex-1 text-center text-[13px] bg-cyan-500 hover:bg-cyan-600 text-white font-medium py-2 rounded-lg transition-colors"
               >
-                Daftar
+                {config.registerLabel}
               </Link>
             </div>
           </div>
