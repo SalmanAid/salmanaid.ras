@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Clock, FileText, IdCard, MapPin, Phone, RefreshCw, ShieldCheck, XCircle } from "lucide-react";
 
 import AdminDashboard_AdminNavbar from "@/components/ui/admin-dashboard/admin_navbar";
+import { AdminSearch } from "@/components/ui/admin-search";
 import { useToast } from "@/components/ui/toast";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 type VerificationStatus = "PENDING" | "VERIFIED" | "REJECTED" | "REVISION_REQUESTED";
 
@@ -144,29 +146,45 @@ export default function AdminAccountVerificationsPage() {
   const [submittingKey, setSubmittingKey] = useState("");
   const [sortBy, setSortBy] = useState<"submissionTime" | "updateTime" | "type" | undefined>();
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search);
 
-  const fetchRequests = async (status?: VerificationStatus) => {
+  const fetchRequests = useCallback(async (
+    status?: VerificationStatus,
+    searchQuery = "",
+    signal?: AbortSignal
+  ) => {
     setIsLoading(true);
     setError("");
 
     try {
-      const params = status ? `?status=${status}` : "";
-      const response = await fetch(`/api/admin/account-verifications${params}`, { cache: "no-store" });
+      const params = new URLSearchParams();
+      if (status) params.set("status", status);
+      if (searchQuery) params.set("search", searchQuery);
+
+      const response = await fetch(`/api/admin/account-verifications?${params}`, {
+        cache: "no-store",
+        signal,
+      });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || "Gagal memuat data verifikasi");
 
       setRequests(payload.data || []);
     } catch (fetchError) {
-      setError(fetchError instanceof Error ? fetchError.message : "Gagal memuat data verifikasi");
+      if (!(fetchError instanceof DOMException && fetchError.name === "AbortError")) {
+        setError(fetchError instanceof Error ? fetchError.message : "Gagal memuat data verifikasi");
+      }
     } finally {
-      setIsLoading(false);
+      if (!signal?.aborted) setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    const controller = new AbortController();
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    void fetchRequests(statusFilter);
-  }, [statusFilter]);
+    void fetchRequests(statusFilter, debouncedSearch, controller.signal);
+    return () => controller.abort();
+  }, [debouncedSearch, fetchRequests, statusFilter]);
 
   const requestKey = (request: VerificationRequest) => `${request.userId}:${request.role}`;
 
@@ -234,7 +252,7 @@ export default function AdminAccountVerificationsPage() {
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.error || "Gagal memperbarui status verifikasi");
 
-      await fetchRequests(statusFilter);
+      await fetchRequests(statusFilter, debouncedSearch);
       const toastCopy: Record<VerificationStatus, { title: string; description: string }> = {
         VERIFIED: {
           title: "Akun berhasil diverifikasi",
@@ -280,13 +298,20 @@ export default function AdminAccountVerificationsPage() {
           </div>
           <button
             type="button"
-            onClick={() => fetchRequests(statusFilter)}
+            onClick={() => fetchRequests(statusFilter, debouncedSearch)}
             className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-gray-50"
           >
             <RefreshCw size={16} />
             Refresh
           </button>
         </header>
+
+        <AdminSearch
+          value={search}
+          onChange={setSearch}
+          placeholder="Cari nama, email, NIK, telepon, alamat, role, status, atau catatan..."
+          className="mt-6 max-w-2xl"
+        />
 
         <div className="mt-6 overflow-x-auto border-b border-gray-200">
           <div className="flex min-w-max gap-2">

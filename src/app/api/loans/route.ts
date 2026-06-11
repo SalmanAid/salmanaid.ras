@@ -1,8 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { LoanApplicationSchema } from "@/schemas/loan.schema";
+import { NextResponse } from "next/server";
 import { LoanService } from "@/services/loan.service";
-import { LoanApplicationStatus, LoanStatus } from "@/generated/prisma";
-import { auth } from "@/auth";
+import { LoanStatus } from "@/generated/prisma";
 
 export async function GET(req: Request) {
   try {
@@ -12,6 +10,7 @@ export async function GET(req: Request) {
     const startStr = searchParams.get("start");
     const endStr = searchParams.get("end");
     const status = searchParams.get("status"); // Default to PENDING if not provided
+    const search = searchParams.get("search")?.trim().slice(0, 100) || undefined;
 
     // 3. parsing and handle edge case
     const start = startStr ? parseInt(startStr, 10) : 0;
@@ -23,12 +22,15 @@ export async function GET(req: Request) {
       result = await LoanService.getAllLoans(
         start,
         end,
-        status == "DEFAULTED" ? LoanStatus.DEFAULTED : (status == "ACTIVE" ? LoanStatus.ACTIVE : (status == "PAID" ? LoanStatus.PAID : LoanStatus.FORGIVEN))
+        status == "DEFAULTED" ? LoanStatus.DEFAULTED : (status == "ACTIVE" ? LoanStatus.ACTIVE : (status == "PAID" ? LoanStatus.PAID : LoanStatus.FORGIVEN)),
+        search
       ) 
     } else {
       result = await LoanService.getAllLoans(
         start,
-        end
+        end,
+        undefined,
+        search
       ) 
     }
 

@@ -2,27 +2,31 @@
 
 import { useLoanStore } from "@/hooks/loanStore";
 import { useEffect, useState } from "react";
-import LoanRequest_LoanRequestsTable from "@/components/ui/loan-request/loan_request_table";
 import AdminDashboard_AdminNavbar from "@/components/ui/admin-dashboard/admin_navbar";
 import Monitoring_LoanMonitoringTable from "@/components/ui/monitoring/loan_monitoring_table";
 import Monitoring_ManualSettlementCard from "@/components/ui/monitoring/manual_settlement_card";
+import { AdminSearch } from "@/components/ui/admin-search";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 export default function AdminMonitoringPage() {
   const maxItemsInPage = 10;
 
 	const isManualSettlementCardOpen = useLoanStore((state) => (state.isManualSettlementCardOpen))
 
-  const loans = useLoanStore((state) => state.loans);
   const setLoans = useLoanStore((state) => state.setLoans);
 
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [totalItems, setTotalItems] = useState(0);
+  const debouncedSearch = useDebouncedValue(search);
 
-  const totalItems = loans.length || 0;
   const maxPageNumber = Math.max(1, Math.ceil(totalItems / maxItemsInPage));
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchLoans = async () => {
       setIsLoading(true);
       const baseUrl = '/api/loans';
@@ -37,22 +41,29 @@ export default function AdminMonitoringPage() {
       if (statusFilter) {
         params.append("status", statusFilter);
       }
+      if (debouncedSearch) {
+        params.append("search", debouncedSearch);
+      }
 
       try {
-        const response = await fetch(`${baseUrl}?${params}`);
+        const response = await fetch(`${baseUrl}?${params}`, { signal: controller.signal });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const result = await response.json();
         setLoans(result.data.loans || []);
+        setTotalItems(result.data.total || 0);
       } catch (error) {
-        console.error("Fetch error:", error);
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          console.error("Fetch error:", error);
+        }
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) setIsLoading(false);
       }
     };
 
-    fetchLoans();
-  }, [currentPageNumber, statusFilter, setLoans]);
+    void fetchLoans();
+    return () => controller.abort();
+  }, [currentPageNumber, debouncedSearch, statusFilter, setLoans]);
 
   const handleFilterChange = (status: string | undefined) => {
     setStatusFilter(status);
@@ -90,6 +101,15 @@ export default function AdminMonitoringPage() {
 		</div>
 
 		<div className="flex flex-col w-[90%] py-4">
+      <AdminSearch
+        value={search}
+        onChange={(value) => {
+          setSearch(value);
+          setCurrentPageNumber(1);
+        }}
+        placeholder="Cari peminjam, email, ID, deskripsi, donor, pembayaran, atau nominal..."
+        className="mb-5 max-w-2xl"
+      />
 			{/* Filter Tabs with Hardcoded Dictionary Colors */}
 			<div className="w-full border-b border-gray-200 mb-6">
 				<div className="flex gap-1 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth -mb-px">

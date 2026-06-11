@@ -83,6 +83,7 @@ export async function GET(req: Request) {
     const startStr = searchParams.get("start");
     const endStr = searchParams.get("end");
     const status = searchParams.get("status"); // Default to PENDING if not provided
+    const search = searchParams.get("search")?.trim().slice(0, 100) || undefined;
 
     // 3. Convert start/end to numbers (and handle defaults)
     const start = startStr ? parseInt(startStr, 10) : 0;
@@ -94,12 +95,15 @@ export async function GET(req: Request) {
       result = await LoanService.getLoanApplication(
         start,
         end,
-        status == "PENDING" ? LoanApplicationStatus.PENDING : (status == "APPROVED" ? LoanApplicationStatus.APPROVED : LoanApplicationStatus.REJECTED)
+        status == "PENDING" ? LoanApplicationStatus.PENDING : (status == "APPROVED" ? LoanApplicationStatus.APPROVED : LoanApplicationStatus.REJECTED),
+        search
       ) 
     } else {
       result = await LoanService.getLoanApplication(
         start,
-        end
+        end,
+        undefined,
+        search
       ) 
     }
 
