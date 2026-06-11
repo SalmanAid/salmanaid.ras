@@ -73,6 +73,8 @@ jobs:
           cache: 'npm'
       - name: Install Dependencies
         run: npm ci --legacy-peer-deps
+      - name: Prisma Generate
+        run: npx prisma generate
       - name: Apply Database Migrations
         env:
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
