@@ -4,6 +4,8 @@ import { useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { CurrencyInput } from '@/components/ui/currency-input';
+import { formatCurrency } from '@/lib/utils';
 
 type PaymentMethod = 'qris' | 'va' | null;
 type VABank =
@@ -38,11 +40,6 @@ export default function PaymentPage({
     setError('');
   };
 
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAmount(e.target.value);
-    setError('');
-  };
-
   const handleSubmit = async () => {
     setError('');
 
@@ -57,7 +54,7 @@ export default function PaymentPage({
     }
 
     if (paymentMethod === 'qris' && parseFloat(amount) < 1500) {
-      setError('Minimum nilai transaksi QRIS adalah IDR 1,500');
+      setError(`Minimum nilai transaksi QRIS adalah ${formatCurrency(1500)}`);
       return;
     }
 
@@ -232,18 +229,18 @@ export default function PaymentPage({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Jumlah (IDR)
           </label>
-          <input
-            type="number"
+          <CurrencyInput
             value={amount}
-            onChange={handleAmountChange}
-            placeholder="Enter amount"
-            min={paymentMethod === 'qris' ? '1500' : '1000'}
-            step="1000"
+            onValueChange={(value, rawDigits) => {
+              setAmount(rawDigits ? String(value) : '');
+              setError('');
+            }}
+            placeholder="Rp0"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#07B0C8]"
             disabled={!paymentMethod}
           />
           <p className="text-xs text-gray-500 mt-1">
-            Minimum: {paymentMethod === 'qris' ? 'IDR 1,500 (QRIS)' : 'IDR 1,000'}
+            Minimum: {paymentMethod === 'qris' ? `${formatCurrency(1500)} (QRIS)` : formatCurrency(1000)}
           </p>
         </div>
 

@@ -1,6 +1,8 @@
 
 "use client"
 
+import { formatCurrency } from "@/lib/utils";
+
 type PaymentScheduleRowProps = {
     installment_value: number;
     installment_paid_value: number;
@@ -9,12 +11,7 @@ type PaymentScheduleRowProps = {
     installment_status: string;
 };
 
-const formatIdr = (value: number) =>
-    new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-        maximumFractionDigits: 0,
-    }).format(value);
+const formatIdr = formatCurrency;
 
 export default function ApplicantDashboard_PaymentScheduleRow(props : PaymentScheduleRowProps){
 

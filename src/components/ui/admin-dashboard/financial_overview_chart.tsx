@@ -3,6 +3,7 @@
 import { ChartContainer, type ChartConfig, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { CartesianGrid, XAxis, YAxis, Bar, BarChart } from "recharts"
 import { useAdminDashboardStore } from "@/hooks/adminDashboardStore"
+import { formatCurrency } from "@/lib/utils"
 
 // ===============================
 // HELPERS
@@ -18,16 +19,9 @@ const formatMonthLabel = (yyyyMM: string) => {
   return MONTH_LABELS[parts[1]] ?? yyyyMM
 }
 
-const formatYAxis = (value: number): string => {
-  if (value === 0) return "Rp 0"
-  if (value >= 1_000_000_000) return `Rp ${(value / 1_000_000_000).toFixed(1)}M`
-  if (value >= 1_000_000) return `Rp ${Math.round(value / 1_000_000)}Jt`
-  if (value >= 1_000) return `Rp ${Math.round(value / 1_000)}rb`
-  return `Rp ${value}`
-}
+const formatYAxis = formatCurrency
 
-const formatTooltipValue = (value: number): string =>
-  new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(value)
+const formatTooltipValue = formatCurrency
 
 // ===============================
 // MAIN COMPONENT
@@ -141,7 +135,7 @@ export default function AdminDashboard_FinancialOverviewChart() {
             tickMargin={8}
             tickFormatter={formatYAxis}
             tick={{ fontSize: 10, fill: "#9ca3af" }}
-            width={70}
+            width={110}
           />
 
           <ChartTooltip

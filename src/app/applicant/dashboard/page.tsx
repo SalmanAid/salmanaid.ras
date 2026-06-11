@@ -9,6 +9,7 @@ import ApplicantDashboard_PaymentScheduleRow from "@/components/ui/applicant-das
 import ApplicantDashboard_ApplicationProgressComponent from "@/components/ui/applicant-dashboard/application_progress_block";
 import ApplicantDashboard_ApplicantNavbar from "@/components/ui/applicant-dashboard/applicant_navbar";
 import ApplicantDashboard_PaymentApplicantComponent from "@/components/ui/applicant-dashboard/payment_applicant_modal";
+import { formatCurrency } from "@/lib/utils";
 
 type UserRoleOverview = {
     role: string;
@@ -260,12 +261,7 @@ export default function ApplicantDashboardPage() {
         return "pending";
     };
 
-    const formatIdr = (value: number) =>
-        new Intl.NumberFormat("id-ID", {
-            style: "currency",
-            currency: "IDR",
-            maximumFractionDigits: 0,
-        }).format(value);
+    const formatIdr = formatCurrency;
 
     const formatStatus = (value: string | null | undefined) => {
         if (!value) return "-";

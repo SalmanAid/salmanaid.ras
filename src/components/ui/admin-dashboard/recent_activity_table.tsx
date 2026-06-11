@@ -3,16 +3,12 @@
 import Link from "next/link"
 import { ArrowRight, FileText } from "lucide-react"
 import { useAdminDashboardStore } from "@/hooks/adminDashboardStore"
+import { formatCurrency } from "@/lib/utils"
 
 // ===============================
 // HELPERS
 // ===============================
-const formatRupiah = (amount: number) =>
-  new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(amount)
+const formatRupiah = formatCurrency
 
 const timeAgo = (date: Date) => {
   const now = new Date()

@@ -119,7 +119,7 @@ export const defaultLandingContent: PublicLandingContent = PublicLandingContentS
       title: "Dampak Kami",
       description: "Setiap angka mewakili kehidupan yang berubah melalui pendanaan pendidikan.",
       cards: [
-        { id: id("015aa9a9-8a59-438e-aab4-414aac7ccad9"), metric: "totalDonations", label: "Total Donasi", description: "Dana dari donatur di seluruh Indonesia.", icon: "dollar", prefix: "Rp ", suffix: "", format: "compact" },
+        { id: id("015aa9a9-8a59-438e-aab4-414aac7ccad9"), metric: "totalDonations", label: "Total Donasi", description: "Dana dari donatur di seluruh Indonesia.", icon: "dollar", prefix: "Rp", suffix: "", format: "full" },
         { id: id("8a934ffc-e5d6-4371-8035-b822678844c5"), metric: "studentsHelped", label: "Mahasiswa Terbantu", description: "Mahasiswa yang menerima dukungan pendidikan.", icon: "users", prefix: "", suffix: "+", format: "full" },
         { id: id("9aa83577-72af-49aa-a425-05b81948df05"), metric: "manual", manualValue: "0", label: "Bebas Bunga", description: "Pendanaan sesuai prinsip syariah dan beretika.", icon: "percent", prefix: "", suffix: "%", format: "plain" },
       ],

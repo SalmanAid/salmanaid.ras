@@ -2,6 +2,7 @@
 
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
+import { formatCurrency } from '@/lib/utils';
 
 type PaymentStatus = 'PENDING' | 'SETTLEMENT' | 'EXPIRE' | 'FAILURE' | null;
 type PaymentMethod = 'qris' | 'va';
@@ -149,14 +150,6 @@ export default function PaymentConfirmPage({
 
     return () => eventSource.close();
   }, [orderId]);
-
-  const formatCurrency = (value: string | number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-    }).format(Number(value));
-  };
 
   const formatExpiry = (value: string) => {
     if (!value) return '-';

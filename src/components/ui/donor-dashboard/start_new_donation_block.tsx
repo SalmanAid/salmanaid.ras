@@ -2,21 +2,15 @@
 
 import { useDonationStore } from "@/hooks/donationStore";
 import Link from "next/link";
+import { CurrencyInput } from "@/components/ui/currency-input";
+import { formatCurrency } from "@/lib/utils";
 
 type DonorDashboardStartNewDonationProps = {
     quickSelectAmounts: number[];
 };
 
 const formatCurrencyCompact = (amount: number) => {
-    if (amount % 1000000 === 0) {
-        return `Rp${amount / 1000000} Juta`;
-    }
-
-    return new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-        maximumFractionDigits: 0,
-    }).format(amount);
+    return formatCurrency(amount);
 };
 
 export default function DonorDashboard_StartNewDonation({ quickSelectAmounts }: DonorDashboardStartNewDonationProps) {
@@ -35,13 +29,11 @@ export default function DonorDashboard_StartNewDonation({ quickSelectAmounts }: 
                 <div className="mt-4">
                     <p className="text-[12.5px] font-medium text-white">Jumlah Donasi</p>
 
-                    <input
+                    <CurrencyInput
                         value={donationAmount || ""}
-                        onChange={(e) => setAmount(Number(e.target.value || 0))}
-                        type="number"
-                        inputMode="numeric"
+                        onValueChange={(value) => setAmount(value)}
                         className="mt-2 h-11 w-full rounded-md border border-white/25 bg-[#10AEC4] px-4 text-[13px] text-white placeholder:text-[#B8E8F0] focus:outline-none focus:ring-2 focus:ring-white/45"
-                        placeholder="Rp 0"
+                        placeholder="Rp0"
                     />
 
                     <p className="mt-3 text-[12px] text-[#DDF6FB]">Pilihan Cepat:</p>

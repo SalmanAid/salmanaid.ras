@@ -9,6 +9,8 @@ import { useDonationStore } from '@/hooks/donationStore';
 import { PaymentMethod, VABank, TransactionType } from '@/types/donation';
 import DonorDashboard_DonorNavbar from '@/components/ui/donor-dashboard/donor_navbar';
 import { ShieldAlert } from 'lucide-react';
+import { CurrencyInput } from '@/components/ui/currency-input';
+import { formatCurrency } from '@/lib/utils';
 
 const DONATION_STEPS = [
   { id: 1, label: 'Select Amount' },
@@ -18,14 +20,7 @@ const DONATION_STEPS = [
 
 const QUICK_AMOUNTS = [50000, 100000, 250000, 500000];
 
-const formatIdr = (value: number) =>
-  new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0,
-  })
-    .format(value)
-    .replace('Rp', 'Rp ');
+const formatIdr = formatCurrency;
 
 export default function DonateFormPage({
   searchParams
@@ -96,11 +91,6 @@ export default function DonateFormPage({
     setError('');
   };
 
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAmount(Number(e.target.value));
-    setError('');
-  };
-
   const handleSubmit = async () => {
     setError('');
 
@@ -120,7 +110,7 @@ export default function DonateFormPage({
     }
 
     if (paymentMethod === 'qris' && parseFloat(String(amount)) < 1500) {
-      setError('Minimum nilai transaksi QRIS adalah IDR 1,500');
+      setError(`Minimum nilai transaksi QRIS adalah ${formatCurrency(1500)}`);
       return;
     }
 
@@ -315,18 +305,18 @@ export default function DonateFormPage({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Jumlah (IDR)
             </label>
-            <input
-              type="number"
+            <CurrencyInput
               value={amount}
-              onChange={handleAmountChange}
-              placeholder="Enter amount"
-              min={paymentMethod === 'qris' ? '1500' : '1000'}
-              step="1000"
+              onValueChange={(value) => {
+                setAmount(value);
+                setError('');
+              }}
+              placeholder="Rp0"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#07B0C8]"
               disabled={!paymentMethod}
             />
             <p className="text-xs text-gray-500 mt-1">
-              Minimum: {paymentMethod === 'qris' ? 'IDR 1,500 (QRIS)' : 'IDR 1,000'}
+              Minimum: {paymentMethod === 'qris' ? `${formatCurrency(1500)} (QRIS)` : formatCurrency(1000)}
             </p>
           </div>
 
