@@ -8,7 +8,6 @@ on:
       - 'public/**'       # Ignore static assets (images, favicons, etc.)
       - '.vscode/**'      # Ignore VS Code settings
       - '.gitignore'      # Ignore git configuration
-      - '.github/**'
       - '.prettierrc'     # Ignore formatting configs (optional)
       - 'LICENSE'         # Ignore license files
   
@@ -19,7 +18,6 @@ on:
       - 'docs/**'
       - 'public/**'
       - '.vscode/**'
-      - '.github/**'
       - '.gitignore'
 
 jobs:
@@ -73,6 +71,8 @@ jobs:
           cache: 'npm'
       - name: Install Dependencies
         run: npm ci --legacy-peer-deps
+      - name: Prisma Generate
+        run: npx prisma generate
       - name: Apply Database Migrations
         env:
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
