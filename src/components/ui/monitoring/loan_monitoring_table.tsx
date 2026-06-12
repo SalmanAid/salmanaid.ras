@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation"
 import DefaultAvatarLogo from "../../../../public/default-avatar.svg"
 import { LoanStatus } from "@/generated/prisma"
 import { Loan } from "@/types/loan"
+import { formatCurrency } from "@/lib/utils"
 
 // ===============================
 // HELPERS
@@ -48,14 +49,6 @@ const StatusActionDict = {
         "action_text": "#FCB82E",
     },
 }
-
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0
-    }).format(amount).replace("IDR", "Rp");
-};
 
 const formatDate = (dateInput: string | number | Date) => {
     const date = new Date(dateInput);

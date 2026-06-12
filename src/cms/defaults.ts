@@ -119,7 +119,7 @@ export const defaultLandingContent: PublicLandingContent = PublicLandingContentS
       title: "Dampak Kami",
       description: "Setiap angka mewakili kehidupan yang berubah melalui pendanaan pendidikan.",
       cards: [
-        { id: id("015aa9a9-8a59-438e-aab4-414aac7ccad9"), metric: "totalDonations", label: "Total Donasi", description: "Dana dari donatur di seluruh Indonesia.", icon: "dollar", prefix: "Rp ", suffix: "", format: "compact" },
+        { id: id("015aa9a9-8a59-438e-aab4-414aac7ccad9"), metric: "totalDonations", label: "Total Donasi", description: "Dana dari donatur di seluruh Indonesia.", icon: "dollar", prefix: "Rp", suffix: "", format: "full" },
         { id: id("8a934ffc-e5d6-4371-8035-b822678844c5"), metric: "studentsHelped", label: "Mahasiswa Terbantu", description: "Mahasiswa yang menerima dukungan pendidikan.", icon: "users", prefix: "", suffix: "+", format: "full" },
         { id: id("9aa83577-72af-49aa-a425-05b81948df05"), metric: "manual", manualValue: "0", label: "Bebas Bunga", description: "Pendanaan sesuai prinsip syariah dan beretika.", icon: "percent", prefix: "", suffix: "%", format: "plain" },
       ],
@@ -206,6 +206,24 @@ const commonFooter = {
   copyright: "© 2026 SalmanAid - Rumah Amal Salman",
 };
 
+export const defaultBorrowerAgreement: NonNullable<RoleShellContent["borrowerAgreement"]> = {
+  sectionTitle: "Syarat dan Ketentuan",
+  sectionDescription: "Mohon review dan terima kesepakatan pinjaman",
+  agreementTitle: "Kesepakatan Pinjaman Bebas Bunga",
+  introduction: "Dengan mengirimkan aplikasi ini, Anda mengakui dan menyetujui syarat dan ketentuan berikut dari program pinjaman pelajar tanpa bunga Rumah Amal Salman:",
+  explanation: "Ini adalah pinjaman tanpa bunga (Qardhul Hasan) yang diberikan untuk mendukung pendidikan Anda melalui prinsip-prinsip filantropi Islami.",
+  terms: [
+    "Anda setuju untuk membayar kembali jumlah pinjaman dalam cicilan bulanan sesuai kesepakatan setelah persetujuan pinjaman.",
+    "Tidak ada bunga atau biaya tambahan yang akan dikenakan pada pinjaman ini. Jumlah pembayaran kembali sama dengan jumlah pinjaman.",
+    "Semua informasi yang diberikan dalam aplikasi ini akurat dan benar sejauh pengetahuan Anda.",
+    "Anda memberi wewenang kepada Rumah Amal Salman untuk memverifikasi informasi dan dokumen yang diberikan.",
+    "Anda berkomitmen untuk menggunakan dana pinjaman semata-mata untuk tujuan pendidikan sebagaimana dinyatakan dalam permohonan Anda.",
+  ],
+  hardshipText: "Dalam hal mengalami kesulitan keuangan, Anda setuju untuk segera berkomunikasi dengan Rumah Amal Salman untuk membahas pengaturan pembayaran alternatif.",
+  closingText: "Anda memahami bahwa pinjaman ini adalah amanah dan Anda secara moral dan etis berkewajiban untuk mengembalikannya secara bertanggung jawab.",
+  checkboxLabel: "Saya telah membaca dan menyetujui syarat dan ketentuan perjanjian pinjaman tanpa bunga. Saya menegaskan bahwa semua informasi yang diberikan akurat dan saya berkomitmen untuk memenuhi kewajiban pembayaran kembali saya.",
+};
+
 export const defaultBorrowerShell: RoleShellContent = RoleShellContentSchema.parse({
   schemaVersion: 1,
   logoUrl: "/rumah-amal-horizontal-logo.svg",
@@ -218,6 +236,7 @@ export const defaultBorrowerShell: RoleShellContent = RoleShellContentSchema.par
     logout: "Logout",
   },
   helpText: "Butuh bantuan terkait pengajuan atau cicilan?",
+  borrowerAgreement: defaultBorrowerAgreement,
   footer: commonFooter,
 });
 

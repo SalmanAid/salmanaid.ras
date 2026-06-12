@@ -12,6 +12,7 @@ import TrophyLogo from "../../../../public/trophy.svg"
 import { useUserStore } from "@/hooks/userStore";
 import DonorDashboard_SummaryOfDonor from "@/components/ui/donor-dashboard/summary_of_donor_block";
 import DonorDashboard_StartNewDonation from "@/components/ui/donor-dashboard/start_new_donation_block";
+import { formatCurrency } from "@/lib/utils";
 import DonorDashboard_RecentDistributionTable from "@/components/ui/donor-dashboard/recent_distribution_table";
 import DonorDashboard_DonorNavbar from "@/components/ui/donor-dashboard/donor_navbar";
 
@@ -51,13 +52,6 @@ const FALLBACK_DASHBOARD_DATA: DonorDashboardPayload = {
   recentDistributions: [],
   quickSelectAmounts: [1000000, 5000000, 10000000],
 };
-
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(amount);
 
 const formatDate = (dateIso: string) => {
   const date = new Date(dateIso);

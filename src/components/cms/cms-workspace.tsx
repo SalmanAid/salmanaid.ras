@@ -20,6 +20,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { CmsIcon } from "@/components/cms/cms-icon";
 import { LandingPageRenderer } from "@/components/cms/landing-page-renderer";
+import { defaultBorrowerAgreement } from "@/cms/defaults";
 import { supabaseClient } from "@/lib/supabase-client";
 import {
   PublicLandingContentSchema,
@@ -442,6 +443,21 @@ function LandingSectionEditor({
 
 function RoleShellEditor({ value, onChange }: { value: RoleShellContent; onChange: (value: RoleShellContent) => void }) {
   const setLabel = (key: keyof RoleShellContent["menuLabels"], label: string) => onChange({ ...value, menuLabels: { ...value.menuLabels, [key]: label } });
+  const borrowerAgreement = value.borrowerAgreement || defaultBorrowerAgreement;
+  const setBorrowerAgreement = (
+    key: keyof NonNullable<RoleShellContent["borrowerAgreement"]>,
+    fieldValue: string | string[]
+  ) => {
+    if (!borrowerAgreement) return;
+    onChange({
+      ...value,
+      borrowerAgreement: {
+        ...borrowerAgreement,
+        [key]: fieldValue,
+      },
+    });
+  };
+
   return (
     <div className="space-y-6">
       <section className="rounded-xl border border-gray-200 bg-white p-5">
@@ -458,6 +474,31 @@ function RoleShellEditor({ value, onChange }: { value: RoleShellContent; onChang
           <Field label="Label Logout"><input className={inputClass} value={value.menuLabels.logout} onChange={(event) => setLabel("logout", event.target.value)} /></Field>
         </div>
       </section>
+      {"apply" in value.menuLabels && borrowerAgreement && (
+        <section className="rounded-xl border border-gray-200 bg-white p-5">
+          <h2 className="text-lg font-extrabold text-slate-900">Syarat pengajuan pinjaman</h2>
+          <p className="mt-1 text-sm text-gray-500">Konten ini tampil pada tahap terakhir sebelum peminjam mengirim pengajuan.</p>
+          <div className="mt-5 space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Judul section"><input className={inputClass} value={borrowerAgreement.sectionTitle} onChange={(event) => setBorrowerAgreement("sectionTitle", event.target.value)} /></Field>
+              <Field label="Judul kesepakatan"><input className={inputClass} value={borrowerAgreement.agreementTitle} onChange={(event) => setBorrowerAgreement("agreementTitle", event.target.value)} /></Field>
+            </div>
+            <Field label="Deskripsi section"><input className={inputClass} value={borrowerAgreement.sectionDescription} onChange={(event) => setBorrowerAgreement("sectionDescription", event.target.value)} /></Field>
+            <Field label="Pembuka"><textarea className={textareaClass} value={borrowerAgreement.introduction} onChange={(event) => setBorrowerAgreement("introduction", event.target.value)} /></Field>
+            <Field label="Penjelasan program"><textarea className={textareaClass} value={borrowerAgreement.explanation} onChange={(event) => setBorrowerAgreement("explanation", event.target.value)} /></Field>
+            <Field label="Daftar ketentuan" hint="Tulis satu ketentuan per baris. Maksimal 15 item.">
+              <textarea
+                className={`${textareaClass} min-h-40`}
+                value={borrowerAgreement.terms.join("\n")}
+                onChange={(event) => setBorrowerAgreement("terms", event.target.value.split("\n").map((item) => item.trim()).filter(Boolean).slice(0, 15))}
+              />
+            </Field>
+            <Field label="Ketentuan kesulitan pembayaran"><textarea className={textareaClass} value={borrowerAgreement.hardshipText} onChange={(event) => setBorrowerAgreement("hardshipText", event.target.value)} /></Field>
+            <Field label="Penutup"><textarea className={textareaClass} value={borrowerAgreement.closingText} onChange={(event) => setBorrowerAgreement("closingText", event.target.value)} /></Field>
+            <Field label="Teks persetujuan checkbox"><textarea className={textareaClass} value={borrowerAgreement.checkboxLabel} onChange={(event) => setBorrowerAgreement("checkboxLabel", event.target.value)} /></Field>
+          </div>
+        </section>
+      )}
       <section className="rounded-xl border border-gray-200 bg-white p-5">
         <h2 className="text-lg font-extrabold text-slate-900">Footer ringkas</h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">

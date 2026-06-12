@@ -2,6 +2,8 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { useLoanRequestStore } from "@/hooks/loanRequestStore";
+import { CurrencyInput } from "@/components/ui/currency-input";
+import { formatCurrency } from "@/lib/utils";
 
 type DonorFundOption = {
   id: string;
@@ -15,14 +17,6 @@ type DonorFundOption = {
 type AllocationDraft = {
   donor: DonorFundOption;
   amount: string;
-};
-
-const formatCurrency = (amount: number | string) => {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-  }).format(Number(amount) || 0).replace("IDR", "Rp");
 };
 
 export default function MapFundsModal() {
@@ -269,14 +263,11 @@ export default function MapFundsModal() {
                 </div>
               </div>
               <div className="flex gap-2">
-                <input
-                  type="number"
-                  min={1}
-                  max={item.donor.available}
-                  placeholder="Enter amount (Rp)"
+                <CurrencyInput
+                  placeholder="Rp0"
                   className="w-full bg-[#F1F5F9] border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#7DD3E1] outline-none"
                   value={item.amount}
-                  onChange={(e) => updateAmount(index, e.target.value)}
+                  onValueChange={(value, rawDigits) => updateAmount(index, rawDigits ? String(value) : "")}
                 />
                 <button
                   type="button"

@@ -4,21 +4,26 @@ import { useLoanRequestStore } from "@/hooks/loanRequestStore";
 import { useEffect, useState } from "react";
 import LoanRequest_LoanRequestsTable from "@/components/ui/loan-request/loan_request_table";
 import AdminDashboard_AdminNavbar from "@/components/ui/admin-dashboard/admin_navbar";
+import { AdminSearch } from "@/components/ui/admin-search";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 export default function AdminLoanRequestPage() {
   const maxItemsInPage = 10;
 
-  const loans = useLoanRequestStore((state) => state.loans);
   const setLoans = useLoanRequestStore((state) => state.setLoans);
 
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [totalItems, setTotalItems] = useState(0);
+  const debouncedSearch = useDebouncedValue(search);
 
-  const totalItems = loans.length || 0;
   const maxPageNumber = Math.max(1, Math.ceil(totalItems / maxItemsInPage));
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchLoanApplication = async () => {
       setIsLoading(true);
       const baseUrl = '/api/loan-applications';
@@ -33,22 +38,29 @@ export default function AdminLoanRequestPage() {
       if (statusFilter) {
         params.append("status", statusFilter);
       }
+      if (debouncedSearch) {
+        params.append("search", debouncedSearch);
+      }
 
       try {
-        const response = await fetch(`${baseUrl}?${params}`);
+        const response = await fetch(`${baseUrl}?${params}`, { signal: controller.signal });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const result = await response.json();
         setLoans(result.data.loans || []);
+        setTotalItems(result.data.total || 0);
       } catch (error) {
-        console.error("Fetch error:", error);
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          console.error("Fetch error:", error);
+        }
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) setIsLoading(false);
       }
     };
 
-    fetchLoanApplication();
-  }, [currentPageNumber, statusFilter, setLoans]);
+    void fetchLoanApplication();
+    return () => controller.abort();
+  }, [currentPageNumber, debouncedSearch, statusFilter, setLoans]);
 
   const handleFilterChange = (status: string | undefined) => {
     setStatusFilter(status);
@@ -83,27 +95,36 @@ export default function AdminLoanRequestPage() {
 
       {/* Main Content Area Container */}
       <div className="flex flex-col w-full max-w-350 px-4 sm:px-6 py-2 sm:py-4">
-        
         {/* ── FILTER TABS (Refactored for horizontal scroll touch behavior on mobile) ── */}
-        <div className="w-full border-b border-gray-200 mb-6">
-          <div className="flex gap-1 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth -mb-px">
-            {[
-              { label: "All", value: undefined },
-              { label: "Pending", value: "PENDING" },
-              { label: "Approved", value: "APPROVED" },
-              { label: "Rejected", value: "REJECTED" },
-            ].map((tab) => (
-              <button
-                key={tab.label}
-                onClick={() => handleFilterChange(tab.value)}
-                className={`pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold transition-all border-b-2 whitespace-nowrap ${getTabColor(tab.value)} ${
-                  statusFilter !== tab.value ? "border-transparent text-gray-500 hover:text-gray-700" : ""
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+        <div className="mb-6 flex w-full flex-col gap-4 border-b border-gray-200 md:flex-row md:items-end md:justify-between">
+          <div className="flex gap-1 overflow-x-auto no-scrollbar scroll-smooth -mb-px sm:gap-4">
+              {[
+                { label: "All", value: undefined },
+                { label: "Pending", value: "PENDING" },
+                { label: "Approved", value: "APPROVED" },
+                { label: "Rejected", value: "REJECTED" },
+              ].map((tab) => (
+                <button
+                  key={tab.label}
+                  onClick={() => handleFilterChange(tab.value)}
+                  className={`pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold transition-all border-b-2 whitespace-nowrap ${getTabColor(tab.value)} ${
+                    statusFilter !== tab.value ? "border-transparent text-gray-500 hover:text-gray-700" : ""
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
           </div>
+
+          <AdminSearch
+            value={search}
+            onChange={(value) => {
+              setSearch(value);
+              setCurrentPageNumber(1);
+            }}
+            placeholder="Cari nama, email, ID, deskripsi, donor, atau nominal..."
+            className="mb-3 w-full md:max-w-md"
+          />
         </div>
 
         {/* Dynamic Inner Table Rendering Element Frame */}
@@ -143,7 +164,7 @@ export default function AdminLoanRequestPage() {
 
             <button
               disabled={currentPageNumber >= maxPageNumber}
-              onClick={() => setCurrentPageNumber((prev) => prev - 1)}
+              onClick={() => setCurrentPageNumber((prev) => prev + 1)}
               className="px-3.5 py-2 text-xs sm:text-sm font-bold text-gray-600 bg-gray-50 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-100 transition-colors active:scale-95"
             >
               Selanjutnya

@@ -10,16 +10,13 @@ import { useState } from "react";
 import AdminDashboard_AdminNavbar from "@/components/ui/admin-dashboard/admin_navbar";
 import MapFundsModal from "@/components/ui/loan-request/fund_allocation_card";
 import { FileText } from "lucide-react";
+import { CurrencyInput } from "@/components/ui/currency-input";
+import { formatCurrency } from "@/lib/utils";
 
 const StatusActionDict = {
     "PENDING": { "status_color": "#FEF3C6", "text_color": "#BB4D00" },
     "APPROVED": { "status_color": "#D0FAE5", "text_color": "#007A55" },
     "REJECTED": { "status_color": "#FFE2E2", "text_color": "#C10007" },
-}
-
-const formatCurrency = (val: number | string) => {
-    const num = Number(val) || 0;
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num).replace("IDR", "Rp");
 }
 
 function InfoBlock({ label, value }: { label: string, value: string | number | null | undefined }) {
@@ -286,14 +283,11 @@ export default function ReviewLoanApplicationPage() {
                     {isPending && (
                         <div className="flex flex-col gap-2">
                             <label className="text-xs sm:text-sm font-bold text-slate-700">Jumlah Disetujui Admin</label>
-                            <input
-                                type="number"
+                            <CurrencyInput
                                 value={approvedAmount}
-                                onChange={(e) => setApprovedAmount(Number(e.target.value))}
+                                onValueChange={(value) => setApprovedAmount(value)}
                                 className="w-full p-2.5 sm:p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#07B0C8] outline-none font-bold text-base sm:text-lg"
                                 placeholder="Masukkan nominal yang disetujui"
-                                min={1}
-                                max={Number(selectedLoan.requestedAmount)}
                             />
                             <p className="text-[11px] text-slate-400 leading-tight">
                                 Boleh lebih kecil dari jumlah yang diajukan, maksimal {formatCurrency(selectedLoan.requestedAmount)}.

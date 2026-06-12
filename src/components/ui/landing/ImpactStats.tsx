@@ -1,12 +1,21 @@
 import type { LandingSection } from "@/schemas/cms.schema";
 import type { LandingMetrics } from "@/services/landing-metrics.service";
 import { CmsIcon } from "@/components/cms/cms-icon";
+import { formatCurrency } from "@/lib/utils";
 
 type Data = Extract<LandingSection, { type: "impactStats" }>;
 
 function formatMetric(card: Data["cards"][number], metrics: LandingMetrics) {
-  if (card.metric === "manual") return `${card.prefix}${card.manualValue || "0"}${card.suffix}`;
+  const isRupiah = card.prefix.trim().toLowerCase() === "rp";
+  if (card.metric === "manual") {
+    return isRupiah
+      ? `${formatCurrency(card.manualValue || 0)}${card.suffix}`
+      : `${card.prefix}${card.manualValue || "0"}${card.suffix}`;
+  }
+
   const value = metrics[card.metric];
+  if (isRupiah) return `${formatCurrency(value)}${card.suffix}`;
+
   const formatted = card.format === "compact"
     ? new Intl.NumberFormat("id-ID", { notation: "compact", maximumFractionDigits: 1 }).format(value)
     : card.format === "full"

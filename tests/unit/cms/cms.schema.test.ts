@@ -18,6 +18,19 @@ describe("CMS content schemas", () => {
     expect(RoleShellContentSchema.safeParse(defaultDonorShell).success).toBe(true);
   });
 
+  it("keeps older borrower shell documents compatible", () => {
+    const content = structuredClone(defaultBorrowerShell);
+    delete content.borrowerAgreement;
+    expect(RoleShellContentSchema.safeParse(content).success).toBe(true);
+  });
+
+  it("requires at least one borrower agreement term when configured", () => {
+    const content = structuredClone(defaultBorrowerShell);
+    if (!content.borrowerAgreement) throw new Error("Borrower agreement missing");
+    content.borrowerAgreement.terms = [];
+    expect(RoleShellContentSchema.safeParse(content).success).toBe(false);
+  });
+
   it("rejects unsafe links", () => {
     const content = structuredClone(defaultLandingContent);
     const hero = content.sections.find((section) => section.type === "hero");

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cn, formatCurrency } from '@/lib/utils';
+import { cn, formatCurrency, formatCurrencyInput, parseCurrencyInput } from '@/lib/utils';
 
 describe('cn utility', () => {
   it('should merge tailwind classes correctly', () => {
@@ -10,10 +10,12 @@ describe('cn utility', () => {
 
 describe('formatCurrency utility', () => {
   it('should format numbers to IDR correctly', () => {
-    // Note: Intl formatting might have different space characters (non-breaking space) depending on environment
-    // We can check if it contains the currency code and the number
-    const result = formatCurrency(10000);
-    expect(result).toContain('Rp');
-    expect(result).toContain('10.000');
+    expect(formatCurrency(10000)).toBe('Rp10.000');
+  });
+
+  it('should parse and format currency input values', () => {
+    expect(parseCurrencyInput('Rp1.000.000')).toBe(1000000);
+    expect(formatCurrencyInput('1000000')).toBe('Rp1.000.000');
+    expect(formatCurrencyInput('')).toBe('');
   });
 });

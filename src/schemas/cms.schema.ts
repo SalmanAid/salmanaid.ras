@@ -306,12 +306,25 @@ const RoleMenuLabelsSchema = z.object({
   donate: z.string().trim().min(1).max(50).optional(),
 });
 
+const BorrowerAgreementSchema = z.object({
+  sectionTitle: z.string().trim().min(1).max(100),
+  sectionDescription: z.string().trim().min(1).max(250),
+  agreementTitle: z.string().trim().min(1).max(120),
+  introduction: z.string().trim().min(1).max(1000),
+  explanation: z.string().trim().min(1).max(1000),
+  terms: z.array(z.string().trim().min(1).max(500)).min(1).max(15),
+  hardshipText: z.string().trim().min(1).max(1000),
+  closingText: z.string().trim().min(1).max(1000),
+  checkboxLabel: z.string().trim().min(1).max(1000),
+});
+
 export const RoleShellContentSchema = z.object({
   schemaVersion: z.literal(1),
   logoUrl: z.string().min(1).max(1000),
   logoAlt: z.string().min(1).max(180),
   menuLabels: RoleMenuLabelsSchema,
   helpText: z.string().trim().min(1).max(250),
+  borrowerAgreement: BorrowerAgreementSchema.optional(),
   footer: z.object({
     helpLabel: z.string().trim().min(1).max(80),
     helpHref: SafeLinkSchema,

@@ -1,10 +1,7 @@
 import { useLoanStore } from "@/hooks/loanStore";
 import { useState } from "react";
-
-const formatCurrency = (val: number | string) => {
-    const num = Number(val) || 0;
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num).replace("IDR", "Rp");
-}
+import { CurrencyInput } from "@/components/ui/currency-input";
+import { formatCurrency } from "@/lib/utils";
 
 export default function Monitoring_ManualSettlementCard() {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -102,15 +99,11 @@ export default function Monitoring_ManualSettlementCard() {
                 <div className="space-y-2">
                 <label className="font-bold text-sm text-slate-600">Jumlah pengurangan</label>
                 <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">Rp</span>
-                    <input
-                    type="number"
-                    min={0}
-                    max={remainingUnpaid}
-                    placeholder="0"
-                    className="w-full bg-white border-2 border-slate-100 rounded-2xl py-4 pl-12 pr-4 text-lg font-bold text-slate-800 focus:border-[#87DCE9] focus:ring-4 focus:ring-[#87DCE9]/10 outline-none transition-all"
+                    <CurrencyInput
+                    placeholder="Rp0"
+                    className="w-full bg-white border-2 border-slate-100 rounded-2xl py-4 px-4 text-lg font-bold text-slate-800 focus:border-[#87DCE9] focus:ring-4 focus:ring-[#87DCE9]/10 outline-none transition-all"
                     value={reductionAmount}
-                    onChange={(e) => setReductionAmount(Number(e.target.value))}
+                    onValueChange={(value) => setReductionAmount(value)}
                     />
                 </div>
                 <div className="flex justify-between items-center px-1">

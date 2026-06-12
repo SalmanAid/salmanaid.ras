@@ -1,10 +1,7 @@
 import { AccountVerificationStatus, Prisma } from "@/generated/prisma";
 import { prisma } from "@/lib/prisma";
 import { normalizeRoleName, ROLES } from "@/lib/roles";
-import { supabaseAdmin } from "@/lib/supabase";
 import { batchGenerateSignedUrls } from "@/lib/supabase-batch";
-
-const USER_DOCUMENT_BUCKET = process.env.SUPABASE_USER_BUCKET_NAME || "user-documents";
 
 export type UserDocumentType = "identityCard" | "institutionCard" | "familyCard";
 export type VerifiableRole = typeof ROLES.DONOR | typeof ROLES.BORROWER;
@@ -55,19 +52,6 @@ function getRoleLabel(role: string) {
 
 function getDocumentUploadedAtKey(documentType: UserDocumentType) {
   return `${documentType}UploadedAt` as const;
-}
-
-/**
- * OPTIMIZED: Batch generates signed URLs for multiple users' documents
- * BEFORE: 30+ Supabase API calls per verification list (1 per document per user)
- * AFTER: 1-3 API calls total (batch all unique paths first)
- */
-async function createSignedDocumentUrl(storagePath: string | null) {
-  if (!storagePath) return null;
-
-  // Fall back to single URL generation (cached)
-  const signedUrlMap = await batchGenerateSignedUrls([storagePath]);
-  return signedUrlMap.get(storagePath) || null;
 }
 
 async function buildDocumentSummaries(user: UserWithDocuments, role?: string) {
@@ -399,7 +383,19 @@ export const AccountVerificationService = {
     });
   },
 
-  async listVerificationRequests(status?: AccountVerificationStatus) {
+  async listVerificationRequests(status?: AccountVerificationStatus, search?: string) {
+    const query = search?.trim();
+    const normalizedQuery = query?.toUpperCase();
+    const matchingRoles = query
+      ? [
+          ...(["DONOR", "DONATUR"].some((label) => label.includes(normalizedQuery || "")) ? [ROLES.DONOR] : []),
+          ...(["BORROWER", "PEMINJAM"].some((label) => label.includes(normalizedQuery || "")) ? [ROLES.BORROWER] : []),
+        ]
+      : [];
+    const matchingStatuses = query
+      ? Object.values(AccountVerificationStatus).filter((item) => item.includes(normalizedQuery || ""))
+      : [];
+
     const requests = await prisma.userRole.findMany({
       where: {
         role: {
@@ -408,6 +404,37 @@ export const AccountVerificationService = {
           },
         },
         ...(status ? { verificationStatus: status } : {}),
+        ...(query
+          ? {
+              AND: [
+                {
+                  OR: [
+                    {
+                      user: {
+                        is: {
+                          OR: [
+                            { name: { contains: query, mode: "insensitive" } },
+                            { email: { contains: query, mode: "insensitive" } },
+                            { nik: { contains: query, mode: "insensitive" } },
+                            { phone_number: { contains: query, mode: "insensitive" } },
+                            { address: { contains: query, mode: "insensitive" } },
+                            { identityCard: { contains: query, mode: "insensitive" } },
+                            { institutionCard: { contains: query, mode: "insensitive" } },
+                            { familyCard: { contains: query, mode: "insensitive" } },
+                          ],
+                        },
+                      },
+                    },
+                    { verificationMessage: { contains: query, mode: "insensitive" } },
+                    ...(matchingRoles.length > 0 ? [{ role: { name: { in: matchingRoles } } }] : []),
+                    ...(matchingStatuses.length > 0
+                      ? [{ verificationStatus: { in: matchingStatuses } }]
+                      : []),
+                  ],
+                },
+              ],
+            }
+          : {}),
       },
       include: {
         role: true,
