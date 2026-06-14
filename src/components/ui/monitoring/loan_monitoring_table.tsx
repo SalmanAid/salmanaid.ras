@@ -21,29 +21,29 @@ import { formatCurrency } from "@/lib/utils"
 // ===============================
 const StatusActionDict = {
     "FORGIVEN": {
-        "status_bg": "#FEF3C6",
-        "status_text": "#BB4D00",
+        "status_bg": "#F3E8FF", // bg-purple-100
+        "status_text": "#6B21A8", // text-purple-800
         "action_caption": "Review",
         "action_bg": "#E0F7FA",
         "action_text": "#00B5D8",
     },
     "ACTIVE": {
-        "status_bg": "#D0FAE5",
-        "status_text": "#007A55",
+        "status_bg": "#DBEAFE", // bg-blue-100
+        "status_text": "#1E40AF", // text-blue-800
         "action_caption": "See Detail",
         "action_bg": "#FEFCE8",
         "action_text": "#FCB82E",
     },
     "PAID": {
-        "status_bg": "#D0FAE5",
-        "status_text": "#007A55",
+        "status_bg": "#D1FAE5", // bg-green-100
+        "status_text": "#065F46", // text-green-800
         "action_caption": "See Detail",
         "action_bg": "#FEFCE8",
         "action_text": "#FCB82E",
     },
     "DEFAULTED": {
-        "status_bg": "#FFE2E2",
-        "status_text": "#C10007",
+        "status_bg": "#FEE2E2", // bg-red-100
+        "status_text": "#991B1B", // text-red-800
         "action_caption": "See Detail",
         "action_bg": "#FEFCE8",
         "action_text": "#FCB82E",
