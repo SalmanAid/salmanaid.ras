@@ -8,8 +8,10 @@ import { createBusinessRecordFromSettledPayment } from '@/services/payment-fulfi
  * POST /api/payments/midtrans/notification
  */
 export async function POST(request: NextRequest) {
+  console.log('[NOTIFICATION-DEBUG] POST /api/payments/midtrans/notification received');
   try {
     const payload = await request.json();
+    console.log('[NOTIFICATION-DEBUG] Payload received:', JSON.stringify(payload).slice(0, 500));
 
     const signatureValid = verifyMidtransSignature(payload);
     if (!signatureValid) {
@@ -47,10 +49,18 @@ export async function POST(request: NextRequest) {
     });
 
     if (finalStatus === 'SETTLEMENT') {
-      await createBusinessRecordFromSettledPayment({
-        ...paymentTransaction,
-        status: finalStatus,
-      });
+      try {
+        await createBusinessRecordFromSettledPayment({
+          ...paymentTransaction,
+          status: finalStatus,
+        });
+      } catch (fundReturnError) {
+        console.error('[NOTIFICATION-DEBUG] ERROR inside createBusinessRecordFromSettledPayment:', fundReturnError);
+        if (fundReturnError instanceof Error) {
+          console.error('[NOTIFICATION-DEBUG] Error message:', fundReturnError.message);
+          console.error('[NOTIFICATION-DEBUG] Stack trace:', fundReturnError.stack);
+        }
+      }
     }
 
     return NextResponse.json(
@@ -62,6 +72,11 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
+    console.error('[NOTIFICATION-DEBUG] UNCAUGHT ERROR in notification route:', error);
+    if (error instanceof Error) {
+      console.error('[NOTIFICATION-DEBUG] Error message:', error.message);
+      console.error('[NOTIFICATION-DEBUG] Stack trace:', error.stack);
+    }
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process webhook',

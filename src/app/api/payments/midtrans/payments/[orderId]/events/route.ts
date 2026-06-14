@@ -10,6 +10,8 @@ export const dynamic = 'force-dynamic';
 const developerFallbackPollingEnabled =
   process.env.MIDTRANS_DEV_FALLBACK_POLLING === 'true';
 
+const SSE_DBG = '[SSE-DEBUG]';
+
 function toSseEvent(event: string, data: unknown) {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 }
@@ -109,6 +111,7 @@ export async function GET(
           });
 
           if (!latestTransaction) {
+            console.log(`${SSE_DBG} [${orderId}] paymentTransaction disappeared from DB. Closing stream.`);
             controller.enqueue(
               encoder.encode(
                 toSseEvent('payment-error', { error: 'Payment transaction not found' })
@@ -119,13 +122,17 @@ export async function GET(
           }
 
           pollCount += 1;
+          console.log(`${SSE_DBG} [${orderId}] poll #${pollCount} — dbStatus=${latestTransaction.status} fallbackEnabled=${developerFallbackPollingEnabled} willSync=${developerFallbackPollingEnabled && latestTransaction.status === 'PENDING' && pollCount % 5 === 0}`);
+
           if (
             developerFallbackPollingEnabled &&
             latestTransaction.status === 'PENDING' &&
             pollCount % 5 === 0
           ) {
+            console.log(`${SSE_DBG} [${orderId}] Triggering Midtrans sync at poll #${pollCount}...`);
             const synced = await syncPaymentTransactionFromMidtrans(orderId);
             if (!synced.paymentTransaction) {
+              console.log(`${SSE_DBG} [${orderId}] syncPaymentTransactionFromMidtrans returned null. Closing stream.`);
               controller.enqueue(
                 encoder.encode(
                   toSseEvent('payment-error', { error: 'Payment transaction not found' })
@@ -134,6 +141,7 @@ export async function GET(
               closeStream();
               return;
             }
+            console.log(`${SSE_DBG} [${orderId}] Sync complete. New status in DB=${synced.paymentTransaction.status}`);
           }
 
           const refreshedTransaction =
@@ -167,6 +175,7 @@ export async function GET(
           }
 
           if (['SETTLEMENT', 'EXPIRE', 'FAILURE'].includes(refreshedTransaction.status)) {
+            console.log(`${SSE_DBG} [${orderId}] Terminal status reached: ${refreshedTransaction.status}. Closing stream.`);
             closeStream();
           }
         } catch (error) {
@@ -182,6 +191,7 @@ export async function GET(
         }
       };
 
+      console.log(`${SSE_DBG} [${orderId}] SSE stream opened. fallbackPollingEnabled=${developerFallbackPollingEnabled}`);
       controller.enqueue(
         encoder.encode(
           toSseEvent('connected', { success: true, orderId })
@@ -194,6 +204,7 @@ export async function GET(
       }, 2000);
     },
     cancel() {
+      console.log(`${SSE_DBG} [${orderId}] SSE stream cancelled by client (navigated away or connection dropped).`);
       if (intervalId) clearInterval(intervalId);
     },
   });

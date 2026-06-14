@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { DonationInput } from "@/schemas/donations.schema";
 import { randomUUID } from "crypto";
+import { DonorTrackingService } from "./donor-tracking.service";
 
 type DistributionStatus = "Pending" | "Distributed";
 
@@ -56,23 +57,19 @@ export const DonationService = {
     try {
       const donations = await prisma.donorFund.findMany({
         where: {
-          // Only fetch funds that still have money available to allocate
-          remaining: {
-            gt: 0,
-          },
+          remaining: { gt: 0 },
         },
         select: {
           id: true,
+          donorId: true,
           amount: true,
           remaining: true,
-          // Fetches the User who owns this fund
           donor: {
             select: {
               name: true,
               image: true,
             },
           },
-          // Fetches transaction details to identify the "fund type"
           paymentTransaction: {
             select: {
               paymentType: true,
@@ -84,18 +81,35 @@ export const DonationService = {
         },
       });
 
-      // We map the data so the frontend receives a clean, flattened object
-      const formattedDonations = donations.map((d) => ({
-        id: d.id,
-        name: d.donor.name,
-        image: d.donor.image,
-        available: Number(d.remaining), // Convert Prisma Decimal to Number
-        totalAmount: Number(d.amount),
-        fund: d.paymentTransaction?.paymentType || "Donasi Umum",
-      }));
+      type GroupedDonation = {
+        id: string;
+        name: string | null;
+        image: string | null;
+        available: number;
+        totalAmount: number;
+        fund: string;
+      };
+      const groupedDonations = new Map<string, GroupedDonation>();
+      for (const d of donations) {
+        if (!d.donorId || !d.donor) continue;
+        const existing = groupedDonations.get(d.donorId);
+        if (existing) {
+          existing.available += Number(d.remaining);
+          existing.totalAmount += Number(d.amount);
+        } else {
+          groupedDonations.set(d.donorId, {
+            id: d.donorId, // We map the donorId to id for the frontend
+            name: d.donor.name,
+            image: d.donor.image,
+            available: Number(d.remaining),
+            totalAmount: Number(d.amount),
+            fund: d.paymentTransaction?.paymentType || "Donasi Umum",
+          });
+        }
+      }
 
       return {
-        donations: formattedDonations,
+        donations: Array.from(groupedDonations.values()),
       };
     } catch (error) {
       console.error("Error fetching donor funds:", error);
@@ -153,32 +167,25 @@ export const DonationService = {
         }
       );
 
-      const recentDistributions: DonorDashboardDistribution[] = donorFunds
-        .slice(0, 5)
-        .map((fund) => {
-          const amount = Number(fund.amount);
-          const remaining = Number(fund.remaining);
-          const status = mapDistributionStatus(amount, remaining);
-          const distributionAmount = status === "Distributed" ? Math.max(amount - remaining, 0) : amount;
-
-          return {
-            id: fund.id,
-            date: fund.createdAt.toISOString(),
-            programName: fund.paymentTransaction?.paymentType
-              ? `${fund.paymentTransaction.paymentType} Program`
-              : "Student Support Program",
-            amount: distributionAmount,
-            status,
-          };
-        });
+      const { distributions: recentDistributions } = await DonorTrackingService.getDonorDistributions({
+        donorId: userId,
+        limit: 5,
+      });
 
       return {
         summary: {
           totalDonated: summarySeed.totalDonated,
           activeImpact: summarySeed.activeImpact,
+          undistributedBalance: Math.max(summarySeed.totalDonated - summarySeed.totalAllocated, 0),
           currentRank: rankFromTotalDonation(summarySeed.totalDonated),
         },
-        recentDistributions,
+        recentDistributions: recentDistributions.map((d: any) => ({
+          id: d.id,
+          date: d.allocatedAt,
+          programName: d.description,
+          amount: d.allocatedAmount,
+          status: d.status === "RETURNED" ? "Distributed" : "Pending",
+        })),
         quickSelectAmounts: QUICK_SELECT_AMOUNTS,
       };
     } catch (error) {

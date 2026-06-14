@@ -9,8 +9,11 @@ import { createBusinessRecordFromSettledPayment } from '@/services/payment-fulfi
  * Midtrans webhook endpoint for backend integration.
  */
 export async function POST(request: NextRequest) {
+  console.log('[WEBHOOK-DEBUG] POST /api/payments/midtrans/webhook received');
   try {
     const payload = await request.json();
+    console.log('[WEBHOOK-DEBUG] Payload received:', JSON.stringify(payload).slice(0, 500));
+
 
     const signatureValid = verifyMidtransSignature(payload);
     if (!signatureValid) {
@@ -52,10 +55,18 @@ export async function POST(request: NextRequest) {
     });
 
     if (finalStatus === 'SETTLEMENT') {
-      await createBusinessRecordFromSettledPayment({
-        ...paymentTransaction,
-        status: finalStatus,
-      });
+      try {
+        await createBusinessRecordFromSettledPayment({
+          ...paymentTransaction,
+          status: finalStatus,
+        });
+      } catch (fundReturnError) {
+        console.error('[WEBHOOK-DEBUG] ERROR inside createBusinessRecordFromSettledPayment:', fundReturnError);
+        if (fundReturnError instanceof Error) {
+          console.error('[WEBHOOK-DEBUG] Error message:', fundReturnError.message);
+          console.error('[WEBHOOK-DEBUG] Stack trace:', fundReturnError.stack);
+        }
+      }
     }
 
     return NextResponse.json(
@@ -70,6 +81,11 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
+    console.error('[WEBHOOK-DEBUG] UNCAUGHT ERROR in webhook route:', error);
+    if (error instanceof Error) {
+      console.error('[WEBHOOK-DEBUG] Error message:', error.message);
+      console.error('[WEBHOOK-DEBUG] Stack trace:', error.stack);
+    }
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to process webhook',

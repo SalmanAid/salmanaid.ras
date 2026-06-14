@@ -47,8 +47,13 @@ export async function GET(
       referenceId: paymentTransaction.referenceId,
       currentUserId: currentUser.id,
       findLoanBorrowerId: async (loanId) => {
-        const loan = await prisma.loan.findUnique({
-          where: { id: loanId },
+        const loan = await prisma.loan.findFirst({
+          where: { 
+            OR: [
+              { id: loanId },
+              { applicationId: loanId }
+            ]
+          },
           select: {
             application: {
               select: {

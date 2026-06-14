@@ -8,7 +8,7 @@ const AmountSchema = z
 
 export const CreateLoanFundingSchema = z.object({
   loanId: z.string().uuid("loanId harus berupa UUID yang valid"),
-  donorFundId: z.string().uuid("donorFundId harus berupa UUID yang valid"),
+  donorId: z.string().uuid("donorId harus berupa UUID yang valid"),
   amount: AmountSchema,
 });
 
