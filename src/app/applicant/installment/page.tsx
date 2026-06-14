@@ -10,6 +10,8 @@ import ApplicantDashboard_ApplicantNavbar from "@/components/ui/applicant-dashbo
 import { useRepaymentStore } from "@/hooks/repaymentStore";
 import { useUserStore } from "@/hooks/userStore";
 import { PaymentMethod, TransactionType, VABank } from "@/types/donation";
+import { CurrencyInput } from "@/components/ui/currency-input";
+import { formatCurrency } from "@/lib/utils";
 
 type UserRoleOverview = {
 	role: string;
@@ -25,14 +27,7 @@ const REPAYMENT_STEPS = [
 	{ id: 4, label: "Konfirmasi" },
 ] as const;
 
-const formatIdr = (value: number) =>
-	new Intl.NumberFormat("id-ID", {
-		style: "currency",
-		currency: "IDR",
-		maximumFractionDigits: 0,
-	})
-		.format(value)
-		.replace("Rp", "Rp ");
+const formatIdr = formatCurrency;
 
 const QUICK_AMOUNTS = [50000, 100000, 250000, 500000];
 
@@ -179,13 +174,6 @@ export default function InstallmentPage({ searchParams }: InstallmentPageProps) 
 		setError("");
 	};
 
-	const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const nextValue = e.target.value;
-		setAmountInput(nextValue);
-		setAmount(nextValue === "" ? 0 : Number(nextValue));
-		setError("");
-	};
-
 	const handleSubmit = async () => {
 		setError("");
 
@@ -200,7 +188,7 @@ export default function InstallmentPage({ searchParams }: InstallmentPageProps) 
 		}
 
 		if (paymentMethod === "qris" && parsedAmount < 1500) {
-			setError("Minimum nilai transaksi QRIS adalah IDR 1,500");
+			setError(`Minimum nilai transaksi QRIS adalah ${formatCurrency(1500)}`);
 			return;
 		}
 
@@ -443,19 +431,20 @@ export default function InstallmentPage({ searchParams }: InstallmentPageProps) 
 									<div className="mb-4">
 										<label className="mb-1.5 block text-[12px] font-semibold text-gray-700">Jumlah Custom</label>
 										<div className="relative">
-											<input
-												type="number"
+											<CurrencyInput
 												value={amountInput}
-												onChange={handleAmountChange}
-												placeholder="0"
-												min={paymentMethod === "qris" ? "1500" : "1000"}
-												step="1000"
+												onValueChange={(value, rawDigits) => {
+													setAmountInput(rawDigits ? String(value) : "");
+													setAmount(value);
+													setError("");
+												}}
+												placeholder="Rp0"
 												className="w-full rounded-lg border border-gray-300 px-3 py-2 text-[14px] transition-all focus:outline-none focus:ring-2 focus:ring-[#07B0C8]/50"
 												disabled={!canProceed}
 											/>
 										</div>
 										<p className="mt-1 text-[10px] text-gray-400 italic">
-											Min: {paymentMethod === "qris" ? "IDR 1,500" : "IDR 1,000"}
+											Min: {paymentMethod === "qris" ? formatCurrency(1500) : formatCurrency(1000)}
 										</p>
 									</div>
 								</>

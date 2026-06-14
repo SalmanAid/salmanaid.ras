@@ -7,13 +7,14 @@ import { signOut, useSession } from "next-auth/react";
 import { useMemo } from "react";
 import { ChevronDown } from "lucide-react";
 
-import RumahAmalHorizontalLogo from "../../../../public/rumah-amal-horizontal-logo.svg"
 import UserPersonaLogo from "../../../../public/user_persona.svg"
 
 import { useUserStore } from "@/hooks/userStore";
 import AccountVerificationBanner from "@/components/ui/account-verification-banner";
+import { useRoleShell } from "@/components/cms/role-shell-provider";
 
 export default function DonorDashboard_DonorNavbar() {
+    const shell = useRoleShell("DONOR");
     const pathname = usePathname();
     const { data: session } = useSession();
     const usernameFromStore = useUserStore((state) => (state.user?.username));
@@ -27,8 +28,8 @@ export default function DonorDashboard_DonorNavbar() {
         : { href: "/account/roles?role=BORROWER&from=DONOR", label: "Daftar sebagai Peminjam" };
 
     const menuItems = [
-        { href: "/donor/dashboard", label: "Dashboard" },
-        { href: "/donor/donate-form", label: "Donasi" },
+        { href: "/donor/dashboard", label: shell.menuLabels.dashboard },
+        { href: "/donor/donate-form", label: shell.menuLabels.donate || "Donasi" },
     ];
     
     return (
@@ -41,8 +42,8 @@ export default function DonorDashboard_DonorNavbar() {
                     <div className="shrink-0">
                         <Link href="/donor/dashboard" className="flex items-center">
                             <Image
-                                src={RumahAmalHorizontalLogo}
-                                alt="Rumah Amal Salman"
+                                src={shell.logoUrl}
+                                alt={shell.logoAlt}
                                 width={115}
                                 height={40}
                                 className="h-10 w-auto"
@@ -121,7 +122,7 @@ export default function DonorDashboard_DonorNavbar() {
                                     href="/profile?from=DONOR"
                                     className="flex w-full items-center rounded-lg px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
                                 >
-                                    Profil
+                                    {shell.menuLabels.profile}
                                 </Link>
                                 <Link
                                     href={borrowerAction.href}
@@ -134,7 +135,7 @@ export default function DonorDashboard_DonorNavbar() {
                                     onClick={() => signOut({ callbackUrl: "/login" })}
                                     className="flex w-full items-center rounded-lg px-3 py-2 text-left text-[12.5px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#07B0C8]"
                                 >
-                                    Logout
+                                    {shell.menuLabels.logout}
                                 </button>
                             </div>
                         </div>

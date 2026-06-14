@@ -1,13 +1,11 @@
 import { LoanApplicationStatus, LoanStatus, Prisma, RepaymentStatus } from "@/generated/prisma";
 import { prisma } from "@/lib/prisma";
 import { ROLES } from "@/lib/roles";
-import { supabaseAdmin } from "@/lib/supabase";
 import { batchGenerateSignedUrls } from "@/lib/supabase-batch";
 import { LoanApplicationInput } from "@/schemas/loan.schema";
 import { AccountVerificationService } from "@/services/account-verification.service";
 import { NotificationService } from "@/services/notification.service";
 
-const BUCKET_NAME = process.env.SUPABASE_BUCKET_NAME || "loan-documents";
 const JAKARTA_TIME_ZONE = "Asia/Jakarta";
 
 function toJakartaDateKey(date: Date) {
@@ -35,6 +33,157 @@ function differenceInJakartaCalendarDays(from: Date, to: Date) {
   const toUtc = new Date(`${toKey}T00:00:00.000Z`);
 
   return Math.round((toUtc.getTime() - fromUtc.getTime()) / 86400000);
+}
+
+function getSearchNumber(search: string) {
+  if (!/^(?:rp\s*)?[\d.,\s]+$/i.test(search)) return null;
+
+  const digits = search.replace(/\D/g, "");
+  const value = digits ? Number(digits) : NaN;
+  return Number.isFinite(value) ? value : null;
+}
+
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+function buildLoanApplicationSearchWhere(search?: string): Prisma.LoanApplicationWhereInput | undefined {
+  const query = search?.trim();
+  if (!query) return undefined;
+
+  const amount = getSearchNumber(query);
+  const normalizedStatus = query.toUpperCase();
+  const statuses = Object.values(LoanApplicationStatus);
+
+  return {
+    OR: [
+      ...(isUuid(query) ? [{ id: query }, { borrowerId: query }] : []),
+      { description: { contains: query, mode: "insensitive" } },
+      { collateralDescription: { contains: query, mode: "insensitive" } },
+      {
+        borrower: {
+          is: {
+            OR: [
+              { name: { contains: query, mode: "insensitive" } },
+              { email: { contains: query, mode: "insensitive" } },
+              { nik: { contains: query, mode: "insensitive" } },
+              { phone_number: { contains: query, mode: "insensitive" } },
+              { address: { contains: query, mode: "insensitive" } },
+            ],
+          },
+        },
+      },
+      {
+        loan: {
+          is: {
+            OR: [
+              ...(isUuid(query) ? [{ id: query }] : []),
+              ...(amount !== null ? [{ approvedAmount: { equals: amount } }] : []),
+              {
+                fundings: {
+                  some: {
+                    donorFund: {
+                      is: {
+                        donor: {
+                          is: {
+                            OR: [
+                              { name: { contains: query, mode: "insensitive" } },
+                              { email: { contains: query, mode: "insensitive" } },
+                            ],
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        },
+      },
+      {
+        attachments: {
+          some: {
+            OR: [
+              { documentType: { contains: query, mode: "insensitive" } },
+              { fileUrl: { contains: query, mode: "insensitive" } },
+            ],
+          },
+        },
+      },
+      ...(amount !== null ? [{ requestedAmount: { equals: amount } }] : []),
+      ...(statuses.includes(normalizedStatus as LoanApplicationStatus)
+        ? [{ status: normalizedStatus as LoanApplicationStatus }]
+        : []),
+    ],
+  };
+}
+
+function buildLoanSearchWhere(search?: string): Prisma.LoanWhereInput | undefined {
+  const query = search?.trim();
+  if (!query) return undefined;
+
+  const amount = getSearchNumber(query);
+  const normalizedStatus = query.toUpperCase();
+  const statuses = Object.values(LoanStatus);
+
+  return {
+    OR: [
+      ...(isUuid(query) ? [{ id: query }, { applicationId: query }] : []),
+      ...(amount !== null
+        ? [
+            { approvedAmount: { equals: amount } },
+            { repayments: { some: { amount: { equals: amount } } } },
+            { fundings: { some: { amount: { equals: amount } } } },
+          ]
+        : []),
+      ...(statuses.includes(normalizedStatus as LoanStatus)
+        ? [{ status: normalizedStatus as LoanStatus }]
+        : []),
+      {
+        application: {
+          is: {
+            OR: [
+              { description: { contains: query, mode: "insensitive" } },
+              { collateralDescription: { contains: query, mode: "insensitive" } },
+              ...(amount !== null ? [{ requestedAmount: { equals: amount } }] : []),
+              {
+                borrower: {
+                  is: {
+                    OR: [
+                      { name: { contains: query, mode: "insensitive" } },
+                      { email: { contains: query, mode: "insensitive" } },
+                      { nik: { contains: query, mode: "insensitive" } },
+                      { phone_number: { contains: query, mode: "insensitive" } },
+                      { address: { contains: query, mode: "insensitive" } },
+                    ],
+                  },
+                },
+              },
+            ],
+          },
+        },
+      },
+      {
+        fundings: {
+          some: {
+            donorFund: {
+              is: {
+                donor: {
+                  is: {
+                    OR: [
+                      { name: { contains: query, mode: "insensitive" } },
+                      { email: { contains: query, mode: "insensitive" } },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    ],
+  };
 }
 
 /**
@@ -108,23 +257,19 @@ export const LoanService = {
     }
   },
 
-  async getLoanApplication(start: number, end: number, loanStatus? : LoanApplicationStatus) {
+  async getLoanApplication(start: number, end: number, loanStatus?: LoanApplicationStatus, search?: string) {
     try {
-      // Calculate the number of items to take
-      let loanApplications = null;
-      let totalCount = 0;
       const skip = Math.max(0, start);
       const take = Math.max(0, end - start);
+      const searchWhere = buildLoanApplicationSearchWhere(search);
+      const where: Prisma.LoanApplicationWhereInput = {
+        ...(loanStatus ? { status: loanStatus } : {}),
+        ...(searchWhere ? { AND: [searchWhere] } : {}),
+      };
 
-      // ==========================================
-      // 1. Fetch paginated loan applications
-      // ==========================================
-      if (loanStatus) {
-
-        loanApplications = await prisma.loanApplication.findMany({
-          where: { 
-            status: loanStatus
-          },
+      const [loanApplications, totalCount] = await prisma.$transaction([
+        prisma.loanApplication.findMany({
+          where,
           skip: skip,
           take: take,
           select: {
@@ -132,6 +277,7 @@ export const LoanService = {
             description: true,
             collateralDescription: true,
             requestedAmount: true,
+            installmentFreq: true,
             createdAt: true,
             status: true,
             loan: {
@@ -183,86 +329,11 @@ export const LoanService = {
           orderBy: { 
             createdAt: "desc" 
           },
-        });
-  
-        // ==========================================
-        // 2. Get total count for frontend pagination
-        // ==========================================
-        totalCount = await prisma.loanApplication.count({
-          where: { status: loanStatus }
-        });
-        
-      } else {
-        
-        loanApplications = await prisma.loanApplication.findMany({
-          skip: skip,
-          take: take,
-          select: {
-            id: true,
-            description: true,
-            collateralDescription: true,
-            requestedAmount: true,
-            createdAt: true,
-            status: true,
-            loan: {
-              select: {
-                id: true,
-                approvedAmount: true,
-                status: true,
-                fundings: {
-                  select: {
-                    id: true,
-                    donorFundId: true,
-                    sourceType: true,
-                    amount: true,
-                    donorFund: {
-                      select: {
-                        donor: {
-                          select: {
-                            name: true,
-                            email: true,
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-            attachments: {
-              select: {
-                id: true,
-                documentType: true,
-                fileUrl: true,
-                uploadedAt: true,
-              },
-              orderBy: {
-                uploadedAt: "desc",
-              },
-            },
-            // Using the relation from your schema: 'borrower'
-            borrower: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                image: true, // Included so your frontend Table can show the profile pic
-              },
-            },
-          },
-          orderBy: { 
-            createdAt: "desc" 
-          },
-        });
-  
-        // ==========================================
-        // 2. Get total count for frontend pagination
-        // ==========================================
-        totalCount = await prisma.loanApplication.count();
+        }),
+        prisma.loanApplication.count({ where }),
+      ]);
 
-      }
-
-      const loansWithSignedAttachments = await withSignedAttachmentUrls(loanApplications || []);
+      const loansWithSignedAttachments = await withSignedAttachmentUrls(loanApplications);
 
       return {
       
@@ -376,6 +447,7 @@ export const LoanService = {
     applicationId: string;
     adminId: string;
     approvedAmount: number;
+    installmentFreq?: number;
     notes?: string | null;
   }) {
     const approvedAmount = new Prisma.Decimal(input.approvedAmount);
@@ -401,10 +473,13 @@ export const LoanService = {
         throw new Error("APPLICATION_NOT_FOUND");
       }
 
+      const finalInstallmentFreq = input.installmentFreq ?? application.installmentFreq;
+
       const updatedApplication = await tx.loanApplication.update({
         where: { id: input.applicationId },
         data: {
           status: LoanApplicationStatus.APPROVED,
+          installmentFreq: finalInstallmentFreq,
         },
       });
 
@@ -421,7 +496,7 @@ export const LoanService = {
       }
 
       const dueDate = new Date(approvedAt);
-      dueDate.setMonth(dueDate.getMonth() + application.installmentFreq);
+      dueDate.setMonth(dueDate.getMonth() + finalInstallmentFreq);
 
       const loan = await tx.loan.upsert({
         where: {
@@ -430,6 +505,8 @@ export const LoanService = {
         update: {
           approvedAmount,
           status: LoanStatus.ACTIVE,
+          installmentFreq: finalInstallmentFreq,
+          dueDate,
         },
         create: {
           applicationId: input.applicationId,
@@ -437,7 +514,7 @@ export const LoanService = {
           status: LoanStatus.ACTIVE,
           approvedAt,
           dueDate,
-          installmentFreq : application.installmentFreq,
+          installmentFreq : finalInstallmentFreq,
         },
       });
 
@@ -515,11 +592,15 @@ export const LoanService = {
     });
   },
 
-  async getAllLoans(start: number, end: number, loanStatus?: LoanStatus) {
+  async getAllLoans(start: number, end: number, loanStatus?: LoanStatus, search?: string) {
     try {
       const skip = Math.max(0, start);
       const take = Math.max(0, end - start);
-      const whereClause = loanStatus ? { status: loanStatus } : {};
+      const searchWhere = buildLoanSearchWhere(search);
+      const whereClause: Prisma.LoanWhereInput = {
+        ...(loanStatus ? { status: loanStatus } : {}),
+        ...(searchWhere ? { AND: [searchWhere] } : {}),
+      };
 
       const [loans, totalCount] = await prisma.$transaction([
         prisma.loan.findMany({

@@ -16,6 +16,7 @@ import Image from 'next/image';
 import BlueHeartLogo from "../../../../../public/heart-blue.svg"
 import { useDonationStore } from '@/hooks/donationStore';
 import DonorDashboard_DonorNavbar from "@/components/ui/donor-dashboard/donor_navbar";
+import { formatCurrency } from "@/lib/utils";
 
 export default function PaymentSuccessPage() {
 
@@ -138,7 +139,7 @@ export default function PaymentSuccessPage() {
 
                     {/* Message */}
                     <p className="text-gray-600 mb-6">
-                        Donasi Rp {amount} dari Anda telah diterima.
+                        Donasi {formatCurrency(amount)} dari Anda telah diterima.
                     </p>
 
                     {/* donation detail table */}
@@ -158,7 +159,7 @@ export default function PaymentSuccessPage() {
 
                                 <TableRow>
                                 <TableHead>Jumlah</TableHead>
-                                <TableCell>{donation_detail.amount}</TableCell>
+                                <TableCell>{formatCurrency(donation_detail.amount)}</TableCell>
                                 </TableRow>
                             </TableBody>
                         </Table>

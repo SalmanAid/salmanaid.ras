@@ -11,6 +11,8 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ApplicantDashboard_ApplicantNavbar from "./applicant_navbar";
+import { CurrencyInput } from "@/components/ui/currency-input";
+import { formatCurrency } from "@/lib/utils";
 
 interface PaymentModalProps {
   type?: 'donation' | 'repayment';
@@ -24,14 +26,7 @@ const REPAYMENT_STEPS = [
   { id: 3, label: 'Konfirmasi' },
 ] as const;
 
-const formatIdr = (value: number) =>
-    new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        maximumFractionDigits: 0,
-    })
-    .format(value)
-    .replace('Rp', 'Rp ');
+const formatIdr = formatCurrency;
 
 const QUICK_AMOUNTS = [50000, 100000, 250000, 500000];
     
@@ -65,11 +60,6 @@ export default function ApplicantDashboard_PaymentApplicantComponent({
         setError('');
     };
     
-    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setAmount(Number(e.target.value));
-        setError('');
-    };
-    
     const handleSubmit = async () => {
         setError('');
     
@@ -84,7 +74,7 @@ export default function ApplicantDashboard_PaymentApplicantComponent({
         }
     
         if (paymentMethod === 'qris' && parseFloat(String(amount)) < 1500) {
-        setError('Minimum jumlah transaksi QRIS adalah IDR 1,500');
+        setError(`Minimum jumlah transaksi QRIS adalah ${formatCurrency(1500)}`);
         return;
         }
     
@@ -249,19 +239,19 @@ export default function ApplicantDashboard_PaymentApplicantComponent({
                     Jumlah Custom
                 </label>
                 <div className="relative">
-                    <input
-                    type="number"
+                    <CurrencyInput
                     value={amount}
-                    onChange={handleAmountChange}
-                    placeholder="0"
-                    min={paymentMethod === 'qris' ? '1500' : '1000'}
-                    step="1000"
+                    onValueChange={(value) => {
+                      setAmount(value);
+                      setError('');
+                    }}
+                    placeholder="Rp0"
                     className="w-full px-3 py-2 text-[14px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#07B0C8]/50 transition-all"
                     disabled={!paymentMethod}
                     />
                 </div>
                 <p className="text-[10px] text-gray-400 mt-1 italic">
-                    Min: {paymentMethod === 'qris' ? 'IDR 1,500' : 'IDR 1,000'}
+                    Min: {paymentMethod === 'qris' ? formatCurrency(1500) : formatCurrency(1000)}
                 </p>
                 </div>
             </div>

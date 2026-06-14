@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
     if (!admin.ok) return admin.response;
 
     const statusParam = request.nextUrl.searchParams.get("status");
+    const search = request.nextUrl.searchParams.get("search")?.trim().slice(0, 100) || undefined;
     const parsedStatus = statusParam ? StatusSchema.safeParse(statusParam) : null;
 
     if (statusParam && !parsedStatus?.success) {
@@ -53,7 +54,8 @@ export async function GET(request: NextRequest) {
     }
 
     const requests = await AccountVerificationService.listVerificationRequests(
-      parsedStatus?.success ? parsedStatus.data as AccountVerificationStatus : undefined
+      parsedStatus?.success ? parsedStatus.data as AccountVerificationStatus : undefined,
+      search
     );
 
     return NextResponse.json({ data: requests }, { status: 200 });

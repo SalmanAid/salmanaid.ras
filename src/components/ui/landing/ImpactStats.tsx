@@ -1,72 +1,47 @@
-'use client';
+import type { LandingSection } from "@/schemas/cms.schema";
+import type { LandingMetrics } from "@/services/landing-metrics.service";
+import { CmsIcon } from "@/components/cms/cms-icon";
+import { formatCurrency } from "@/lib/utils";
 
-import { DollarSign, Users, Percent } from 'lucide-react';
+type Data = Extract<LandingSection, { type: "impactStats" }>;
 
-interface Stat {
-  icon: React.ReactNode;
-  value: string;
-  label: string;
-  description: string;
+function formatMetric(card: Data["cards"][number], metrics: LandingMetrics) {
+  const isRupiah = card.prefix.trim().toLowerCase() === "rp";
+  if (card.metric === "manual") {
+    return isRupiah
+      ? `${formatCurrency(card.manualValue || 0)}${card.suffix}`
+      : `${card.prefix}${card.manualValue || "0"}${card.suffix}`;
+  }
+
+  const value = metrics[card.metric];
+  if (isRupiah) return `${formatCurrency(value)}${card.suffix}`;
+
+  const formatted = card.format === "compact"
+    ? new Intl.NumberFormat("id-ID", { notation: "compact", maximumFractionDigits: 1 }).format(value)
+    : card.format === "full"
+      ? new Intl.NumberFormat("id-ID").format(value)
+      : String(value);
+  return `${card.prefix}${formatted}${card.suffix}`;
 }
 
-const stats: Stat[] = [
-  {
-    icon: <DollarSign className="w-8 h-8" />,
-    value: 'Rp 2.5B+',
-    label: 'Total yang telah Didonasikan',
-    description: 'Dana terkumpul dari para donatur dermawan di seluruh Indonesia.',
-  },
-  {
-    icon: <Users className="w-8 h-8" />,
-    value: '500+',
-    label: 'Mahasiswa Terbantu',
-    description: 'Kehidupan berubah melalui pendanaan pendidikan yang mudah diakses',
-  },
-  {
-    icon: <Percent className="w-8 h-8" />,
-    value: '0%',
-    label: 'Bebas Bunga',
-    description: 'Bantuan keuangan yang sepenuhnya sesuai dengan syariah dan beretika',
-  },
-];
-
-export const ImpactStats = () => {
-  return (
-    <section className="bg-[#07B0C8] text-white py-16 md:py-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Dampak Kami</h2>
-          <div className="mx-auto mb-4 h-1 w-24 rounded-full bg-[#FCB82E]" />
-          <p className="text-cyan-100 text-sm md:text-[15px] max-w-2xl mx-auto">
-            Setiap angka mewakili kehidupan nyata yang diubah melalui kekuatan pemberian di bidang pendidikan.
-          </p>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="bg-white/12 rounded-xl p-12 text-center border border-white/20 hover:bg-white/15 transition-all"
-            >
-              {/* Icon */}
-              <div className="flex justify-center mb-6 text-white">
-                {stat.icon}
-              </div>
-
-              {/* Value */}
-              <h3 className="text-2xl md:text-5xl font-bold mb-2 text-white">{stat.value}</h3>
-
-              {/* Label */}
-              <p className="text-lg font-semibold mb-3 text-white">{stat.label}</p>
-
-              {/* Description */}
-              <p className="text-cyan-100 text-sm">{stat.description}</p>
-            </div>
-          ))}
-        </div>
+export const ImpactStats = ({ data, metrics }: { data: Data; metrics: LandingMetrics }) => (
+  <section id={data.id} className="bg-[#07B0C8] py-16 text-white md:py-24">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mb-14 text-center">
+        <h2 className="mb-4 text-3xl font-bold md:text-4xl">{data.title}</h2>
+        <div className="mx-auto mb-4 h-1 w-24 rounded-full bg-[#FCB82E]" />
+        <p className="mx-auto max-w-2xl text-sm text-cyan-100 md:text-[15px]">{data.description}</p>
       </div>
-    </section>
-  );
-};
+      <div className={`grid grid-cols-1 gap-8 ${data.cards.length >= 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
+        {data.cards.map((card) => (
+          <article key={card.id} className="rounded-xl border border-white/20 bg-white/12 p-10 text-center transition-all hover:bg-white/15">
+            <div className="mb-6 flex justify-center"><CmsIcon name={card.icon} className="h-8 w-8" /></div>
+            <h3 className="mb-2 text-3xl font-bold text-white md:text-5xl">{formatMetric(card, metrics)}</h3>
+            <p className="mb-3 text-lg font-semibold text-white">{card.label}</p>
+            <p className="text-sm text-cyan-100">{card.description}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+);

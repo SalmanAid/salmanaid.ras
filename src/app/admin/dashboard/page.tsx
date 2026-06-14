@@ -16,13 +16,9 @@ import {
   exportAnalyticsToPdf,
   getFinancialReportDateBounds,
 } from "@/lib/xlsx_converter";
+import { formatCurrency } from "@/lib/utils";
 
-const formatRupiah = (value: number) =>
-  new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(value);
+const formatRupiah = formatCurrency;
 
 export default function AdminDashboardPage() {
   const statistics = useAdminDashboardStore((state) => state.statistics);

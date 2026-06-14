@@ -15,6 +15,7 @@ export type LoanApplication = {
 
   // loan details
   requestedAmount: number;
+  installmentFreq: number;
   description: string;
   collateralDescription?: string;
   status: string;

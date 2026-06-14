@@ -9,6 +9,12 @@ const ApproveApplicationSchema = z.object({
     .transform((value) => Number(value))
     .refine((value) => Number.isFinite(value), "approvedAmount harus berupa angka")
     .refine((value) => value > 0, "approvedAmount harus lebih dari 0"),
+  installmentFreq: z
+    .union([z.number(), z.string()])
+    .transform((value) => Number(value))
+    .refine((value) => Number.isFinite(value), "Durasi harus berupa angka")
+    .refine((value) => value > 0, "Durasi harus lebih dari 0")
+    .optional(),
   notes: z.string().optional().nullable(),
 });
 
@@ -42,6 +48,7 @@ export async function POST(
       applicationId,
       adminId: session.user.id,
       approvedAmount: parsed.data.approvedAmount,
+      installmentFreq: parsed.data.installmentFreq,
       notes: parsed.data.notes,
     });
 

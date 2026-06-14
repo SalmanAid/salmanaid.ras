@@ -1,6 +1,7 @@
 
 import { useApplicationProgressStore } from "@/hooks/applicationProgressStore"
 import { useState } from "react"
+import { CurrencyInput } from "@/components/ui/currency-input"
 
 export default function ApplicantForm_FinancialNeedsSection() {
 
@@ -16,12 +17,6 @@ export default function ApplicantForm_FinancialNeedsSection() {
 
     const incrementStep = useApplicationProgressStore((state) => state.incrementStep)
     const decrementStep = useApplicationProgressStore((state) => state.decrementStep)
-    const [requestedAmountInput, setRequestedAmountInput] = useState(
-        Number.isFinite(requested_amount ?? NaN) && requested_amount !== 0
-            ? String(requested_amount)
-            : ""
-    )
-
     const [installmentFreqInput, setInstallmentFreqInput] = useState(
         Number.isFinite(installment_freq ?? NaN) && installment_freq !== 0
             ? String(installment_freq)
@@ -35,12 +30,6 @@ export default function ApplicantForm_FinancialNeedsSection() {
     const handleContinue = async () => {
         if (!isStepComplete) return
         incrementStep()
-    }
-
-    const handleRequestedAmountChange = (value: string) => {
-        const normalizedValue = value.replace(/[^\d]/g, "")
-        setRequestedAmountInput(normalizedValue)
-        setRequestedAmount(normalizedValue === "" ? 0 : Number(normalizedValue))
     }
 
     const handleInstallmentFreqChange = (value: string) => {
@@ -109,13 +98,12 @@ export default function ApplicantForm_FinancialNeedsSection() {
 
                 <label className="block">
                     <span className={labelClassName}>Jumlah yang Diajukan (Rp) *</span>
-                    <input
-                        value={requestedAmountInput}
-                        onChange={(e) => handleRequestedAmountChange(e.target.value)}
+                    <CurrencyInput
+                        value={requested_amount}
+                        onValueChange={(value) => setRequestedAmount(value)}
                         onKeyDown={(e) => e.key === "Enter"}
-                        inputMode="numeric"
                         className={`${inputClassName} mt-2`}
-                        placeholder="e.g., 5000000"
+                        placeholder="Rp5.000.000"
                     />
                 </label>
 

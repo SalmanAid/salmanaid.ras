@@ -10,16 +10,13 @@ import { useState } from "react";
 import AdminDashboard_AdminNavbar from "@/components/ui/admin-dashboard/admin_navbar";
 import MapFundsModal from "@/components/ui/loan-request/fund_allocation_card";
 import { FileText } from "lucide-react";
+import { CurrencyInput } from "@/components/ui/currency-input";
+import { formatCurrency } from "@/lib/utils";
 
 const StatusActionDict = {
     "PENDING": { "status_color": "#FEF3C6", "text_color": "#BB4D00" },
     "APPROVED": { "status_color": "#D0FAE5", "text_color": "#007A55" },
     "REJECTED": { "status_color": "#FFE2E2", "text_color": "#C10007" },
-}
-
-const formatCurrency = (val: number | string) => {
-    const num = Number(val) || 0;
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num).replace("IDR", "Rp");
 }
 
 function InfoBlock({ label, value }: { label: string, value: string | number | null | undefined }) {
@@ -77,12 +74,14 @@ export default function ReviewLoanApplicationPage() {
     const [isRejecting, setIsRejecting] = useState(false);
     
     const setApprovedAmount = useLoanRequestStore((state) => state.setApprovedAmount);
+    const setInstallmentFreq = useLoanRequestStore((state) => state.setInstallmentFreq);
     const setRejectionApprovalNote = useLoanRequestStore((state) => state.setRejectionApprovalNote);
     const setAllocationFundModalOpen = useLoanRequestStore((state) => state.setAllocationFundModalOpen);
     const setSelectedLoan = useLoanRequestStore((state) => state.setSelectedLoan);
 
     const submitTime = selectedLoan?.createdAt ? new Date(selectedLoan.createdAt).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' }) : "Recently";
     const approvedAmount = selectedLoan?.approvedAmount || "";
+    const installmentFreq = selectedLoan?.installmentFreq || 4;
     const rejectionApprovalNote = selectedLoan?.rejectionApprovalNotes || "";
     const status = (selectedLoan?.status || "PENDING").toUpperCase();
     const isPending = status === "PENDING";
@@ -130,6 +129,7 @@ export default function ReviewLoanApplicationPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     approvedAmount: amount,
+                    installmentFreq: installmentFreq,
                     notes: rejectionApprovalNote || undefined,
                 }),
             });
@@ -143,6 +143,7 @@ export default function ReviewLoanApplicationPage() {
                 ...selectedLoan,
                 status: "APPROVED",
                 loanId: result.data.loan.id,
+                installmentFreq: installmentFreq,
                 loan: {
                     ...result.data.loan,
                     fundings: result.data.loan.fundings || [],
@@ -282,17 +283,31 @@ export default function ReviewLoanApplicationPage() {
                     {isPending && (
                         <div className="flex flex-col gap-2">
                             <label className="text-xs sm:text-sm font-bold text-slate-700">Jumlah Disetujui Admin</label>
-                            <input
-                                type="number"
+                            <CurrencyInput
                                 value={approvedAmount}
-                                onChange={(e) => setApprovedAmount(Number(e.target.value))}
+                                onValueChange={(value) => setApprovedAmount(value)}
                                 className="w-full p-2.5 sm:p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#07B0C8] outline-none font-bold text-base sm:text-lg"
                                 placeholder="Masukkan nominal yang disetujui"
-                                min={1}
-                                max={Number(selectedLoan.requestedAmount)}
                             />
                             <p className="text-[11px] text-slate-400 leading-tight">
                                 Boleh lebih kecil dari jumlah yang diajukan, maksimal {formatCurrency(selectedLoan.requestedAmount)}.
+                            </p>
+                        </div>
+                    )}
+
+                    {isPending && (
+                        <div className="flex flex-col gap-2">
+                            <label className="text-xs sm:text-sm font-bold text-slate-700">Durasi Pinjaman (Bulan)</label>
+                            <input
+                                type="number"
+                                value={installmentFreq}
+                                onChange={(e) => setInstallmentFreq(Number(e.target.value))}
+                                className="w-full p-2.5 sm:p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#07B0C8] outline-none font-bold text-base sm:text-lg"
+                                placeholder="Masukkan durasi dalam bulan"
+                                min={1}
+                            />
+                            <p className="text-[11px] text-slate-400 leading-tight">
+                                Tentukan durasi pinjaman dalam satuan bulan.
                             </p>
                         </div>
                     )}
@@ -302,6 +317,10 @@ export default function ReviewLoanApplicationPage() {
                             <div className="bg-emerald-50 p-3.5 sm:p-4 rounded-xl border border-emerald-100">
                                 <p className="text-[10px] sm:text-xs text-emerald-700 font-medium uppercase mb-1">Jumlah Disetujui</p>
                                 <p className="text-xl sm:text-2xl font-black text-emerald-700">{formatCurrency(approvedLoanAmount)}</p>
+                            </div>
+                            <div className="bg-emerald-50 p-3.5 sm:p-4 rounded-xl border border-emerald-100">
+                                <p className="text-[10px] sm:text-xs text-emerald-700 font-medium uppercase mb-1">Durasi Disetujui</p>
+                                <p className="text-xl sm:text-2xl font-black text-emerald-700">{installmentFreq} Bulan</p>
                             </div>
                             <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
                                 <div className="bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200">

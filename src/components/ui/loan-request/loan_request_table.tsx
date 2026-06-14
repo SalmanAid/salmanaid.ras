@@ -12,6 +12,7 @@ import { useLoanRequestStore } from "@/hooks/loanRequestStore"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import DefaultAvatarLogo from "../../../../public/default-avatar.svg"
+import { formatCurrency } from "@/lib/utils"
 
 // ===============================
 // HELPERS
@@ -39,14 +40,6 @@ const StatusActionDict = {
         "action_text": "#FCB82E",
     },
 }
-
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        maximumFractionDigits: 0
-    }).format(amount).replace("IDR", "Rp");
-};
 
 const formatDate = (dateInput: string | number | Date) => {
     const date = new Date(dateInput);
@@ -83,6 +76,7 @@ type LoanRequestRow = {
     intakeYear?: number;
     address?: string;
     requestedAmount: number | string;
+    installmentFreq: number;
     description?: string | null;
     collateralDescription?: string | null;
     status?: string;
@@ -135,6 +129,7 @@ export default function LoanRequest_LoanRequestsTable({ isLoading = false }: { i
             intakeYear: loan.intakeYear || 2022,
             address: loan.address || "",
             requestedAmount: Number(loan.requestedAmount),
+            installmentFreq: loan.installmentFreq || 4,
             description: loan.description || "",
             collateralDescription: loan.collateralDescription || "",
             status,
