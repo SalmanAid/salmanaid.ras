@@ -159,7 +159,7 @@ export default function MapFundsModal() {
           },
           body: JSON.stringify({
             loanId: currentLoanId,
-            donorFundId: allocation.donor.id,
+            donorId: allocation.donor.id, // mapped from the donorId in the backend
             amount: Number(allocation.amount),
           }),
         });

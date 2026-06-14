@@ -32,6 +32,24 @@ export async function createBusinessRecordFromSettledPayment(paymentTransaction:
 
   if (paymentTransaction.category === TransactionCategory.REPAYMENT) {
     await prisma.$transaction(async (tx) => {
+      const loanByRef = await tx.loan.findFirst({
+        where: { 
+          OR: [
+            { id: paymentTransaction.referenceId },
+            { applicationId: paymentTransaction.referenceId }
+          ]
+        },
+        select: {
+          id: true,
+          approvedAmount: true,
+          status: true,
+        },
+      });
+
+      if (!loanByRef) {
+        return;
+      }
+
       const existingRepayment = await tx.repayment.findUnique({
         where: { paymentTransactionId: paymentTransaction.id },
       });
@@ -39,7 +57,7 @@ export async function createBusinessRecordFromSettledPayment(paymentTransaction:
       if (!existingRepayment) {
         await tx.repayment.create({
           data: {
-            loanId: paymentTransaction.referenceId,
+            loanId: loanByRef.id,
             paymentTransactionId: paymentTransaction.id,
             amount: paymentTransaction.amount,
             paidAt: new Date(),
@@ -53,37 +71,50 @@ export async function createBusinessRecordFromSettledPayment(paymentTransaction:
         });
       }
 
-      const [loan, repaymentTotals] = await Promise.all([
-        tx.loan.findUnique({
-          where: { id: paymentTransaction.referenceId },
-          select: {
-            approvedAmount: true,
-            status: true,
-          },
-        }),
-        tx.repayment.aggregate({
-          where: {
-            loanId: paymentTransaction.referenceId,
-            status: RepaymentStatus.CONFIRMED,
-          },
-          _sum: {
-            amount: true,
-          },
-        }),
-      ]);
-
-      if (!loan) {
-        return;
-      }
+      const repaymentTotals = await tx.repayment.aggregate({
+        where: {
+          loanId: loanByRef.id,
+          status: RepaymentStatus.CONFIRMED,
+        },
+        _sum: {
+          amount: true,
+        },
+      });
 
       const totalPaid = Number(repaymentTotals._sum.amount || 0);
-      const approvedAmount = Number(loan.approvedAmount);
+      const approvedAmount = Number(loanByRef.approvedAmount);
 
-      if (totalPaid >= approvedAmount && loan.status !== LoanStatus.PAID) {
+      if (totalPaid >= approvedAmount && loanByRef.status !== "PAID") {
         await tx.loan.update({
-          where: { id: paymentTransaction.referenceId },
-          data: { status: LoanStatus.PAID },
+          where: { id: loanByRef.id },
+          data: { status: "PAID" },
         });
+
+        // Trigger fund return logic for PAID
+        const loanFundings = await tx.loanFunding.findMany({
+          where: { 
+            loanId: loanByRef.id, 
+            sourceType: 'DONOR',
+          }
+        });
+
+        for (const funding of loanFundings) {
+          if (funding.donorFundId && funding.status !== "RETURNED") {
+            // Update funding status
+            await tx.loanFunding.update({
+              where: { id: funding.id },
+              data: { status: "RETURNED" }
+            });
+
+            // Increment donor fund remaining
+            await tx.donorFund.update({
+              where: { id: funding.donorFundId },
+              data: {
+                remaining: { increment: funding.amount }
+              }
+            });
+          }
+        }
       }
     });
   }

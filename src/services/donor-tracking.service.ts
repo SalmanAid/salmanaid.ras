@@ -8,56 +8,95 @@ export class DonorTrackingService {
    * @param donorId The UUID of the authenticated donor user
    * @param limit Optional limit for pagination/recent views
    */
-  static async getDonorDistributions(donorId?: string, limit?: number) {
-    // We query LoanFunding where the connected DonorFund belongs to the requested donorId
-    const fundings = await prisma.loanFunding.findMany({
-      where: {
-        sourceType: "DONOR",
-        ...(donorId ? {
-          donorFund: {
-            donorId: donorId
-          }
-        } : {})
-      },
-      include: {
-        loan: {
-          include: {
-            application: {
-              include: {
-                borrower: {
-                  select: {
-                    name: true,
-                    image: true
-                  }
+  static async getDonorDistributions(params: {
+    donorId?: string;
+    start?: number;
+    end?: number;
+    status?: string;
+    search?: string;
+    limit?: number; // kept for backwards compatibility if needed
+  }) {
+    const { donorId, start, end, status, search, limit } = params;
+
+    const whereClause: any = {
+      fundings: {
+        some: {
+          sourceType: "DONOR",
+          ...(donorId ? { donorFund: { donorId: donorId } } : {}),
+          ...(status ? { status } : {}),
+        }
+      }
+    };
+
+    if (search) {
+      whereClause.application = {
+        OR: [
+          { description: { contains: search, mode: 'insensitive' } },
+          { borrower: { name: { contains: search, mode: 'insensitive' } } }
+        ]
+      };
+    }
+
+    const take = limit ?? ((start !== undefined && end !== undefined) ? end - start : undefined);
+    const skip = start !== undefined ? start : undefined;
+    
+    const [loans, total] = await Promise.all([
+      prisma.loan.findMany({
+        where: whereClause,
+        include: {
+          application: {
+            include: {
+              borrower: {
+                select: {
+                  name: true,
+                  image: true
                 }
               }
             }
+          },
+          fundings: {
+            where: {
+              sourceType: "DONOR",
+              ...(donorId ? { donorFund: { donorId: donorId } } : {}),
+            },
+            select: {
+              amount: true,
+              status: true,
+              id: true,
+            }
           }
-        }
-      },
-      orderBy: {
-        // Since LoanFunding lacks a createdAt, we order by the Loan's approval or the application's creation
-        loan: {
+        },
+        orderBy: {
           approvedAt: "desc"
-        }
-      },
-      take: limit
-    });
+        },
+        take,
+        skip
+      }),
+      prisma.loan.count({ where: whereClause })
+    ]);
 
     // Map the database response to the API contract format
-    return fundings.map(funding => {
-      const loan = funding.loan;
+    const distributions = loans.map(loan => {
       const application = loan.application;
       const borrower = application.borrower;
+      
+      // Since all fundings for the same loan/donor will transition status together
+      // we can just take the status of the first one
+      const representativeStatus = loan.fundings[0]?.status || "ALLOCATED";
+      const totalAllocated = loan.fundings.reduce((sum, f) => sum + Number(f.amount), 0);
+      const representativeId = loan.fundings[0]?.id || loan.id;
 
       return {
-        id: funding.id,
-        loanId: funding.loanId,
+        id: representativeId,
+        loanId: loan.id,
         beneficiaryName: borrower.name,
         description: application.description,
-        allocatedAmount: Number(funding.amount),
-        allocatedAt: loan.approvedAt.toISOString()
+        allocatedAmount: totalAllocated,
+        allocatedAt: loan.approvedAt.toISOString(),
+        status: representativeStatus
       };
     });
+
+    return { distributions, total };
   }
 }

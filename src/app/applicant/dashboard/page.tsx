@@ -417,7 +417,7 @@ export default function ApplicantDashboardPage() {
                             <ApplicantDashboard_PaymentApplicantComponent 
                                 searchParams={Promise.resolve({ 
                                     type: 'repayment', 
-                                    referenceId: selectedLoanId 
+                                    referenceId: selectedLoan?.loanDetails?.loanId || selectedLoanId 
                                 })} 
                             />
                             <button 

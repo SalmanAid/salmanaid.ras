@@ -13,7 +13,7 @@ function decimalToNumber(value: Prisma.Decimal) {
 
 export const LoanFundingService = {
   async allocateDonorFund(input: CreateLoanFundingInput) {
-    const amount = toDecimal(input.amount);
+    const totalAmountRequired = toDecimal(input.amount);
 
     return prisma.$transaction(async (tx) => {
       const loan = await tx.loan.findUnique({
@@ -36,8 +36,15 @@ export const LoanFundingService = {
         throw new Error("LOAN_NOT_FOUND");
       }
 
-      const donorFund = await tx.donorFund.findUnique({
-        where: { id: input.donorFundId },
+      // Instead of finding one specific donorFundId, find all funds for the donorId
+      const donorFunds = await tx.donorFund.findMany({
+        where: { 
+          donorId: input.donorId,
+          remaining: { gt: 0 }
+        },
+        orderBy: {
+          createdAt: "asc", // FIFO logic: oldest funds first
+        },
         select: {
           id: true,
           donorId: true,
@@ -45,11 +52,12 @@ export const LoanFundingService = {
         },
       });
 
-      if (!donorFund) {
+      if (donorFunds.length === 0) {
         throw new Error("DONOR_FUND_NOT_FOUND");
       }
 
-      if (donorFund.remaining.lessThan(amount)) {
+      const totalAvailable = donorFunds.reduce((sum, f) => sum.plus(f.remaining), new Prisma.Decimal(0));
+      if (totalAvailable.lessThan(totalAmountRequired)) {
         throw new Error("INSUFFICIENT_DONOR_FUND");
       }
 
@@ -59,55 +67,68 @@ export const LoanFundingService = {
       );
       const loanRemaining = loan.approvedAmount.minus(allocatedAmount);
 
-      if (loanRemaining.lessThan(amount)) {
+      if (loanRemaining.lessThan(totalAmountRequired)) {
         throw new Error("LOAN_OVER_ALLOCATION");
       }
 
-      const donorFundUpdate = await tx.donorFund.updateMany({
-        where: {
-          id: input.donorFundId,
-          remaining: {
-            gte: amount,
-          },
-        },
-        data: {
-          remaining: {
-            decrement: amount,
-          },
-        },
-      });
+      // Start FIFO Allocation
+      let amountLeftToAllocate = totalAmountRequired;
+      const createdFundings = [];
 
-      if (donorFundUpdate.count !== 1) {
-        throw new Error("INSUFFICIENT_DONOR_FUND");
+      for (const fund of donorFunds) {
+        if (amountLeftToAllocate.lte(0)) break;
+
+        const amountFromThisFund = Prisma.Decimal.min(fund.remaining, amountLeftToAllocate);
+
+        // Update the specific donor fund
+        const donorFundUpdate = await tx.donorFund.updateMany({
+          where: {
+            id: fund.id,
+            remaining: { gte: amountFromThisFund },
+          },
+          data: {
+            remaining: { decrement: amountFromThisFund },
+          },
+        });
+
+        if (donorFundUpdate.count !== 1) {
+          throw new Error("INSUFFICIENT_DONOR_FUND"); // Concurrency safety
+        }
+
+        // Create the specific funding record for this portion
+        const loanFunding = await tx.loanFunding.create({
+          data: {
+            loanId: input.loanId,
+            donorFundId: fund.id,
+            sourceType: "DONOR",
+            amount: amountFromThisFund,
+          },
+        });
+
+        createdFundings.push(loanFunding);
+        amountLeftToAllocate = amountLeftToAllocate.minus(amountFromThisFund);
       }
-
-      const loanFunding = await tx.loanFunding.create({
-        data: {
-          loanId: input.loanId,
-          donorFundId: input.donorFundId,
-          sourceType: "DONOR",
-          amount,
-        },
-      });
 
       await NotificationService.createLoanFundingNotifications(
         {
           borrowerId: loan.application.borrowerId,
-          donorId: donorFund.donorId,
+          donorId: input.donorId,
           loanId: input.loanId,
           amount: input.amount,
         },
         tx
       );
 
+      // We return the last funding record format to keep API contract somewhat similar,
+      // but returning the total allocation data
       return {
-        id: loanFunding.id,
-        loanId: loanFunding.loanId,
-        donorFundId: loanFunding.donorFundId,
-        sourceType: loanFunding.sourceType,
-        amount: decimalToNumber(loanFunding.amount),
-        remainingDonorFund: decimalToNumber(donorFund.remaining.minus(amount)),
-        remainingLoanAmount: decimalToNumber(loanRemaining.minus(amount)),
+        id: createdFundings[0]?.id || "", // Note: might be multiple, returning first id as a reference
+        loanId: input.loanId,
+        donorId: input.donorId,
+        sourceType: "DONOR",
+        amount: decimalToNumber(totalAmountRequired),
+        remainingDonorFund: decimalToNumber(totalAvailable.minus(totalAmountRequired)),
+        remainingLoanAmount: decimalToNumber(loanRemaining.minus(totalAmountRequired)),
       };
     }, {
       isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
