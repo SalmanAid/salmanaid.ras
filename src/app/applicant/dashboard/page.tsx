@@ -216,7 +216,8 @@ export default function ApplicantDashboardPage() {
     const installmentValue = useMemo(() => {
         if (!selectedLoan) return 0;
         const amount = selectedLoan.loanDetails?.approvedAmount ?? selectedLoan.requestedAmount;
-        return Number(amount) / currentLoanFreq;
+        const freq = currentLoanFreq;
+        return Math.ceil(Number(amount) / freq);
     }, [selectedLoan, currentLoanFreq]);
 
     useEffect(() => {
@@ -311,22 +312,26 @@ export default function ApplicantDashboardPage() {
         
         // Pick individual application specific configuration value directly
         const loanSpecificFreq = loan.installmentFreq ?? 4;
-        const installmentAmount = loanSpecificFreq > 0 ? approvedAmount / loanSpecificFreq : 0;
+        const baseInstallment = loanSpecificFreq > 0 ? Math.floor(approvedAmount / loanSpecificFreq) : 0;
+        const lastInstallment = approvedAmount - (baseInstallment * (loanSpecificFreq - 1));
 
         return Array.from({ length: loanSpecificFreq }).map((_, i) => {
             const date = new Date(baseDate);
             date.setMonth(date.getMonth() - (loanSpecificFreq - 1 - i));
+            const isLast = i === loanSpecificFreq - 1;
+            const currentAmount = isLast ? lastInstallment : baseInstallment;
+            const cumulativeBefore = baseInstallment * i;
             const installmentPaidAmount = Math.min(
-                Math.max(totalPaid - (installmentAmount * i), 0),
-                installmentAmount
+                Math.max(totalPaid - cumulativeBefore, 0),
+                currentAmount
             );
-            const isPaid = loan.loanDetails?.status === "PAID" || installmentPaidAmount >= installmentAmount;
+            const isPaid = loan.loanDetails?.status === "PAID" || installmentPaidAmount >= currentAmount;
 
             return {
                 order: i + 1,
                 date: date,
                 paidAmount: installmentPaidAmount,
-                amount: installmentAmount,
+                amount: currentAmount,
                 status: isPaid ? "paid" : getInstallmentStatus(date, loan.loanDetails?.status),
             };
         });

@@ -21,6 +21,8 @@ export const useLoanStore = create<LoanStore>((set) => ({
         dueDate : "",
         approvedAmount: 0,
         approvedAt : "",
+        forgivenAmount : 0,
+        forgivenAt : null,
         
         // loan details
         application: {

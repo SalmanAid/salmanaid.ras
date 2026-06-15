@@ -184,7 +184,7 @@ export default function AdminMonitoringPage() {
 			</div>	
 
 				<div className="w-full mb-6">
-					<Monitoring_LoanMonitoringTable isLoading={isLoading} />
+					<Monitoring_LoanMonitoringTable isLoading={isLoading} statusFilter={statusFilter} />
 				</div>
 
 				{/* Pagination UI */}

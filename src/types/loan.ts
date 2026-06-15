@@ -8,6 +8,8 @@ export type Loan = {
     status:LoanStatus,
     approvedAt : string | number | Date,
     dueDate : string | number | Date,
+    forgivenAmount?: number,
+    forgivenAt?: string | number | Date | null,
     application: {
         description : string,
         borrower : {
