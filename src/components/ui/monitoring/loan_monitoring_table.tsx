@@ -67,12 +67,14 @@ const formatDate = (dateInput: string | number | Date) => {
 // ===============================
 // COMPONENT
 // ===============================
-export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { isLoading?: boolean }) {
+export default function Monitoring_LoanMonitoringTable({ isLoading = false, statusFilter }: { isLoading?: boolean; statusFilter?: string }) {
     const router = useRouter();
     const loans = useLoanStore((state) => state.loans);
     const isManualSettlementCardOpen = useLoanStore((state) => state.isManualSettlementCardOpen)
     const setSelectedLoan = useLoanStore((state) => state.setSelectedLoan);
     const setManualSettlementCardOpen = useLoanStore((state) => state.setIsManualSettlementCardOpen);
+
+    const showForgivenColumn = statusFilter === "FORGIVEN";
 
     const handleActionClick = (loan: Loan) => {
         const status = loan.status as keyof typeof StatusActionDict || "ACTIVE";
@@ -83,6 +85,8 @@ export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { 
             status: status,
             approvedAt: loan.approvedAt || "",
             dueDate: loan.dueDate || "",
+            forgivenAmount: Number(loan.forgivenAmount || 0),
+            forgivenAt: loan.forgivenAt || null,
             application: loan.application,
             _count: loan._count,
             totalPaid : loan.totalPaid
@@ -168,6 +172,14 @@ export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { 
                                         {formatCurrency(Number(loan.approvedAmount - loan.totalPaid))}
                                     </p>
                                 </div>
+                                {showForgivenColumn && (
+                                    <div className="col-span-2">
+                                        <p className="text-[10px] text-slate-400 font-medium uppercase mb-0.5">Jumlah Dihapuskan</p>
+                                        <p className="font-bold text-[#6B21A8] text-sm">
+                                            {formatCurrency(Number(loan.forgivenAmount || 0))}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Footer: Date & Bottom Full-width Action Button */}
@@ -200,6 +212,9 @@ export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { 
                             <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Deskripsi</TableHead>
                             <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Jumlah yang Diajukan</TableHead>
                             <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Pembayaran Pinjaman Tersisa</TableHead>
+                            {showForgivenColumn && (
+                                <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Jumlah Dihapuskan</TableHead>
+                            )}
                             <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Tanggal Disetujui</TableHead>
                             <TableHead className="text-[#64748B] font-semibold text-xs uppercase text-center">Status</TableHead>
                             <TableHead className="text-[#64748B] font-semibold text-xs uppercase text-center">Aksi</TableHead>
@@ -246,6 +261,12 @@ export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { 
                                     <TableCell className="font-bold text-[#1E293B] text-sm">
                                         {formatCurrency(Number(loan.approvedAmount - loan.totalPaid))}
                                     </TableCell>
+
+                                    {showForgivenColumn && (
+                                        <TableCell className="font-bold text-[#6B21A8] text-sm">
+                                            {formatCurrency(Number(loan.forgivenAmount || 0))}
+                                        </TableCell>
+                                    )}
 
                                     <TableCell className="text-[#64748B] text-sm">
                                         {formatDate(loan.approvedAt)}

@@ -655,9 +655,11 @@ export const LoanService = {
           status: loan.status,
           approvedAt: loan.approvedAt,
           dueDate: loan.dueDate,
+          forgivenAmount: loan.forgivenAmount,
+          forgivenAt: loan.forgivenAt,
           application: loan.application,
           _count: loan._count,
-          totalPaid: totalPaid, // Now aligned with application field
+          totalPaid: totalPaid,
         };
       });
 

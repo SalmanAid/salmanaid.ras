@@ -160,6 +160,8 @@ model Loan {
   approvedAt     DateTime
   dueDate        DateTime
   installmentFreq Int           @default(4)
+  forgivenAmount Decimal         @default(0) @db.Decimal(12, 2)
+  forgivenAt     DateTime?
   application    LoanApplication @relation(fields: [applicationId], references: [id])
   fundings       LoanFunding[]
   repayments     Repayment[]

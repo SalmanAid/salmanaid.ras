@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { RepaymentStatus } from "@/generated/prisma";
+import { RepaymentStatus, LoanStatus } from "@/generated/prisma";
 
 export class RepaymentService {
   static async recordRepayment(data: { loanId: string; amount: number; paidAt?: Date }) {
@@ -18,7 +18,7 @@ export class RepaymentService {
           loanId: data.loanId,
           amount: data.amount,
           paidAt: data.paidAt || new Date(),
-          status: RepaymentStatus.CONFIRMED, // or PENDING based on your flow
+          status: RepaymentStatus.CONFIRMED,
         },
       });
 
@@ -30,15 +30,16 @@ export class RepaymentService {
       const totalPaid = previouslyPaid + Number(data.amount);
       const isFullyPaid = totalPaid >= Number(loan.approvedAmount);
 
-      // 4. Update Loan Status & Process Funds if fully paid
-      if (isFullyPaid && loan.status !== "PAID") {
+      // 4. Update Loan Status & Process Funds
+      if (isFullyPaid && loan.status !== LoanStatus.PAID) {
         await tx.loan.update({
           where: { id: data.loanId },
-          data: { status: "PAID" }
+          data: {
+            status: LoanStatus.PAID,
+            forgivenAmount: Number(loan.forgivenAmount) + Number(data.amount),
+            forgivenAt: new Date(),
+          }
         });
-
-        // TODO: Handle logic for forgiven loans where partial repayment might require proportional partial returns to the DonorFund.
-        // Currently, forgiven loans trigger full return of all associated LoanFunding records identically to a PAID status.
 
         // Trigger fund return logic for PAID
         const loanFundings = await tx.loanFunding.findMany({
@@ -50,13 +51,11 @@ export class RepaymentService {
 
         for (const funding of loanFundings) {
           if (funding.donorFundId && funding.status !== "RETURNED") {
-            // Update funding status
             await tx.loanFunding.update({
               where: { id: funding.id },
               data: { status: "RETURNED" }
             });
 
-            // Increment donor fund remaining
             await tx.donorFund.update({
               where: { id: funding.donorFundId },
               data: {
@@ -65,6 +64,17 @@ export class RepaymentService {
             });
           }
         }
+      } else if (!isFullyPaid && loan.status !== LoanStatus.PAID) {
+        // Any non-zero admin reduction sets the loan to FORGIVEN
+        const newForgivenAmount = Number(loan.forgivenAmount || 0) + Number(data.amount);
+        await tx.loan.update({
+          where: { id: data.loanId },
+          data: {
+            status: LoanStatus.FORGIVEN,
+            forgivenAmount: newForgivenAmount,
+            forgivenAt: new Date(),
+          }
+        });
       }
 
       return repayment;
