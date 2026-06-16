@@ -2,6 +2,7 @@ import { useLoanStore } from "@/hooks/loanStore";
 import { useState } from "react";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { formatCurrency } from "@/lib/utils";
+import { LoanStatus } from "@/generated/prisma";
 
 export default function Monitoring_ManualSettlementCard() {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -58,7 +59,7 @@ export default function Monitoring_ManualSettlementCard() {
             const newTotalPaid = Number(selectedLoan.totalPaid) + reductionAmount;
             const newForgivenAmount = Number(selectedLoan.forgivenAmount || 0) + reductionAmount;
             const isFullyPaid = newTotalPaid >= Number(selectedLoan.approvedAmount);
-            const newStatus = isFullyPaid ? "PAID" : "FORGIVEN";
+            const newStatus: LoanStatus = isFullyPaid ? LoanStatus.PAID : LoanStatus.FORGIVEN;
 
             setSelectedLoan({
                 ...selectedLoan,
