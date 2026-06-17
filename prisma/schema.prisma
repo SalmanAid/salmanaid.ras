@@ -160,6 +160,8 @@ model Loan {
   approvedAt     DateTime
   dueDate        DateTime
   installmentFreq Int           @default(4)
+  forgivenAmount Decimal         @default(0) @db.Decimal(12, 2)
+  forgivenAt     DateTime?
   application    LoanApplication @relation(fields: [applicationId], references: [id])
   fundings       LoanFunding[]
   repayments     Repayment[]
@@ -175,6 +177,7 @@ model LoanFunding {
   sourceType  FundingSourceType
   donorFundId String?           @db.Uuid
   amount      Decimal           @db.Decimal(12, 2)
+  status      FundingStatus     @default(ALLOCATED)
   donorFund   DonorFund?        @relation(fields: [donorFundId], references: [id])
   loan        Loan              @relation(fields: [loanId], references: [id], onDelete: Cascade)
 
@@ -355,4 +358,9 @@ enum AccountVerificationStatus {
   VERIFIED
   REJECTED
   REVISION_REQUESTED
+}
+
+enum FundingStatus {
+  ALLOCATED
+  RETURNED
 }

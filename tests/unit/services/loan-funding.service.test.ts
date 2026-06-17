@@ -24,14 +24,14 @@ describe('LoanFundingService', () => {
           findUnique: vi.fn().mockResolvedValue(mockLoan),
         },
         donorFund: {
-          findUnique: vi.fn().mockResolvedValue(mockDonorFund),
+          findMany: vi.fn().mockResolvedValue([mockDonorFund]),
           updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         },
         loanFunding: {
           create: vi.fn().mockResolvedValue({
             id: 'funding-1',
             loanId: 'loan-1',
-            donorFundId: 'fund-1',
+            donorId: 'fund-1',
             sourceType: 'DONOR',
             amount: new Prisma.Decimal(100000),
           }),
@@ -51,7 +51,7 @@ describe('LoanFundingService', () => {
 
       const result = await LoanFundingService.allocateDonorFund({
         loanId: 'loan-1',
-        donorFundId: 'fund-1',
+        donorId: 'fund-1',
         amount: 100000,
       });
 
@@ -76,7 +76,7 @@ describe('LoanFundingService', () => {
 
       const mockTx = {
         loan: { findUnique: vi.fn().mockResolvedValue(mockLoan) },
-        donorFund: { findUnique: vi.fn().mockResolvedValue(mockDonorFund) },
+        donorFund: { findMany: vi.fn().mockResolvedValue([mockDonorFund]) },
       };
 
       (prisma.$transaction as any).mockImplementation(async (callback: any) => {
@@ -85,7 +85,7 @@ describe('LoanFundingService', () => {
 
       await expect(LoanFundingService.allocateDonorFund({
         loanId: 'loan-1',
-        donorFundId: 'fund-1',
+        donorId: 'fund-1',
         amount: 100000,
       })).rejects.toThrow('INSUFFICIENT_DONOR_FUND');
     });

@@ -26,6 +26,7 @@ type UserRoleOverview = {
 type DashboardSummary = {
   totalDonated: number;
   activeImpact: number;
+  undistributedBalance: number;
   currentRank: string;
 };
 
@@ -47,6 +48,7 @@ const FALLBACK_DASHBOARD_DATA: DonorDashboardPayload = {
   summary: {
     totalDonated: 0,
     activeImpact: 0,
+    undistributedBalance: 0,
     currentRank: "Bronze Donor",
   },
   recentDistributions: [],
@@ -71,6 +73,7 @@ export default function DonorDashboardPage(){
     const { data: session } = useSession();
     const username = useUserStore((state) => state.user?.username) || session?.user?.name || "Donor";
     const [dashboardData, setDashboardData] = useState<DonorDashboardPayload>(FALLBACK_DASHBOARD_DATA);
+    const [distributions, setDistributions] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isCheckingVerification, setIsCheckingVerification] = useState(true);
     const [donorRole, setDonorRole] = useState<UserRoleOverview | null>(null);
@@ -119,17 +122,21 @@ export default function DonorDashboardPage(){
     useEffect(() => {
       const fetchDashboardData = async () => {
         try {
-          const response = await fetch("/api/donations?view=dashboard", {
-            method: "GET",
-            cache: "no-store",
-          });
+          const [dashRes, distRes] = await Promise.all([
+            fetch("/api/donations?view=dashboard", { method: "GET", cache: "no-store" }),
+            fetch("/api/donors/distributions?limit=5", { method: "GET", cache: "no-store" })
+          ]);
 
-          if (!response.ok) {
-            throw new Error("Failed to fetch donor dashboard data");
+          if (dashRes.ok) {
+            const payload = await dashRes.json();
+            setDashboardData(payload.data || FALLBACK_DASHBOARD_DATA);
           }
-
-          const payload = await response.json();
-          setDashboardData(payload.data || FALLBACK_DASHBOARD_DATA);
+          if (distRes.ok) {
+            const payload = await distRes.json();
+            if (payload.success) {
+              setDistributions(payload.data?.distributions || []);
+            }
+          }
         } catch (error) {
           console.error("Error loading donor dashboard data:", error);
           setDashboardData(FALLBACK_DASHBOARD_DATA);
@@ -143,14 +150,15 @@ export default function DonorDashboardPage(){
 
     const tableRows = useMemo(
       () =>
-        dashboardData.recentDistributions.map((distribution) => ({
+        distributions.map((distribution) => ({
           id: distribution.id,
-          date: formatDate(distribution.date),
-          programName: distribution.programName,
-          amount: formatCurrency(distribution.amount),
+          date: formatDate(distribution.allocatedAt),
+          beneficiaryName: distribution.beneficiaryName,
+          programName: distribution.description,
+          amount: formatCurrency(distribution.allocatedAmount),
           status: distribution.status,
         })),
-      [dashboardData.recentDistributions]
+      [distributions]
     );
 
     return (
@@ -203,13 +211,20 @@ export default function DonorDashboardPage(){
             </p>
           </section>
 
-          <section className="mt-8 grid gap-4 md:grid-cols-3">
+          <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <DonorDashboard_SummaryOfDonor
               logo={WalletLogo}
               alt="Wallet"
               title="Total Donated"
               caption={formatCurrency(dashboardData.summary.totalDonated)}
               color="07B0C8"
+            />
+            <DonorDashboard_SummaryOfDonor
+              logo={WalletLogo}
+              alt="Wallet"
+              title="Undistributed Balance"
+              caption={formatCurrency(dashboardData.summary.undistributedBalance)}
+              color="3B82F6"
             />
             <DonorDashboard_SummaryOfDonor
               logo={GreenHeartLogo}
@@ -228,7 +243,7 @@ export default function DonorDashboardPage(){
           </section>
 
           <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_420px] xl:grid-cols-[minmax(0,1fr)_460px]">
-            <DonorDashboard_RecentDistributionTable rows={tableRows} isLoading={isLoading} />
+            <DonorDashboard_RecentDistributionTable rows={tableRows} isLoading={isLoading} limit={5} />
             <DonorDashboard_StartNewDonation quickSelectAmounts={dashboardData.quickSelectAmounts} />
           </section>
           </>

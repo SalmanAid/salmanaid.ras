@@ -2,21 +2,38 @@ import { useLoanStore } from "@/hooks/loanStore";
 import { useState } from "react";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { formatCurrency } from "@/lib/utils";
+import { LoanStatus } from "@/generated/prisma";
 
 export default function Monitoring_ManualSettlementCard() {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [reductionAmount, setReductionAmount] = useState<number>(0);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null); // Added for error feedback
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
 
     const selectedLoan = useLoanStore((state) => state.selected_loan);
+    const setSelectedLoan = useLoanStore((state) => state.setSelectedLoan);
     const setManualSettlementCardOpen = useLoanStore((state) => state.setIsManualSettlementCardOpen);
+    const loans = useLoanStore((state) => state.loans);
+    const setLoans = useLoanStore((state) => state.setLoans);
 
     const approvedAmount = selectedLoan.approvedAmount;
     const totalPaid = selectedLoan.totalPaid;
-    const remainingUnpaid = approvedAmount - totalPaid;
+    const forgivenAmount = selectedLoan.forgivenAmount || 0;
+    const remainingUnpaid = Math.max(approvedAmount - totalPaid - forgivenAmount, 0);
+
+    const getStatusBadgeClass = (status: string) => {
+        switch (status) {
+            case "FORGIVEN": return "bg-purple-100 text-purple-700";
+            case "ACTIVE": return "bg-emerald-100 text-emerald-700";
+            case "PAID": return "bg-green-100 text-green-700";
+            case "DEFAULTED": return "bg-red-100 text-red-700";
+            default: return "bg-amber-100 text-amber-700";
+        }
+    };
 
     const handleConfirmAdjustment = async () => {
         setErrorMessage(null);
+        setSubmitSuccess(null);
         setIsSubmitting(true);
 
         try {
@@ -28,8 +45,6 @@ export default function Monitoring_ManualSettlementCard() {
                 body: JSON.stringify({
                     loanId: selectedLoan.id,
                     amount: reductionAmount,
-                    // We can optionally pass paidAt here, 
-                    // otherwise the backend defaults to now.
                 }),
             });
 
@@ -39,9 +54,32 @@ export default function Monitoring_ManualSettlementCard() {
                 throw new Error(result.error || "Gagal memproses penyesuaian");
             }
 
-            alert("Perubahan Data Berhasil!")
-            
-            setManualSettlementCardOpen(false);
+            setSubmitSuccess("Pengurangan berhasil dicatat.");
+
+            const newTotalPaid = Number(selectedLoan.totalPaid) + reductionAmount;
+            const newForgivenAmount = Number(selectedLoan.forgivenAmount || 0) + reductionAmount;
+            const isFullyPaid = newTotalPaid >= Number(selectedLoan.approvedAmount);
+            const newStatus: LoanStatus = isFullyPaid ? LoanStatus.PAID : LoanStatus.FORGIVEN;
+
+            setSelectedLoan({
+                ...selectedLoan,
+                status: newStatus,
+                forgivenAmount: newForgivenAmount,
+                totalPaid: newTotalPaid,
+            });
+
+            const updatedLoans = loans.map((loan) => {
+                if (loan.id === selectedLoan.id) {
+                    return {
+                        ...loan,
+                        status: newStatus,
+                        forgivenAmount: newForgivenAmount,
+                        totalPaid: newTotalPaid,
+                    };
+                }
+                return loan;
+            });
+            setLoans(updatedLoans);
         } catch (error: any) {
             setErrorMessage(error.message);
         } finally {
@@ -71,9 +109,7 @@ export default function Monitoring_ManualSettlementCard() {
                     <p className="font-bold text-lg">{selectedLoan.application.borrower.name}</p>
                     <p className="text-xs text-slate-500">{selectedLoan.id}</p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${
-                    selectedLoan.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                }`}>
+                <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${getStatusBadgeClass(selectedLoan.status)}`}>
                     {selectedLoan.status}
                 </span>
                 </div>
@@ -91,6 +127,12 @@ export default function Monitoring_ManualSettlementCard() {
                     <p className="text-[10px] text-slate-400 font-medium">Jumlah Tak Terbayar</p>
                     <p className="font-bold text-amber-600">{formatCurrency(remainingUnpaid)}</p>
                 </div>
+                {forgivenAmount > 0 && (
+                    <div className="flex flex-col">
+                        <p className="text-[10px] text-slate-400 font-medium">Total Dihapuskan</p>
+                        <p className="font-bold text-purple-600">{formatCurrency(forgivenAmount)}</p>
+                    </div>
+                )}
                 </div>
             </div>
 
@@ -131,9 +173,9 @@ export default function Monitoring_ManualSettlementCard() {
 
             {/* Action Buttons */}
             <div className="p-8 pt-4 bg-white border-t border-slate-50">
-                {errorMessage && (
-                    <p className="mb-3 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
-                        {errorMessage}
+                {(errorMessage || submitSuccess) && (
+                    <p className={`mb-3 rounded-xl px-4 py-3 text-sm font-medium ${errorMessage ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-700"}`}>
+                        {errorMessage || submitSuccess}
                     </p>
                 )}
 
@@ -144,16 +186,18 @@ export default function Monitoring_ManualSettlementCard() {
                         disabled={isSubmitting}
                         className="flex-1 py-3 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
                     >
-                        Batal
+                        {submitSuccess ? "Tutup" : "Batal"}
                     </button>
-                    <button
-                        type="button"
-                        onClick={handleConfirmAdjustment}
-                        disabled={!reductionAmount || reductionAmount <= 0 || reductionAmount > remainingUnpaid || isSubmitting}
-                        className="flex-2 py-3 bg-[#87DCE9] rounded-xl font-bold text-white shadow-lg shadow-[#87DCE9]/20 hover:bg-[#76cad7] disabled:bg-slate-200 disabled:shadow-none disabled:text-slate-400 transition-all"
-                    >
-                        {isSubmitting ? "Menyesuaikan..." : "Konfirmasi Penyesuaian"}
-                    </button>
+                    {!submitSuccess && (
+                        <button
+                            type="button"
+                            onClick={handleConfirmAdjustment}
+                            disabled={!reductionAmount || reductionAmount <= 0 || reductionAmount > remainingUnpaid || isSubmitting}
+                            className="flex-2 py-3 bg-[#87DCE9] rounded-xl font-bold text-white shadow-lg shadow-[#87DCE9]/20 hover:bg-[#76cad7] disabled:bg-slate-200 disabled:shadow-none disabled:text-slate-400 transition-all"
+                        >
+                            {isSubmitting ? "Menyesuaikan..." : "Konfirmasi Penyesuaian"}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

@@ -7,6 +7,9 @@ import Monitoring_LoanMonitoringTable from "@/components/ui/monitoring/loan_moni
 import Monitoring_ManualSettlementCard from "@/components/ui/monitoring/manual_settlement_card";
 import { AdminSearch } from "@/components/ui/admin-search";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import Monitoring_UserMonitoringTable from "@/components/ui/monitoring/user_monitoring_table";
+import { formatCurrency } from "@/lib/utils";
+import { X } from "lucide-react";
 
 export default function AdminMonitoringPage() {
   const maxItemsInPage = 10;
@@ -21,6 +24,10 @@ export default function AdminMonitoringPage() {
   const [search, setSearch] = useState("");
   const [totalItems, setTotalItems] = useState(0);
   const debouncedSearch = useDebouncedValue(search);
+
+  const [viewMode, setViewMode] = useState<"LOANS" | "USERS">("LOANS");
+  const [users, setUsers] = useState<any[]>([]);
+  const [selectedUserForDetail, setSelectedUserForDetail] = useState<any | null>(null);
 
   const maxPageNumber = Math.max(1, Math.ceil(totalItems / maxItemsInPage));
 
@@ -61,9 +68,30 @@ export default function AdminMonitoringPage() {
       }
     };
 
-    void fetchLoans();
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('/api/admin/monitoring/users', { signal: controller.signal });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const result = await response.json();
+        setUsers(result.data || []);
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          console.error("Fetch users error:", error);
+        }
+      }
+    };
+
+    if (viewMode === "LOANS") {
+      void fetchLoans();
+    } else {
+      setIsLoading(true);
+      fetchUsers().finally(() => {
+        if (!controller.signal.aborted) setIsLoading(false);
+      });
+    }
+
     return () => controller.abort();
-  }, [currentPageNumber, debouncedSearch, statusFilter, setLoans]);
+  }, [currentPageNumber, debouncedSearch, statusFilter, setLoans, viewMode]);
 
   const handleFilterChange = (status: string | undefined) => {
     setStatusFilter(status);
@@ -101,6 +129,28 @@ export default function AdminMonitoringPage() {
 		</div>
 
 		<div className="flex flex-col w-[90%] py-4">
+			{/* Main View Mode Tabs */}
+			<div className="flex gap-4 mb-4 border-b border-gray-200">
+				<button
+					onClick={() => { setViewMode("LOANS"); setCurrentPageNumber(1); setSearch(""); }}
+					className={`pb-3 px-2 text-sm font-bold border-b-2 transition-all ${
+						viewMode === "LOANS" ? "border-[#00B5D8] text-[#00B5D8]" : "border-transparent text-gray-500 hover:text-gray-700"
+					}`}
+				>
+					Semua Pinjaman
+				</button>
+				<button
+					onClick={() => { setViewMode("USERS"); setSearch(""); }}
+					className={`pb-3 px-2 text-sm font-bold border-b-2 transition-all ${
+						viewMode === "USERS" ? "border-[#00B5D8] text-[#00B5D8]" : "border-transparent text-gray-500 hover:text-gray-700"
+					}`}
+				>
+					Berdasarkan Pengguna
+				</button>
+			</div>
+
+			{viewMode === "LOANS" && (
+			<>
 			{/* Filter Tabs with Hardcoded Dictionary Colors */}
 			<div className="mb-6 flex w-full flex-col gap-4 border-b border-gray-200 md:flex-row md:items-end md:justify-between">
 				<div className="flex gap-1 overflow-x-auto no-scrollbar scroll-smooth -mb-px sm:gap-4">
@@ -134,7 +184,7 @@ export default function AdminMonitoringPage() {
 			</div>	
 
 				<div className="w-full mb-6">
-					<Monitoring_LoanMonitoringTable isLoading={isLoading} />
+					<Monitoring_LoanMonitoringTable isLoading={isLoading} statusFilter={statusFilter} />
 				</div>
 
 				{/* Pagination UI */}
@@ -172,9 +222,76 @@ export default function AdminMonitoringPage() {
 					Selanjutnya
 					</button>
 				</div>
+				</div>
 
-			</div>
+			</>
+			)}
+
+			{viewMode === "USERS" && (
+			<>
+				<div className="mb-6 flex w-full flex-col gap-4 border-b border-gray-200 md:flex-row md:items-end md:justify-end">
+					<AdminSearch
+					  value={search}
+					  onChange={(value) => setSearch(value)}
+					  placeholder="Cari peminjam, email..."
+					  className="mb-3 w-full md:max-w-md"
+					/>
+				</div>
+
+				<div className="w-full mb-6">
+					<Monitoring_UserMonitoringTable 
+						users={users.filter(u => 
+							u.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
+							u.email?.toLowerCase().includes(debouncedSearch.toLowerCase())
+						)} 
+						isLoading={isLoading} 
+						onUserClick={(user) => setSelectedUserForDetail(user)}
+					/>
+				</div>
+			</>
+			)}
+
 		</div>
+
+		{/* User Detail Modal */}
+		{selectedUserForDetail && (
+			<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+				<div className="w-full max-w-2xl bg-white rounded-xl shadow-lg flex flex-col max-h-[90vh]">
+					<div className="flex items-center justify-between border-b p-6">
+						<h2 className="text-xl font-bold">Riwayat Pinjaman: {selectedUserForDetail.name}</h2>
+						<button onClick={() => setSelectedUserForDetail(null)} className="text-gray-500 hover:text-gray-800 transition">
+							<X size={20} />
+						</button>
+					</div>
+					<div className="overflow-y-auto p-6 flex flex-col gap-4">
+						{selectedUserForDetail.loans.length === 0 ? (
+							<p className="text-gray-500 text-center py-4">Pengguna ini belum memiliki pinjaman.</p>
+						) : (
+							selectedUserForDetail.loans.map((loan: any) => (
+								<div key={loan.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50 flex flex-col gap-2">
+									<div className="flex justify-between items-center">
+										<span className="font-bold text-[#1E293B]">{formatCurrency(Number(loan.approvedAmount))}</span>
+										<span className={`text-xs font-bold px-2 py-1 rounded-full ${
+											loan.status === "PAID" ? "bg-green-100 text-green-800" :
+											loan.status === "FORGIVEN" ? "bg-purple-100 text-purple-800" :
+											loan.status === "DEFAULTED" ? "bg-red-100 text-red-800" :
+											"bg-blue-100 text-blue-800"
+										}`}>
+											{loan.status}
+										</span>
+									</div>
+									<div className="text-sm text-gray-600 flex justify-between">
+										<span>Sisa Pembayaran: {formatCurrency(Number(loan.approvedAmount) - Number(loan.totalPaid || 0))}</span>
+										<span>Disetujui: {new Date(loan.approvedAt).toLocaleDateString("id-ID")}</span>
+									</div>
+								</div>
+							))
+						)}
+					</div>
+				</div>
+			</div>
+		)}
+
     </div>
   );
 }

@@ -82,6 +82,7 @@ export default function ApplicantForm_TermsAndAgreementSection() {
             await createApplicationResponse.json() as CreatedLoanApplicationResponse
 
             setSubmitSuccess("Pengajuan berhasil dikirimkan.")
+            useApplicationProgressStore.getState().reset()
             router.push("/applicant/dashboard")
         } catch (error) {
             setSubmitError(error instanceof Error ? error.message : "Something went wrong while submitting the application.")

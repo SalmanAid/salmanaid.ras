@@ -261,7 +261,7 @@ export default function PaymentConfirmPage({
         );
         setSimulateMessage('Midtrans QRIS simulator terbuka.');
       } catch {
-        setError('Gagal memnbuka Midtrans QRIS simulator');
+        setError('Gagal membuka Midtrans QRIS simulator');
       }
       return;
     }
@@ -274,6 +274,7 @@ export default function PaymentConfirmPage({
       setError('Gagal membuka Midtrans VA simulator');
     }
   };
+
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] py-8 px-4 sm:px-6 lg:px-8">

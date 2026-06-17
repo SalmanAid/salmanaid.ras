@@ -135,6 +135,12 @@ export default function ForgotPasswordPage() {
                         </div>
                     )}
 
+                    {sent && !error && (
+                        <div className="text-emerald-600 text-sm text-center bg-emerald-50 p-2 rounded-lg border border-emerald-100">
+                            Jika email terdaftar, tombol konfirmasi reset password sudah dikirim.
+                        </div>
+                    )}
+
                     {/* verify button */}
                     <button
                         onClick={handleSend}

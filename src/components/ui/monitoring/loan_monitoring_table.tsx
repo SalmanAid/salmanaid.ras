@@ -21,29 +21,29 @@ import { formatCurrency } from "@/lib/utils"
 // ===============================
 const StatusActionDict = {
     "FORGIVEN": {
-        "status_bg": "#FEF3C6",
-        "status_text": "#BB4D00",
+        "status_bg": "#F3E8FF", // bg-purple-100
+        "status_text": "#6B21A8", // text-purple-800
         "action_caption": "Review",
         "action_bg": "#E0F7FA",
         "action_text": "#00B5D8",
     },
     "ACTIVE": {
-        "status_bg": "#D0FAE5",
-        "status_text": "#007A55",
+        "status_bg": "#DBEAFE", // bg-blue-100
+        "status_text": "#1E40AF", // text-blue-800
         "action_caption": "See Detail",
         "action_bg": "#FEFCE8",
         "action_text": "#FCB82E",
     },
     "PAID": {
-        "status_bg": "#D0FAE5",
-        "status_text": "#007A55",
+        "status_bg": "#D1FAE5", // bg-green-100
+        "status_text": "#065F46", // text-green-800
         "action_caption": "See Detail",
         "action_bg": "#FEFCE8",
         "action_text": "#FCB82E",
     },
     "DEFAULTED": {
-        "status_bg": "#FFE2E2",
-        "status_text": "#C10007",
+        "status_bg": "#FEE2E2", // bg-red-100
+        "status_text": "#991B1B", // text-red-800
         "action_caption": "See Detail",
         "action_bg": "#FEFCE8",
         "action_text": "#FCB82E",
@@ -67,12 +67,14 @@ const formatDate = (dateInput: string | number | Date) => {
 // ===============================
 // COMPONENT
 // ===============================
-export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { isLoading?: boolean }) {
+export default function Monitoring_LoanMonitoringTable({ isLoading = false, statusFilter }: { isLoading?: boolean; statusFilter?: string }) {
     const router = useRouter();
     const loans = useLoanStore((state) => state.loans);
     const isManualSettlementCardOpen = useLoanStore((state) => state.isManualSettlementCardOpen)
     const setSelectedLoan = useLoanStore((state) => state.setSelectedLoan);
     const setManualSettlementCardOpen = useLoanStore((state) => state.setIsManualSettlementCardOpen);
+
+    const showForgivenColumn = statusFilter === "FORGIVEN";
 
     const handleActionClick = (loan: Loan) => {
         const status = loan.status as keyof typeof StatusActionDict || "ACTIVE";
@@ -83,6 +85,8 @@ export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { 
             status: status,
             approvedAt: loan.approvedAt || "",
             dueDate: loan.dueDate || "",
+            forgivenAmount: Number(loan.forgivenAmount || 0),
+            forgivenAt: loan.forgivenAt || null,
             application: loan.application,
             _count: loan._count,
             totalPaid : loan.totalPaid
@@ -168,6 +172,14 @@ export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { 
                                         {formatCurrency(Number(loan.approvedAmount - loan.totalPaid))}
                                     </p>
                                 </div>
+                                {showForgivenColumn && (
+                                    <div className="col-span-2">
+                                        <p className="text-[10px] text-slate-400 font-medium uppercase mb-0.5">Jumlah Dihapuskan</p>
+                                        <p className="font-bold text-[#6B21A8] text-sm">
+                                            {formatCurrency(Number(loan.forgivenAmount || 0))}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Footer: Date & Bottom Full-width Action Button */}
@@ -200,6 +212,9 @@ export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { 
                             <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Deskripsi</TableHead>
                             <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Jumlah yang Diajukan</TableHead>
                             <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Pembayaran Pinjaman Tersisa</TableHead>
+                            {showForgivenColumn && (
+                                <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Jumlah Dihapuskan</TableHead>
+                            )}
                             <TableHead className="text-[#64748B] font-semibold text-xs uppercase">Tanggal Disetujui</TableHead>
                             <TableHead className="text-[#64748B] font-semibold text-xs uppercase text-center">Status</TableHead>
                             <TableHead className="text-[#64748B] font-semibold text-xs uppercase text-center">Aksi</TableHead>
@@ -246,6 +261,12 @@ export default function Monitoring_LoanMonitoringTable({ isLoading = false }: { 
                                     <TableCell className="font-bold text-[#1E293B] text-sm">
                                         {formatCurrency(Number(loan.approvedAmount - loan.totalPaid))}
                                     </TableCell>
+
+                                    {showForgivenColumn && (
+                                        <TableCell className="font-bold text-[#6B21A8] text-sm">
+                                            {formatCurrency(Number(loan.forgivenAmount || 0))}
+                                        </TableCell>
+                                    )}
 
                                     <TableCell className="text-[#64748B] text-sm">
                                         {formatDate(loan.approvedAt)}

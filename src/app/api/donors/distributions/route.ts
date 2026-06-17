@@ -22,6 +22,12 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const limitParam = searchParams.get("limit");
     const limit = limitParam ? parseInt(limitParam, 10) : undefined;
+    const startParam = searchParams.get("start");
+    const endParam = searchParams.get("end");
+    const start = startParam ? parseInt(startParam, 10) : undefined;
+    const end = endParam ? parseInt(endParam, 10) : undefined;
+    const status = searchParams.get("status") || undefined;
+    const search = searchParams.get("search") || undefined;
     
     let targetDonorId = searchParams.get("donorId");
 
@@ -39,11 +45,18 @@ export async function GET(request: Request) {
     }
 
     // Fetch the breakdown
-    const distributions = await DonorTrackingService.getDonorDistributions(targetDonorId || undefined, limit);
+    const { distributions, total } = await DonorTrackingService.getDonorDistributions({
+      donorId: targetDonorId || undefined,
+      limit,
+      start,
+      end,
+      status,
+      search
+    });
 
     return NextResponse.json({
       success: true,
-      data: distributions
+      data: { distributions, total }
     });
 
   } catch (error) {

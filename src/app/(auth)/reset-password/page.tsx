@@ -3,8 +3,8 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { validatePassword, isPasswordValid, SPECIAL_CHARACTERS } from "@/lib/password-validation";
-import { CheckCircle2, Circle, AlertCircle } from "lucide-react";
+import { validatePassword, isPasswordValid } from "@/lib/password-validation";
+import { CheckCircle2, Circle, AlertCircle, Eye, EyeOff } from "lucide-react";
 
 function ResetPasswordForm() {
     const router = useRouter();
@@ -19,16 +19,15 @@ function ResetPasswordForm() {
     const [loading, setLoading] = useState<boolean>(false);
     const [tokenError, setTokenError] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [tokenLoading, setTokenLoading] = useState<boolean>(true);
+    const [tokenLoading, setTokenLoading] = useState<boolean>(Boolean(token));
+    const missingTokenError = !token ? "Token tidak ditemukan. Silakan ulangi proses lupa password." : null;
 
     useEffect(() => {
         if (!token) {
-            setTokenError("Token tidak ditemukan. Silakan ulangi proses lupa password.");
-            setTokenLoading(false);
             return;
         }
 
-        fetch(`/api/auth/reset-password?token=${token}`)
+        fetch(`/api/auth/reset-password?token=${encodeURIComponent(token)}`)
             .then((res) => res.json())
             .then((data) => {
                 if (data.email) {
@@ -83,19 +82,6 @@ function ResetPasswordForm() {
         }
     };
 
-    const EyeIcon = () => (
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-        </svg>
-    );
-
-    const EyeOffIcon = () => (
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
-        </svg>
-    );
-
     return (
         <div className="font-sans flex flex-col w-full min-h-screen overflow-hidden items-center justify-center relative">
             <Image
@@ -127,13 +113,13 @@ function ResetPasswordForm() {
                         </h1>
                     </div>
 
-                    {tokenLoading && (
+                    {tokenLoading && !missingTokenError && (
                         <div className="text-center text-gray-400 text-sm py-4">Memvalidasi token...</div>
                     )}
 
-                    {tokenError && (
+                    {(missingTokenError || tokenError) && (
                         <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg border border-red-100">
-                            {tokenError}
+                            {missingTokenError || tokenError}
                             <div className="mt-3">
                                 <a href="/forgot-password" className="text-[#16C5DE] underline">
                                     Kembali ke Lupa Password
@@ -142,7 +128,7 @@ function ResetPasswordForm() {
                         </div>
                     )}
 
-                    {!tokenLoading && !tokenError && (
+                    {!tokenLoading && !missingTokenError && !tokenError && (
                         <>
                             {/* email (read-only) */}
                             <div className="flex flex-col gap-2">
@@ -178,7 +164,7 @@ function ResetPasswordForm() {
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                                         tabIndex={-1}
                                     >
-                                        {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                     </button>
                                 </div>
                                 
@@ -226,7 +212,7 @@ function ResetPasswordForm() {
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                                         tabIndex={-1}
                                     >
-                                        {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+                                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                     </button>
                                 </div>
                             </div>

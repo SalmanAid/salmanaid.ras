@@ -47,6 +47,8 @@ type ApplicationProgressStore = {
 
     // terms and agreement
     switchComplyToTermsAndAgreement : () => void
+
+    reset : () => void
 }
 
 export const useApplicationProgressStore = create<ApplicationProgressStore>((set, get) => ({
@@ -169,6 +171,22 @@ export const useApplicationProgressStore = create<ApplicationProgressStore>((set
     // terms and agreement
     switchComplyToTermsAndAgreement() {
         set( { comply_to_terms_and_agreement : !get().comply_to_terms_and_agreement })
+    },
+
+    reset() {
+        set({
+            application_progress : { step : 1 },
+            full_name : "",
+            university_name : "",
+            student_id_number : "",
+            loan_title : "",
+            requested_amount : 0,
+            loan_purpose : "",
+            installment_freq : 4,
+            student_id_card : null,
+            family_card : null,
+            comply_to_terms_and_agreement : false,
+        })
     },
 
 }))
