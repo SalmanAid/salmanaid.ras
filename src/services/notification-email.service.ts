@@ -7,7 +7,29 @@ type NotificationEmailInput = {
 };
 
 function toHtml(message: string) {
-  return `<p>${message}</p>`;
+  if (/<\/?[a-z][\s\S]*>/i.test(message)) {
+    return message;
+  }
+
+  return `<p>${escapeHtml(message).replace(/\n/g, "<br />")}</p>`;
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function toText(message: string) {
+  return message
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export const NotificationEmailService = {
@@ -23,7 +45,7 @@ export const NotificationEmailService = {
       to: input.to,
       subject: input.subject,
       html: toHtml(input.message),
-      text: input.message,
+      text: toText(input.message),
     });
 
     if (result.error) {
